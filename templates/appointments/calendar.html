@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}تقویم کلینیک{% endblock %}
+{% load static %}
+
+{% block extra_head %}
+<link href="{% static 'css/persian-datepicker.min.css' %}" rel="stylesheet">
+<style>
+    /* =========================================
+       متغیرها و استایل‌های مختص تقویم اصلی (FullCalendar)
+    ========================================= */
+    :root {
+        --fc-border-color: #f1f5f9;
+        --fc-button-text-color: #475569;
+        --fc-button-bg-color: #f8fafc;
+        --fc-button-border-color: #e2e8f0;
+        --fc-button-hover-bg-color: #e2e8f0;
+        --fc-button-active-bg-color: #3b82f6;
+        --fc-button-active-border-color: #3b82f6;
+        --fc-button-active-text-color: #ffffff;
+        --fc-today-bg-color: rgba(59, 130, 246, 0.04);
+        --fc-page-bg-color: #ffffff;
+        --fc-neutral-bg-color: #f8fafc;
+    }
+
+    .fc { font-family: 'Vazir', sans-serif !important; }
+
+    .fc-header-toolbar {
+        margin-bottom: 1.5em !important; padding-bottom: 15px; border-bottom: 1px dashed #e2e8f0;
+    }
+    .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 800 !important; color: #0f172a; }
+    .fc-button { border-radius: 8px !important; font-weight: 500 !important; padding: 6px 12px !important; transition: all 0.2s; }
+    .fc-theme-standard td, .fc-theme-standard th { border-color: #f1f5f9 !important; }
+    .fc-timegrid-slot { height: 2.5em !important; }
+    
+    .fc-event {
+        cursor: pointer; border-radius: 6px !important; border: none !important;
+        padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s;
+    }
+    .fc-event:hover { transform: scale(1.02); z-index: 10 !important; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .fc-timegrid-event-harness { min-height: 35px; }
+    .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: rgb(0, 0, 0); text-decoration: none; }
+    
+    .fc-event-dragging { opacity: 0.7; transform: scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important; }
+    .fc-direction-rtl .fc-daygrid-event.fc-event-start{color: #0f172a;}
+    .fc-liquid-hack .fc-daygrid-day-frame{min-height: 140px;}
+    /* ریسپانسیو اختصاصی FullCalendar */
+    @media (max-width: 767.98px) {
+        .fc-header-toolbar { flex-direction: column !important; gap: 10px; }
+        .fc-toolbar-chunk { display: flex; justify-content: center; width: 100%; }
+        .fc-toolbar-title { font-size: 1.1rem !important; }
+        .fc-button { padding: 4px 8px !important; font-size: 0.8rem !important; }
+        .fc-timeGridWeek-button { display: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4 mt-3">
+    <div class="col-12 page-header-container d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 text-dark fw-bold">
+            <span class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-2">
+                <i class="fa-solid fa-calendar-days"></i>
+            </span>
+            مدیریت تقویم کلینیک
+        </h4>
+        <div class="d-flex gap-2 w-sm-100">
+            <a href="{% url 'appointments:list' %}" class="btn btn-light shadow-sm rounded-pill px-3 px-md-4 border flex-fill text-center">
+                <i class="fa-solid fa-list ms-1 text-secondary"></i><span class="d-none d-sm-inline"> لیست نوبت‌ها</span>
+            </a>
+            <a href="{% url 'appointments:create' %}" class="btn btn-primary shadow-sm rounded-pill px-3 px-md-4 flex-fill text-center">
+                <i class="fa-solid fa-plus ms-1"></i> ثبت نوبت<span class="d-none d-sm-inline"> جدید</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- ستون سایدبار -->
+    <div class="col-xl-3 col-lg-4 col-md-12 mb-4">
+        {% include 'appointments/components/sidebar_calendar.html' %}
+    </div>
+
+    <!-- ستون تقویم اصلی -->
+    <div class="col-xl-9 col-lg-8 col-md-12 mb-5">
+        <div class="modern-card">
+            <div id='calendar'></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/jquery-4.0.0.min.js' %}"></script>
+<script src="{% static 'js/index.global.min.js' %}"></script>
+<script src="{% static 'js/persian-date.min.js' %}"></script>
+<script src="{% static 'js/persian-datepicker.min.js' %}"></script>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var isMobile = window.innerWidth < 768;
+    const csrftoken = getCookie('csrftoken');
+
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'fa',
+        timeZone: 'Asia/Tehran',
+        direction: 'rtl',
+        initialView: isMobile ? 'timeGridDay' : 'timeGridWeek',
+        height: isMobile ? 'auto' : 750,
+        editable: true,
+        eventDurationEditable: true,
+
+        headerToolbar: {
+            right: 'prev,next today',
+            center: 'title',
+            left: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: { today: 'امروز', month: 'ماه', week: 'هفته', day: 'روز' },
+        slotMinTime: '08:00:00',
+        slotMaxTime: '24:00:00',
+        allDaySlot: false,
+        slotDuration: '00:15:00',
+        nowIndicator: true,
+        events: '{% url "appointments:api_calendar" %}',
+        
+
+        // ✅ فقط تغییر DATE در نمای ماهانه
+        eventDrop: function(info) {
+            if (!confirm("آیا از تغییر **تاریخ** نوبت اطمینان دارید؟")) {
+                info.revert();
+                return;
+            }
+
+            // فقط در نمای ماهانه → فقط DATE تغییر کند
+            if (info.view.type === 'dayGridMonth') {
+                // فقط تاریخ جدید (بدون ساعت)
+                const newDateOnly = info.event.start.toISOString().split('T')[0];
+                
+                fetch('/appointments/api/update_event_time/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        id: info.event.id,
+                        date: newDateOnly  // فقط تاریخ!
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        alert('خطا در تغییر تاریخ');
+                        info.revert();
+                    } else {
+                        // ✅ Refetch events برای آپدیت UI
+                        calendar.refetchEvents();
+                    }
+                })
+                .catch(() => {
+                    alert('خطای سرور');
+                    info.revert();
+                });
+            } else {
+                // سایر نماها → start/end کامل
+                fetch('/appointments/api/update_event_time/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        id: info.event.id,
+                        start: info.event.start.toISOString(),
+                        end: info.event.end ? info.event.end.toISOString() : null
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) info.revert();
+                })
+                .catch(() => info.revert());
+            }
+        },
+
+        eventResize: function(info) {
+            // فقط برای نماهای timeGrid
+            fetch('/appointments/api/update_event_time/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    id: info.event.id,
+                    start: info.event.start.toISOString(),
+                    end: info.event.end.toISOString()
+                })
+            })
+            .then(response => {
+                if (!response.ok) info.revert();
+            })
+            .catch(() => info.revert());
+        },
+
+        eventClick: function(info) {
+            if (!info.event.url) {
+                alert('بیمار: ' + info.event.title + '\nتاریخ: ' + 
+                      info.event.start.toLocaleDateString('fa-IR') + '\nساعت: ' + 
+                      info.event.start.toLocaleTimeString('fa-IR'));
+                info.jsEvent.preventDefault();
+            }
+        },
+
+        windowResize: function(arg) {
+            if (window.innerWidth < 768) {
+                calendar.changeView('timeGridDay');
+                calendar.setOption('height', 'auto');
+            } else {
+                calendar.changeView('timeGridWeek');
+                calendar.setOption('height', 750);
+            }
+        }
+    });
+
+    calendar.render();
+
+});
+</script>
+{% endblock %}

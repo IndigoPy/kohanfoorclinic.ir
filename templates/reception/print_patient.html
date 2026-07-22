@@ -1,0 +1,606 @@
+{% load jformat %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پرونده بیمار - کلینیک سلامت پا کهن</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.0.0/dist/font-face.css" rel="stylesheet">
+    <style>
+
+        /* =========================================
+           1. Base & Print Styles
+           ========================================= */
+        body {
+            font-family: 'Vazir', Tahoma, sans-serif;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #525659;
+        }
+
+        .container {
+            width: 210mm;
+            /* کاهش ارتفاع برای اطمینان از جا شدن در یک صفحه */
+            height: 296mm; 
+            margin: 20px auto;
+            padding: 5mm; /* کاهش پدینگ کلی صفحه */
+            box-sizing: border-box;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            direction: rtl;
+            overflow: hidden;
+        }
+
+        @media print {
+            body { background-color: #fff; }
+            .container {
+                margin: 0;
+                padding: 5mm;
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* =========================================
+           2. Header Styles
+           ========================================= */
+        .header-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px; /* کاهش مارجین */
+            padding-bottom: 5px;
+            font-family: 'Vazir', Tahoma, sans-serif;
+        }
+
+        .header-logo {
+            width: 60px; /* کمی کوچکتر برای ذخیره فضا */
+            margin-left: 15px;
+            left: 0;
+            position: absolute;
+        }
+
+        .header-title {
+            font-size: 20pt;
+            font-weight: 700;
+            font-family: 'Vazir', Tahoma, sans-serif;
+            color: #222;
+            margin: 0;
+            position: relative;
+            right: 0;
+        }
+
+        /* =========================================
+           3. Patient Info Table Styles
+           ========================================= */
+        .patient-info-wrapper {
+            width: 100%;
+            margin-bottom: 10px; /* کاهش مارجین */
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+            text-align: center;
+            font-size: 9pt;
+            border-radius: 5px;
+        }
+        
+        .info-table th, .info-table td {
+            border: 1px solid #000;
+            padding: 4px; /* کاهش پدینگ سلول‌ها برای ذخیره فضا */
+            vertical-align: middle;
+        }
+        
+        .info-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .val-bold { font-weight: bold; }
+        .val-red { color: #d93025; font-weight: bold; font-size: 10pt; }
+        .val-blue { color: #1a73e8; font-weight: bold; }
+
+        /* =========================================
+           4. Clinical & Medical Styles
+           ========================================= */
+        .clinical-wrapper {
+            width: 100%;
+            margin: 10px 0; /* کاهش مارجین */
+        }
+
+        .medical-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+        }
+
+        .medical-table > thead > tr > th {
+            border: 1px solid #000;
+            background-color: #f8f9fa;
+            padding: 5px; /* کاهش پدینگ */
+            font-size: 11pt; /* کمی کوچکتر */
+            text-align: center;
+        }
+
+        .medical-table > tbody > tr > td {
+            border: 1px solid #000;
+            vertical-align: top;
+            padding: 0;
+        }
+        
+        .col-exam { width: 45%; }
+        .col-cost { width: 12%; }
+        .col-ind  { width: 43%; }
+
+        .ind-table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: ltr;
+            height: 100%;
+        }
+
+        .ind-table td {
+            border-bottom: 1px solid #888;
+            border-right: 1px solid #888;
+            padding: 3px 6px; /* کاهش پدینگ */
+            vertical-align: top;
+        }
+
+        .ind-table tr:last-child td { border-bottom: none; }
+        .ind-table tr td:last-child { border-right: none; }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9pt;
+            font-weight: bold;
+            font-family: 'Calibri', Arial, sans-serif;
+        }
+
+        .item-cb {
+            margin: 0;
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+        }
+
+        .item-price {
+            text-align: right;
+            font-size: 8pt;
+            color: #444;
+            margin-top: 2px; /* کاهش فاصله */
+            direction: rtl;
+        }
+
+        /* =========================================
+           5. Finance & Signatures Styles
+           ========================================= */
+        .finance-wrapper {
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 9pt;
+            page-break-inside: avoid;
+        }
+        
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+        }
+        
+        .finance-table th, .finance-table td {
+            border: 1px solid #000;
+            padding: 5px; /* کاهش پدینگ */
+        }
+        
+        .finance-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
+            font-size: 10pt;
+        }
+
+        .bg-light { background-color: #f8f9fa; }
+        
+        .flex-col-between {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            min-height: 40px;
+        }
+        
+        .flex-row-between {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .flex-bottom-left {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            height: 100%;
+            min-height: 40px;
+            color: #555;
+        }
+        
+        .dashed-line {
+            display: inline-block;
+            width: 60px;
+            border-bottom: 1px dashed #000;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        
+        .checkbox-icon {
+            font-family: 'Segoe UI Symbol', 'MS Gothic', sans-serif;
+            font-size: 12pt;
+            vertical-align: middle;
+        }
+
+        .signatures-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px; /* کاهش مارجین */
+            padding: 0 10px;
+            font-size: 11pt;
+            font-weight: bold;
+            page-break-inside: avoid;
+        }
+        
+        .signatures-wrapper div {
+            flex: 1;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        
+        <!-- بخش سربرگ -->
+        <div class="header-wrapper" >
+            <img src="data:application/octet-stream;base64,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" alt="لوگو" class="header-logo">
+            <h1 class="header-title">کلینیک سلامت پا کهن</h1>
+        </div>
+
+        <!-- بخش اطلاعات بیمار (به دو جدول تقسیم شد تا عرض ستون سابقه دلخواه تنظیم شود) -->
+        <div class="patient-info-wrapper">
+            <!-- قسمت اول اطلاعات -->
+            <table class="info-table" style="border-bottom: 1px solid #000;">
+                <tbody>
+                    <tr>
+                        <th style="width: 15%;">شماره پرونده</th>
+                        <td style="width: 15%;" class="val-red" dir="ltr">{{ patient.case_number }}</td>
+                        <th style="width: 35%;" colspan="2">شماره تماس</th>
+                        <th style="width: 15%;">تاریخ پذیرش</th>
+                        <td style="width: 20%;" class="val-bold" dir="ltr">{{ patient.admission_date|jformat:"%Y/%m/%d" }}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th>الصاق به</th>
+                        <td class="val-blue" dir="ltr">{{ patient.attached_to.case_number|default:"-" }}</td>
+                        <th style="width: 5%;">1</th>
+                        <td style="width: 30%;" class="val-bold" dir="ltr">{{ patient.phone }}</td>
+                        <th>تاریخ تحویل</th>
+                        <td>&nbsp;</td>
+                    </tr>
+                    
+                    <tr>
+                        <th>کد ملی مراجع</th>
+                        <td class="val-bold" dir="ltr">{{ patient.national_id|default:"-" }}</td>
+                        <th>2</th>
+                        <td class="val-bold" dir="ltr">{{ patient.alternative_phone|default:"-" }}</td>
+                        <th>تاریخ فالو آپ</th>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <th colspan="1">نام</th>
+                        <th colspan="2">نام خانوادگی</th>
+                        <th colspan="2">بیماری</th>
+                        <th colspan="1">علت مراجعه</th>
+                    </tr>
+                    
+                    <tr>
+                        <td colspan="1" class="val-bold">{{ patient.first_name }}</td>
+                        <td colspan="2" class="val-bold">{{ patient.last_name }}</td>
+                        <td colspan="2" class="val-bold">{{ patient.underlying_diseases|default:"-" }}</td>
+                        <td colspan="1" class="val-bold">{{ patient.visit_reason|default:"-" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- قسمت دوم اطلاعات (مستقل از شبکه‌بندی بالا) -->
+            <table class="info-table" style="border-top: none;">
+                <tbody>
+                    <tr>
+                        <th style="width: 10%;">سن</th>
+                        <th style="width: 10%;">قد</th>
+                        <th style="width: 10%;">وزن</th>
+                        <th style="width: 10%;">سایز پا</th>
+                        <!-- سابقه استفاده اکنون ۴۵ درصد فضا را در اختیار دارد -->
+                        <th style="width: 45%;">سابقه استفاده از</th>
+                        <th style="width: 15%;">معرف</th>
+                    </tr>
+
+                    <tr>
+                        <td class="val-bold" dir="ltr">{{ patient.get_age|default:"-" }}</td>
+                        <td class="val-bold" dir="ltr">{{ patient.height|default:"-" }}</td>
+                        <td class="val-bold" dir="ltr">{{ patient.weight|default:"-" }}</td>
+                        <td class="val-bold" dir="ltr">{{ patient.foot_size|default:"-" }}</td>
+                        <td class="val-bold" dir="ltr">{{ patient.orthotic_history|default:"-" }}</td>
+                        <td class="val-bold">{{ patient.referrer|default:"-" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+     <div class="clinical-wrapper" style="width: 100%; font-family: Arial, sans-serif;">
+    <table class="medical-table" dir="ltr" style="width: 100%; border-collapse: collapse; border: 1px solid #000; text-align: left; font-size: 14px;">
+        <thead>
+            <tr style="background-color: #f9f9f9;">
+                <!-- ستون اول: Indication (شامل ۴ زیرستون) -->
+                <th colspan="4" style="width: 40%; border: 1px solid #000; padding: 8px;">Indication</th>
+                
+                <!-- ستون دوم: Cost -->
+                <th style="width: 12%; border: 1px solid #000; padding: 8px; text-align: center;">Cost</th>
+                
+                <!-- ستون سوم: Medical Examination -->
+                <th style="width: 48%; border: 1px solid #000; padding: 8px;">Medical Examination</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ردیف ۱ -->
+            <tr>
+                <!-- بخش Indication -->
+                <td colspan="4" style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div><input type="checkbox" style="margin-right: 5px;"> <span>CNC insole for Shoes</span></div>
+                        <div style="font-size: 0.85em; color: #555;">Qty: <input type="number" min="1" style="width: 40px; text-align: center; border: none; border-radius: 3px;"></div>
+                    </div>
+                </td>
+                <!-- بخش Cost -->
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px;"></td>
+                <!-- بخش Medical Examination (ادغام شده در ۱۰ ردیف) -->
+                <td rowspan="10" style="vertical-align: top; border: 1px solid #000; padding: 10px;">
+                    
+                </td>
+            </tr>
+
+            <!-- ردیف ۲ -->
+            <tr>
+                <td colspan="4" style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div><input type="checkbox" style="margin-right: 5px;"> <span>CNC insole for Sandals</span></div>
+                        <div style="font-size: 0.85em; color: #555;">Qty: <input type="number" min="1" style="width: 40px; text-align: center; border: none; border-radius: 3px;"></div>
+                    </div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px;"></td>
+            </tr>
+
+            <!-- ردیف ۳ -->
+            <tr>
+                <td colspan="4" style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div><input type="checkbox" style="margin-right: 5px;"> <span>Orthopedic Sandals</span></div>
+                        <div style="font-size: 0.85em; color: #555;">Qty: <input type="number" min="1" style="width: 40px; text-align: center; border: none; border-radius: 3px;"></div>
+                    </div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px;"></td>
+            </tr>
+
+            <!-- ردیف ۴ -->
+            <tr>
+                <td colspan="4" style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div><input type="checkbox" style="margin-right: 5px;"> <span>Orthopedic Shoes</span></div>
+                        <div style="font-size: 0.85em; color: #555;">Qty: <input type="number" min="1" style="width: 40px; text-align: center; border: none; border-radius: 3px;"></div>
+                    </div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 35px;"></td>
+            </tr>
+
+            <!-- ردیف ۵ -->
+            <tr>
+                <td colspan="2" style="width: 25%; border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Int Med wedge</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td colspan="2" style="width: 25%; border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Ext Med wedge</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px;"></td>
+            </tr>
+
+            <!-- ردیف ۶ -->
+            <tr>
+                <td colspan="2" style="border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Int Lat wedge</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td colspan="2" style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Ext Lat wedge</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px;"></td>
+            </tr>
+
+            <!-- ردیف ۷ -->
+            <tr>
+                <td style="width: 12.5%; border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Height</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="width: 12.5%; border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Nav pad</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="width: 12.5%; border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Met pad</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="width: 12.5%; border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Heel cup</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px;"></td>
+            </tr>
+
+            <!-- ردیف ۸ -->
+            <tr>
+                <td colspan="2" style="border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Lt lift</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td colspan="2" style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px; padding: 0 8px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Rt lift</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px;"></td>
+            </tr>
+
+            <!-- ردیف ۹ -->
+            <tr>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Soft heel</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Facia bar</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Met bar</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Offloading</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #ccc; border-right: 1px solid #000; height: 45px;"></td>
+            </tr>
+
+            <!-- ردیف ۱۰ -->
+            <tr>
+                <td style="border-bottom: 1px solid #000; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Shoe cover</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #000; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Sandal cover</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #000; border-right: 1px solid #eee; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Soft Cover</span> <input type="checkbox"></div>
+                    <div style="font-size: 0.8em; color: #777; text-align: right;" dir="rtl">تومان</div>
+                </td>
+                <td style="border-bottom: 1px solid #000; border-right: 1px solid #000; height: 45px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em;"><span>Thickness:</span></div>
+                    <div style="font-size: 0.8em; color: #777;">&nbsp;</div>
+                </td>
+                <td style="border-bottom: 1px solid #000; border-right: 1px solid #000; height: 45px;"></td>
+            </tr>
+
+            <!-- ردیف ۱۱: Clinical Notes -->
+            <tr>
+                <!-- ادغام کل ۶ ستون (۴ زیرستون Indication + ستون Cost + ستون Exam) -->
+                <td colspan="6" style="border: 1px solid #000; padding: 10px; background-color: #fdfdfd;">
+                    <div style="margin-bottom: 5px; font-weight: bold; text-align: right; font-family: 'Vazir', Tahoma, sans-serif; font-size: 10pt;">:یادداشت ها/مراحل کار</div>
+                    <p style="width: 100%; height: 80px; box-sizing: border-box; resize: vertical; padding: 8px; font-family: inherit; border-radius: 4px;" placeholder="Enter clinical notes here..."></p>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+
+
+
+        
+        <!-- بخش وضعیت مالی و توضیحات پذیرش -->
+        <div class="finance-wrapper">
+            <table class="finance-table">
+                <tbody>
+                    <tr>
+                        <th style="width: 40%;">توضیحات</th>
+                        <th style="width: 60%;" colspan="3">هزینه خدمات</th>
+                    </tr>
+                    
+                    <tr>
+                        <td rowspan="2" style="vertical-align: top; padding: 10px;">
+                            <div style="min-height: 80px; font-size: 10pt; line-height: 1.6;">
+                                {{ patient.reception_notes|default:""|linebreaks }}
+                            </div>
+                        </td>
+                        
+                        <td class="bg-light" style="width: 15%; text-align: center; font-weight: bold; vertical-align: middle;">مبلغ کل</td>
+                        <td style="width: 25%;">
+                            <div class="flex-bottom-left">تومان</div>
+                        </td>
+                        <td style="width: 20%; vertical-align: middle;">
+                            <div class="flex-col-between" style="gap: 10px;">
+                                <div><span class="checkbox-icon">&#9744;</span> تسویه کامل</div>
+                                <div><span class="checkbox-icon">&#9744;</span> پرداخت بیعانه</div>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="bg-light" style="text-align: center; font-weight: bold; vertical-align: middle;">مبلغ بیعانه</td>
+                        <td>
+                            <div class="flex-bottom-left">تومان</div>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div class="flex-col-between">
+                                <div style="font-weight: bold;">مبلغ بدهی</div>
+                                <div style="align-self: flex-end; color: #555;">تومان</div>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <!-- بخش امضاها -->
+        <div class="signatures-wrapper">
+            <div>پذیرش:</div>
+            <div>تکنیکال ارتوپد:</div>
+            <div>تحویل دهنده:</div>
+        </div>
+
+    </div>
+</body>
+
+
+<script>
+    window.onload = function() {
+        // باز کردن خودکار پنجره پرینت پس از لود کامل صفحه
+        window.print();
+    };
+</script>
+</html>

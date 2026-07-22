@@ -1,0 +1,196 @@
+{% load jformat %}
+
+{% if search_query %}
+    <!-- حالت جستجو: نمایش به صورت کارت -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="text-muted mb-0">نتایج جستجو برای: <strong class="text-primary">"{{ search_query }}"</strong></h5>
+        <span class="badge bg-secondary rounded-pill">{{ patients|length }} بیمار</span>
+    </div>
+
+    {% if patients %}
+        <div class="row g-4">
+            {% for patient in patients %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="card h-100 shadow-sm {% if patient.patient_type == 'good' %}status-indicator-green{% elif patient.patient_type == 'medium' %}status-indicator-yellow{% elif patient.patient_type == 'bad' %}status-indicator-red{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="mb-1 fw-bold">{{ patient.full_name }}</h5>
+                                <small class="text-muted">شماره پرونده: <strong>{{ patient.case_number }}</strong></small>
+                            </div>
+                            {% if patient.has_order %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">دارای سفارش</span>
+                            {% else %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning">بدون سفارش</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="patient-info text-muted small mb-4">
+                            <div class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> {{ patient.phone|default:"نامشخص" }}</div>
+                            <div class="mb-2"><i class="fas fa-venus-mars me-2 text-primary"></i> {{ patient.age|default:"—" }} سال / {{ patient.get_gender_display|default:"—" }}</div>
+                            <div class="mb-2"><i class="fas fa-calendar-alt me-2 text-primary"></i> پذیرش: {{ patient.created_at|jformat:"%Y/%m/%d" }}</div>
+                            {% if patient.last_order_date %}
+                            <div><i class="fas fa-clipboard-check me-2 text-primary"></i> آخرین سفارش: {{ patient.last_order_date|jformat:"%Y/%m/%d" }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 text-end pb-3 pe-3">
+                        <a href="{% url 'reception:patient-detail' patient.id %}" class="btn action-btn-card">
+                            <i class="fas fa-eye me-1"></i> مشاهده پرونده
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search-minus fa-4x text-muted opacity-50 mb-3"></i>
+            <h5 class="text-muted">بیماری با این مشخصات یافت نشد</h5>
+        </div>
+    {% endif %}
+
+{% else %}
+    <!-- حالت پیش‌فرض: جدول -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-muted mb-0">همه بیماران ثبت‌شده</h5>
+        <span class="badge bg-secondary rounded-pill">{{ patients.paginator.count }} نفر</span>
+    </div>
+
+    <div class="patients-table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>شماره پرونده</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>شماره تماس</th>
+                        <th>کد ملی</th>
+                        <th>تاریخ پذیرش</th>
+                        <th>آخرین مراجعه</th>
+                        <th>آخرین سفارش</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr onclick="window.location='{% url 'reception:patient-detail' patient.id %}'"
+                        class="{% if patient.patient_type == 'good' %}status-indicator-green{% elif patient.patient_type == 'medium' %}status-indicator-yellow{% elif patient.patient_type == 'bad' %}status-indicator-red{% endif %}"
+                        style="cursor: pointer;">
+
+                        <td class="fw-bold align-middle">
+                            <!-- بج دایره‌ای وضعیت رفتاری -->
+                            <span class="d-inline-block rounded-circle me-2 shadow-sm 
+                                {% if patient.patient_class == 'good' %}bg-success
+                                {% elif patient.patient_class == 'average' %}bg-warning
+                                {% elif patient.patient_class == 'bad' %}bg-danger
+                                {% else %}bg-secondary{% endif %}" 
+                                style="width: 12px; height: 12px;" 
+                                title="وضعیت رفتاری بیمار">
+                            </span>
+                            {{ patient.case_number }}
+                        </td>
+                        <td>{{ patient.full_name }}</td>
+                        <td dir="ltr" class="text-end">{{ patient.phone|default:"—" }}</td>
+                        <td>{{ patient.national_id|default:"—" }}</td>
+                        <td>{{ patient.admission_date|jformat:"%Y/%m/%d"|default:"—" }}</td>
+                        <td>
+                            {% if patient.last_visit_date %}
+                                {{ patient.last_visit_date|jformat:"%Y/%m/%d" }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if patient.last_order_summary == 'بدون سفارش' or not patient.last_order_summary %}
+                                <span class="badge bg-light text-muted border">بدون سفارش</span>
+                            {% else %}
+                                {{ patient.last_order_summary }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-users-slash fa-3x mb-3 opacity-50 d-block"></i>
+                            هنوز هیچ بیماری ثبت نشده است.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+
+<!-- صفحه‌بندی هوشمند -->
+{% if patients.has_other_pages %}
+<nav class="mt-5 mb-4" aria-label="Page navigation">
+    <ul class="pagination justify-content-center flex-wrap gap-1">
+        
+        <!-- دکمه قبلی -->
+        {% if patients.has_previous %}
+            <li class="page-item">
+                <a class="page-link shadow-sm rounded-3" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ patients.previous_page_number }}">قبلی</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link shadow-sm rounded-3 text-muted">قبلی</span>
+            </li>
+        {% endif %}
+
+        <!-- منطق نمایش صفحات با سه نقطه -->
+        {% for num in patients.paginator.page_range %}
+            
+            {% if patients.number == num %}
+                <!-- صفحه فعلی -->
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link shadow-sm rounded-3">{{ num }}</span>
+                </li>
+                
+            {% elif num > patients.number|add:'-3' and num < patients.number|add:'3' %}
+                <!-- دو صفحه قبل و دو صفحه بعد از صفحه فعلی -->
+                <li class="page-item">
+                    <a class="page-link shadow-sm rounded-3" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+                
+            {% elif num == 1 %}
+                <!-- همیشه صفحه اول را نشان بده -->
+                <li class="page-item">
+                    <a class="page-link shadow-sm rounded-3" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+                {% if patients.number > 4 %}
+                    <li class="page-item disabled">
+                        <span class="page-link border-0 bg-transparent text-muted fs-5 pb-0">...</span>
+                    </li>
+                {% endif %}
+                
+            {% elif num == patients.paginator.num_pages %}
+                <!-- همیشه صفحه آخر را نشان بده -->
+                {% if patients.number < patients.paginator.num_pages|add:'-3' %}
+                    <li class="page-item disabled">
+                        <span class="page-link border-0 bg-transparent text-muted fs-5 pb-0">...</span>
+                    </li>
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link shadow-sm rounded-3" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+                
+            {% endif %}
+            
+        {% endfor %}
+
+        <!-- دکمه بعدی -->
+        {% if patients.has_next %}
+            <li class="page-item">
+                <a class="page-link shadow-sm rounded-3" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ patients.next_page_number }}">بعدی</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link shadow-sm rounded-3 text-muted">بعدی</span>
+            </li>
+        {% endif %}
+        
+    </ul>
+</nav>
+{% endif %}
+

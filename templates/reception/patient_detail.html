@@ -1,0 +1,1934 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load jformat %}
+{% load persian_date %}
+{% load exam_filters %}
+
+{% block title %}جزئیات بیمار - {{ patient.full_name }}{% endblock %}
+
+{% block extra_head %}
+<!-- Swiper.js CDN -->
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script> -->
+
+<style>
+    :root {
+        --primary: #5e60ce;
+        --secondary: #7209b7;
+        --text-light: #2c3e50;
+        --text-dark: #f1f1f1;
+        --bg-light: #f8f9fa;
+        --bg-dark: #121212;
+        --card-light: #ffffff;
+        --card-dark: #1e1e1e;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        color: var(--text-light);
+        direction: rtl;
+        text-align: right;
+    }
+
+    body.dark {
+        background-color: var(--bg-dark);
+        color: var(--text-dark);
+    }
+
+    .patient-profile-card {
+        background: var(--card-light);
+        border-radius: 28px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 2rem auto;
+        max-width: 1200px;
+    }
+
+    .patient-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 4rem 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .patient-photo {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 8px solid white;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        margin-top: -80px;
+        background: #fff;
+        object-fit: cover;
+    }
+
+    /* تب‌ها */
+    .nav-tabs-container {
+        display: flex;
+        align-items: center;
+        position: relative;
+        gap: 4px;
+    }
+
+    .tabs-scroll-wrapper {
+        overflow: hidden;
+        flex: 1;
+    }
+
+    .tabs-scroll-wrapper .nav-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE */
+        scroll-behavior: smooth;
+        border-bottom: none;
+    }
+
+    .tabs-scroll-wrapper .nav-tabs::-webkit-scrollbar {
+        display: none;
+        /* Chrome/Safari */
+    }
+
+    /* دکمه‌های ناوبری */
+    .tab-nav-btn {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid #dee2e6;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--primary);
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+
+    .tab-nav-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* روی دسکتاپ دکمه‌ها پنهان باشن */
+    @media (min-width: 992px) {
+        .tab-nav-btn {
+            display: none;
+        }
+
+        .tabs-scroll-wrapper .nav-tabs {
+            flex-wrap: wrap;
+        }
+    }
+
+    a {
+        text-decoration: none;
+        color: #121212;
+    }
+
+    /* فلش‌ها */
+    .swiper-button-prev,
+    .swiper-button-next {
+        color: var(--primary);
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .swiper-button-prev:after,
+    .swiper-button-next:after {
+        font-size: 20px;
+    }
+
+    .tab-content {
+        min-height: 500px;
+        padding: 50px;
+    }
+
+    /* ===== بهینه‌سازی اطلاعات پایه ===== */
+    .patient-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.6rem;
+        justify-items: stretch;
+        /* بهینه‌سازی: آیتم‌ها را کشیده نگه دار */
+    }
+
+    .info-item {
+        background: var(--bg-light);
+        padding: 1.5rem 1.8rem;
+        border-radius: 18px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: flex-start;
+        gap: 1.4rem;
+        min-height: 140px;
+        width: 100%;
+        /* بهینه‌سازی: عرض کامل برای جلوگیری از ریختن */
+    }
+
+    .info-item i {
+        font-size: 2rem;
+        color: var(--primary);
+        background: rgba(94, 96, 206, 0.1);
+        padding: 1rem;
+        border-radius: 50%;
+        flex-shrink: 0;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .info-item h6 {
+        margin-bottom: 0.4rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .info-item p {
+        margin-bottom: 0;
+        font-size: 1.05rem;
+        line-height: 1.55;
+        white-space: pre-line;
+    }
+
+    /* بقیه استایل‌ها (بدون تغییر) */
+    .financial-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .financial-card {
+        background: white;
+        border-radius: 18px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    body.dark .financial-card {
+        background: var(--card-dark);
+    }
+
+    .financial-card.success {
+        border-left: 6px solid #28a745;
+    }
+
+    .financial-card.warning {
+        border-left: 6px solid #ffc107;
+    }
+
+    .financial-card.danger {
+        border-left: 6px solid #dc3545;
+    }
+
+    .financial-card h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+
+    /* ═══════════════════════════════════════
+   EXAMINATION CARDS - Modern Design
+═══════════════════════════════════════ */
+
+    .examination-card-new {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(94, 96, 206, 0.10);
+        overflow: hidden;
+        border: 1px solid rgba(94, 96, 206, 0.10);
+        transition: box-shadow 0.25s ease, transform 0.25s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .examination-card-new:hover {
+        box-shadow: 0 8px 36px rgba(94, 96, 206, 0.18);
+        transform: translateY(-3px);
+    }
+
+    /* ── Header ── */
+    .exam-card-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #7b5ea7 100%);
+        padding: 1rem 1.4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #fff;
+    }
+
+    .exam-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .exam-badge i {
+        background: rgba(255, 255, 255, 0.2);
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+
+    .exam-date-badge {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 0.3rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+
+    /* ── Body: فیلدهای معاینه ── */
+    .exam-card-body {
+        padding: 1.2rem 1.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        flex: 1;
+    }
+
+    .exam-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding-bottom: 0.85rem;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.07);
+    }
+
+    .exam-field:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .exam-field-label {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-weight: 600;
+        font-size: 0.82rem;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .exam-field-label i {
+        font-size: 0.78rem;
+        width: 20px;
+        height: 20px;
+        background: rgba(94, 96, 206, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .exam-field-value {
+        font-size: 0.93rem;
+        color: #444;
+        line-height: 1.7;
+        padding-right: 1.6rem;
+    }
+
+    .exam-notes {
+        background: #fffbea;
+        border-right: 3px solid #f0c040;
+        border-radius: 0 8px 8px 0;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.88rem;
+        color: #7a6500;
+        font-style: italic;
+        margin-top: 0.3rem;
+    }
+
+    /* ── سفارشات مرتبط ── */
+    .exam-orders-section {
+        background: #f8f9ff;
+        border-top: 1px solid rgba(94, 96, 206, 0.1);
+    }
+
+    .exam-orders-header {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.4rem;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: #555;
+        border-bottom: 1px solid rgba(94, 96, 206, 0.08);
+    }
+
+    .orders-count-badge {
+        margin-right: auto;
+        background: var(--primary);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .exam-orders-body {
+        padding: 0.5rem 1.4rem 0.75rem;
+    }
+
+    .order-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .order-row:last-child {
+        border-bottom: none;
+    }
+
+    .order-row-info {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .order-id {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 0.88rem;
+    }
+
+    .order-status {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        background: #e8f4fd;
+        color: #1a73e8;
+    }
+
+    .order-date {
+        font-size: 0.78rem;
+        color: #888;
+    }
+
+    .btn-order-view {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(94, 96, 206, 0.1);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: background 0.2s, color 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-order-view:hover {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .no-orders-msg {
+        color: #aaa;
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 0.6rem 0;
+        margin: 0;
+    }
+
+    /* ── Footer: دکمه‌های Action ── */
+    .exam-card-footer {
+        display: flex;
+        gap: 0.6rem;
+        padding: 0.9rem 1.4rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        justify-content: flex-end;
+    }
+
+    .btn-exam-action {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 1.1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1.5px solid transparent;
+    }
+
+    .btn-edit {
+        color: var(--primary);
+        border-color: var(--primary);
+        background: transparent;
+    }
+
+    .btn-edit:hover {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .btn-delete {
+        color: #e74c3c;
+        border-color: #e74c3c;
+        background: transparent;
+    }
+
+    .btn-delete:hover {
+        background: #e74c3c;
+        color: #fff;
+    }
+
+    .document-preview {
+        background: var(--bg-light);
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+    }
+
+    .action {
+        padding-bottom: 20px;
+
+    }
+
+    .action-btn {
+        border-radius: 16px;
+        padding: 1.2rem 2.5rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    /* تغییرات جدید برای لیست سفارشات مرتبط در معاینات */
+    .related-orders {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(94, 96, 206, 0.05);
+        border-radius: 12px;
+    }
+
+    .related-orders h6 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+    }
+
+    .related-order-item {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+
+    .related-order-item:last-child {
+        border-bottom: none;
+    }
+
+    .no-orders {
+        font-style: italic;
+        color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        .patient-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .document-preview {
+            flex-direction: column;
+        }
+
+        .nav-tabs .nav-link {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+        }
+    }
+
+    /* ══ مشاهدات ══ */
+    .obs-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        padding-right: 1.6rem;
+    }
+
+    .obs-tag {
+        background: rgba(94, 96, 206, 0.08);
+        color: var(--primary);
+        border: 1px solid rgba(94, 96, 206, 0.2);
+        border-radius: 20px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
+
+    .obs-lr-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        padding-right: 1.6rem;
+    }
+
+    .obs-lr-item {
+        background: rgba(94, 96, 206, 0.05);
+        border-radius: 10px;
+        padding: 0.5rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .obs-lr-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .obs-lr-value {
+        font-size: 0.88rem;
+        color: #444;
+    }
+
+    /* ══ تجویز خدمات ══ */
+    .presc-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding-right: 1.6rem;
+    }
+
+    .presc-service-block {
+        background: #fff;
+        border: 1px solid rgba(94, 96, 206, 0.15);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .presc-service-title {
+        background: linear-gradient(90deg,
+                rgba(94, 96, 206, 0.12),
+                rgba(94, 96, 206, 0.04));
+        padding: 0.5rem 0.9rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--primary);
+        border-bottom: 1px solid rgba(94, 96, 206, 0.1);
+    }
+
+    .presc-fields {
+        padding: 0.5rem 0.9rem;
+        border-bottom: 1px dotted rgba(0, 0.3rem);
+    }
+
+    .presc-field-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        font-size: 0.83rem;
+        padding: 0.2rem 0;
+        border-bottom: 1px dotted rgba(0, 0, 0, 0.05);
+    }
+
+    .presc-field-row:last-child {
+        border-bottom: none;
+    }
+
+    .presc-field-name {
+        color: #888;
+        min-width: 90px;
+        flex-shrink: 0;
+        font-size: 0.78rem;
+    }
+
+    .presc-field-val {
+        color: #333;
+        font-weight: 500;
+    }
+
+    /* ══ بلوک طراحی ══ */
+    .presc-design-block {
+        background: #f9f6ff;
+        border-top: 1px dashed rgba(94, 96, 206, 0.2);
+        padding: 0.5rem 0.9rem;
+    }
+
+    .presc-design-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #7b5ea7;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .design-lr-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .design-lr-col {
+        background: #fff;
+        border-radius: 8px;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid rgba(94, 96, 206, 0.12);
+    }
+
+    .design-lr-header {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #7b5ea7;
+        margin-bottom: 0.3rem;
+        padding-bottom: 0.2rem;
+        border-bottom: 1px solid rgba(123, 94, 167, 0.15);
+    }
+
+    /* مشترک */
+    .empty-dash {
+        color: #ccc;
+        font-size: 1.1rem;
+        padding-right: 1.6rem;
+    }
+
+        /* گرادیان‌های داینامیک برای هدر بر اساس رفتار بیمار */
+    .patient-header.bg-gradient-good {
+        background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+    }
+
+    .patient-header.bg-gradient-average {
+        background: linear-gradient(135deg, #f6a02b 0%, #d35400 100%); /* نارنجی/زرد تیره برای خوانایی متن سفید */
+    }
+
+    .patient-header.bg-gradient-bad {
+        background: linear-gradient(135deg, #ff416c 0%, #c0392b 100%);
+    }
+.related-patient-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.related-patient-card {
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.related-patient-card:hover {
+    border-color: #0d6efd;
+    background: #f8fbff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.12);
+}
+
+.related-patient-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.related-patient-icon {
+    font-size: 1.4rem;
+    color: #0d6efd;
+    margin-top: 3px;
+}
+
+.related-patient-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.related-patient-case-number {
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+@media (max-width: 576px) {
+    .container-fluid{
+        max-width:100% !important;
+        padding:0px;
+        margin:0px;
+
+    }
+    .page-content{
+        padding:0px;
+        margin:0px;
+    }
+    .main-count{
+        margin: 0;
+    }
+    .tab-content {
+        padding: 10px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center main-count">
+        <div class="col-12">
+            <div class="patient-profile-card">
+                <!-- هدر بیمار -->
+                    <div class="patient-header {% if patient.patient_class == 'good' %}bg-gradient-good{% elif patient.patient_class == 'average' %}bg-gradient-average{% elif patient.patient_class == 'bad' %}bg-gradient-bad{% endif %}">
+                    <div class="d-flex justify-content-center mt-5">
+                        <img src="{% if patient.photo %}{{ patient.photo.url }}
+                            {% elif patient.gender == 'male' %}{% static 'images/man.png' %}
+                            {% elif patient.gender == 'female' %}{% static 'images/woman.png' %}
+                            {% else %}{% static 'images/default-avatar.png' %}{% endif %}"
+                            alt="{{ patient.full_name }}" class="patient-photo">
+                    </div>
+                    <h2 class="mt-4 mb-2">{{ patient.full_name }}</h2>
+                    <p class="mb-0 opacity-90" >شماره پرونده: <strong>{{ patient.case_number }}</strong></p>
+                    <p class="mb-0 opacity-90">تاریخ پذیرش: {{ patient.admission_date|jformat:"%Y/%m/%d"|persian_month }}</p>
+                    <p class="mb-0 opacity-90">سن: {{ patient.get_age|default:"نامشخص" }} سال / {{ patient.get_gender }}</p>
+                </div>
+
+                <div class="card-body p-5">
+                    <!-- تب‌های جدید (۶ تایی) - تبدیل به carousel -->
+                    <div class="nav-tabs-container" dir="rtl">
+
+                        <!-- تب‌ها -->
+                        <div class="tabs-scroll-wrapper">
+                            <ul class="nav nav-tabs flex-nowrap" id="patientTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#info"
+                                        type="button">
+                                        <i class="fas fa-user me-2"></i> اطلاعات پایه
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#examinations"
+                                        type="button">
+                                        <i class="fas fa-stethoscope me-2"></i> معاینات
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#orders"
+                                        type="button">
+                                        <i class="fas fa-shopping-cart me-2"></i> سفارشات
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices"
+                                        type="button">
+                                        <i class="fas fa-shopping-cart me-2"></i> فاکتورها
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#followups"
+                                        type="button">
+                                        <i class="fas fa-calendar-check me-2"></i> پیگیری‌ها
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents"
+                                        type="button">
+                                        <i class="fas fa-folder-open me-2"></i> مدارک
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#financial"
+                                        type="button">
+                                        <i class="fas fa-wallet me-2"></i> مالی
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="patientTabContent">
+
+                    <!-- ۱. اطلاعات پایه (بهینه‌شده) -->
+                    <div class="tab-pane fade show active" id="info" role="tabpanel">
+                        <div class="patient-info-grid">
+                            <!-- تمام info-item ها مثل قبل (فقط استایل تغییر کرده) -->
+                            <div class="info-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <h6 class="fw-bold">تلفن همراه</h6>
+                                    <p><a href="tel:{{patient.phone}}">{{ patient.phone|default:"ثبت نشده" }}</a><br><a href="tel:{{patient.alternative_phone}}">{{ patient.alternative_phone|default:"—" }}</a></p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-id-card"></i>
+                                <div>
+                                    <h6 class="fw-bold">کد ملی</h6>
+                                    <p>{{ patient.national_id|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <div>
+                                    <h6 class="fw-bold">تاریخ تولد</h6>
+                                    <p>{{ patient.birth_date|jformat:"%Y/%m/%d"|persian_month|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-home"></i>
+                                <div>
+                                    <h6 class="fw-bold">آدرس مختصر</h6>
+                                    <p>{{ patient.city|default:"—" }} - {{ patient.neighborhood|default:"—" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-shoe-prints"></i>
+                                <div>
+                                    <h6 class="fw-bold">سایز پا</h6>
+                                    <p>{{ patient.foot_size|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-user-friends"></i>
+                                <div>
+                                    <h6 class="fw-bold">معرف</h6>
+                                    <p>{{ patient.referrer|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-notes-medical"></i>
+                                <div>
+                                    <h6 class="fw-bold">علت مراجعه</h6>
+                                    <p>{{ patient.visit_reason|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-stethoscope"></i>
+                                <div>
+                                    <h6 class="fw-bold">بیماری‌های زمینه‌ای</h6>
+                                    <p>{{ patient.underlying_diseases|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-history"></i>
+                                <div>
+                                    <h6 class="fw-bold">سوابق ارتوتیک</h6>
+                                    <p>{{ patient.orthotic_history|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-comment-dots"></i>
+                                <div>
+                                    <h6 class="fw-bold">یادداشت پذیرش</h6>
+                                    <p>{{ patient.reception_notes|default:"ثبت نشده" }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item related-patients-item">
+    <i class="fas fa-link"></i>
+
+    <div class="w-100">
+        <h6 class="fw-bold mb-2">پرونده‌های مرتبط</h6>
+
+        {% if related_patients %}
+        <div class="related-patients-list">
+            {% for related_patient in related_patients %}
+                <a href="{% url 'reception:patient-detail' related_patient.id %}"
+                class="related-patient-card related-patient-link"
+                title="مشاهده پرونده {{ related_patient.full_name }}">
+
+                    <div class="related-patient-info">
+                        <div class="related-patient-main">
+                            <i class="fas fa-folder-open related-patient-icon"></i>
+
+                            <div class="related-patient-text">
+                                <div class="related-patient-name">
+                                    {{ related_patient.full_name }}
+                                </div>
+
+                                <div class="related-patient-case-number">
+                                    شماره پرونده:
+                                    <strong>{{ related_patient.case_number }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </a>
+            {% empty %}
+                <div class="text-muted small">
+                    پرونده پیوستی ثبت نشده است.
+                </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+            <p class="text-muted mb-0">
+                هیچ پرونده مرتبطی ثبت نشده است.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+                        </div>
+                    </div>
+
+                    <!-- ۲. لیست معاینات (اصلاح‌شده بر اساس ساختار جدید مدل‌ها و JSON) -->
+<div class="tab-pane fade" id="examinations" role="tabpanel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">معاینات ثبت‌شده ({{ examinations|length }} مورد)</h4>
+        <a href="{% url 'reception:create-exam' patient_id=patient.id %}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i> ثبت معاینه جدید
+        </a>
+    </div>
+    {% if examinations %}
+    <div class="row">
+        {% for exam in examinations %}
+        <div class="col-lg-6 mb-4">
+            <div class="examination-card-new">
+
+                <!-- ─── Header ─── -->
+                <div class="exam-card-header">
+                    <div class="exam-badge">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>{{ exam.doctor_name }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="exam-date-badge">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            {{ exam.exam_date|jformat:"%Y/%m/%d" }}
+                        </div>
+                        <a href="{% url 'reception:create-order-from-exam' exam_id=exam.id %}"
+                            class="btn btn-success btn-sm" title="افزودن سفارش برای این معاینه">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ─── Body: فیلدهای معاینه ─── -->
+                <div class="exam-card-body">
+
+                    <!-- ─── شرح حال و شکایت اصلی ─── -->
+                    {% if exam.chief_complaint %}
+                    <div class="exam-field mb-3">
+                        <div class="exam-field-label">
+                            <i class="fas fa-comment-medical text-danger"></i>
+                            <span>شرح حال و شکایت اصلی</span>
+                        </div>
+                        <div class="exam-field-value mt-2">
+                            <div class="p-2 bg-light border rounded text-dark" style="font-size: 0.95em; line-height: 1.6;">
+                                {{ exam.chief_complaint|linebreaksbr }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- ─── مشاهدات (نمایش یکپارچه یا تفکیک‌شده) ─── -->
+                    <div class="exam-field mb-3">
+                        <div class="exam-field-label">
+                            <i class="fas fa-eye"></i>
+                            <span>مشاهدات بالینی</span>
+                        </div>
+                        <div class="exam-field-value">
+                            {% if exam.is_separated_observations %}
+                                <!-- حالت تفکیک شده (چپ و راست) -->
+                                <div class="d-flex flex-column gap-2 mt-2">
+                                    {% if exam.observations_left.all %}
+                                    <div class="ps-2 border-start border-2 border-primary">
+                                        <div class="text-muted mb-1" style="font-size: 0.85em;">
+                                            <i class="fas fa-arrow-left me-1"></i>پای چپ:
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% for obs in exam.observations_left.all %}
+                                            <span class="badge bg-primary text-white">{{ obs.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if exam.observations_right.all %}
+                                    <div class="ps-2 border-start border-2 border-success">
+                                        <div class="text-muted mb-1" style="font-size: 0.85em;">
+                                            <i class="fas fa-arrow-right me-1"></i>پای راست:
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% for obs in exam.observations_right.all %}
+                                            <span class="badge bg-success text-white">{{ obs.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if not exam.observations_left.all and not exam.observations_right.all %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <!-- حالت یکپارچه -->
+                                {% if exam.observations.all %}
+                                <div class="d-flex flex-wrap gap-1 mt-2">
+                                    {% for obs in exam.observations.all %}
+                                    <span class="badge bg-light text-dark border">{{ obs.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ─── تجویز خدمات (JSONField) ─── -->
+                    <div class="exam-field mb-3">
+                        <div class="exam-field-label">
+                            <i class="fas fa-prescription-bottle-alt"></i>
+                            <span>تجویز خدمات</span>
+                        </div>
+                        <div class="exam-field-value">
+                            {% if exam.prescription_services %}
+                            <div class="presc-container mt-2">
+                                {% for srv_key, srv_data in exam.prescription_services.items %}
+                                <div class="presc-service-block border rounded p-2 mb-2 bg-light">
+                                    <div class="presc-service-title d-flex justify-content-between border-bottom pb-1 mb-2">
+                                        <span class="fw-bold text-dark" style="font-size: 0.95em;">
+                                            <i class="fas fa-tag me-1 text-primary"></i>
+                                            {{ srv_data.type_name|default:"سرویس نامشخص" }} 
+                                        </span>
+                                        <span class="badge bg-secondary" style="font-size: 0.8em;">تعداد: {{ srv_data.quantity }}</span>
+                                    </div>
+
+                                    <!-- مشخصات داینامیک -->
+                                    {% if srv_data.dynamic_fields %}
+                                    <div class="presc-fields mb-2 ps-2 border-start border-2 border-primary" style="font-size: 0.9em;">
+                                        {% for f_name, f_val in srv_data.dynamic_fields.items %}
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">{{ f_name }}:</span>
+                                            <span class="fw-bold">{{ f_val }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- طراحی‌های یکپارچه -->
+                                    {% if srv_data.design_names %}
+                                    <div class="presc-design-block mt-2 ps-2 border-start border-2 border-info">
+                                        <div class="text-muted mb-1" style="font-size: 0.85em;">
+                                            <i class="fas fa-ruler-combined me-1"></i>طراحی‌ها:
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% for d_name in srv_data.design_names %}
+                                            <span class="badge bg-info text-dark">{{ d_name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- طراحی‌های تفکیک شده (چپ و راست) -->
+                                    {% if srv_data.design_names_left or srv_data.design_names_right %}
+                                    <div class="presc-design-block mt-2 ps-2 border-start border-2 border-info">
+                                        <div class="text-muted mb-1" style="font-size: 0.85em;">
+                                            <i class="fas fa-columns me-1"></i>طراحی‌های تفکیک‌شده:
+                                        </div>
+                                        <div class="d-flex flex-column gap-1">
+                                            {% if srv_data.design_names_left %}
+                                            <div>
+                                                <span class="badge bg-primary me-1">چپ</span>
+                                                {% for d_name in srv_data.design_names_left %}
+                                                <span class="badge bg-white text-dark border">{{ d_name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            {% if srv_data.design_names_right %}
+                                            <div>
+                                                <span class="badge bg-success me-1">راست</span>
+                                                {% for d_name in srv_data.design_names_right %}
+                                                <span class="badge bg-white text-dark border">{{ d_name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ─── تمرین‌ها (ManyToMany) ─── -->
+                    <div class="exam-field mb-3">
+                        <div class="exam-field-label">
+                            <i class="fas fa-running"></i>
+                            <span>تمرین‌ها</span>
+                        </div>
+                        <div class="exam-field-value">
+                            {% if exam.exercises.all %}
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for ex in exam.exercises.all %}
+                                <span class="badge bg-warning text-dark border">{{ ex.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ─── یادداشت (فقط اگر وجود داشت) ─── -->
+                    {% if exam.notes %}
+                    <div class="exam-notes mt-3 p-2 border-top border-light">
+                        <i class="fas fa-sticky-note text-muted me-2"></i>
+                        <span class="text-secondary" style="font-size: 0.95em;">{{ exam.notes }}</span>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- ─── سفارشات مرتبط ─── -->
+                <!-- ─── سفارشات مرتبط ─── -->
+<div class="exam-orders-section mt-auto border-top">
+    <div class="exam-orders-header p-3 pb-2 fw-bold text-secondary d-flex justify-content-between align-items-center">
+        <div>
+            <i class="fas fa-shopping-bag me-2"></i>
+            سفارشات ثبت‌شده از این معاینه
+            <span class="badge bg-secondary ms-1">{{ exam.orders.count }}</span>
+        </div>
+
+        <a href="{% url 'reception:create-order-from-exam' exam_id=exam.id %}"
+           class="btn btn-sm btn-outline-success">
+            <i class="fas fa-plus me-1"></i>
+            ثبت سفارش
+        </a>
+    </div>
+
+    <div class="exam-orders-body px-3 pb-3">
+        {% if exam.orders.all %}
+            <div class="d-flex flex-column gap-2">
+
+                {% for order in exam.orders.all %}
+                <div class="exam-order-summary border rounded bg-light p-2">
+
+                    <!-- Header سفارش -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-dark">#{{ order.id }}</span>
+
+                            <span class="badge 
+                                {% if order.status == 'draft' %}bg-secondary
+                                {% elif order.status == 'awaiting' %}bg-warning text-dark
+                                {% elif order.status == 'confirmed' %}bg-info text-dark
+                                {% elif order.status == 'manufacturing' %}bg-primary
+                                {% elif order.status == 'ready' %}bg-success
+                                {% elif order.status == 'delivered' %}bg-success
+                                {% elif order.status == 'cancelled' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted" style="font-size: 0.82em;">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ order.created_at|jformat:"%Y/%m/%d" }}
+                            </span>
+
+                            <a href="{% url 'workshop:order-detail' order.id %}"
+                               class="btn btn-sm btn-outline-secondary py-0 px-2"
+                               title="مشاهده سفارش">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- آیتم‌های سفارش -->
+                    {% if order.items.all %}
+                    <div class="order-items-summary d-flex flex-column gap-1">
+                        {% for item in order.items.all %}
+                        <div class="order-item-mini bg-white border rounded p-2">
+
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.92em;">
+                                        <i class="fas fa-tag text-primary me-1"></i>
+                                        {{ item.service.name }}
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        <span class="badge bg-light text-dark border">
+                                            تعداد: {{ item.quantity }}
+                                        </span>
+
+                                        <span class="badge 
+                                            {% if item.status == 'draft' %}bg-secondary
+                                            {% elif item.status == 'pending' %}bg-warning text-dark
+                                            {% elif item.status == 'manufacturing' %}bg-primary
+                                            {% elif item.status == 'ready' %}bg-success
+                                            {% elif item.status == 'cancelled' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ item.get_status_display }}
+                                        </span>
+
+                                        {% if item.send_to %}
+                                        <span class="badge bg-light text-dark border">
+                                            {{ item.get_send_to_display }}
+                                        </span>
+                                        {% endif %}
+
+                                        {% if item.delivery_date %}
+                                        <span class="badge bg-light text-dark border">
+                                            تحویل: {{ item.delivery_date }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            
+
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-muted" style="font-size: 0.9em;">
+                        <i class="fas fa-inbox me-1"></i>
+                        این سفارش آیتمی ندارد.
+                    </div>
+                    {% endif %}
+
+                </div>
+                {% endfor %}
+
+            </div>
+        {% else %}
+            <p class="text-muted mb-0" style="font-size: 0.9em;">
+                <i class="fas fa-inbox me-1"></i>
+                هنوز از این معاینه سفارشی ثبت نشده است.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+
+                <!-- ─── Footer: دکمه‌های Action ─── -->
+                <div class="exam-card-footer d-flex bg-light border-top">
+                    <a href="{% url 'reception:edit-exam' exam_id=exam.id %}"
+                        class="btn btn-light flex-fill text-primary border-end rounded-0 py-2">
+                        <i class="fas fa-edit me-1"></i> ویرایش
+                    </a>
+                    <a href="{% url 'reception:delete-exam' exam_id=exam.id %}"
+                        class="btn btn-light flex-fill text-danger rounded-0 py-2"
+                        onclick="return confirm('آیا از حذف این معاینه مطمئن هستید؟')">
+                        <i class="fas fa-trash me-1"></i> حذف
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-stethoscope fa-5x text-muted mb-4 opacity-50"></i>
+        <h5 class="text-muted">هنوز معاینه‌ای ثبت نشده است</h5>
+    </div>
+    {% endif %}
+</div>
+
+{% load humanize %}
+
+<!-- ۳. لیست سفارشات (جدید) -->
+<div class="tab-pane fade" id="orders" role="tabpanel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">سفارشات ثبت‌شده ({{ orders|length }} مورد)</h4>
+        <a href="{% url 'reception:create-direct-order' patient_id=patient.id %}" class="btn btn-success shadow-sm">
+            <i class="fas fa-plus me-2"></i> ثبت سفارش جدید
+        </a>
+    </div>
+
+    {% if orders %}
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-12 mb-5">
+            <!-- کارت اصلی سفارش -->
+            <div class="card shadow border-0 h-100 rounded-3 overflow-hidden">
+                <!-- هدر کارت: اطلاعات پایه، نوع سفارش و زمان -->
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center py-3" style="background: linear-gradient(135deg, #5b3e84 0%, #7b5ea7 100%); border-bottom: none;">
+                    <div class="d-flex align-items-center mb-2 mb-md-0">
+                        <strong class="fs-5 text-white">سفارش #{{ order.id }}</strong>
+                        
+                        <!-- نوع سفارش -->
+                        {% if order.examination %}
+                            <span class="badge bg-info text-dark ms-3 shadow-sm" title="ارجاع از معاینه #{{ order.examination.id }}">
+                                <i class="fas fa-stethoscope"></i> از معاینه
+                            </span>
+                        {% else %}
+                            <span class="badge bg-light text-dark ms-3 shadow-sm">
+                                <i class="fas fa-file-invoice"></i> مستقیم
+                            </span>
+                        {% endif %}
+
+                        <!-- وضعیت سفارش -->
+                        <span class="badge bg-dark ms-2 shadow-sm">{{ order.get_status_display }}</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center text-white-50 small">
+                        <i class="fas fa-clock me-1"></i> {{ order.order_date|jformat:"%Y/%m/%d - %H:%M" }}
+                    </div>
+                </div>
+                
+                <div class="card-body bg-light">
+                    <!-- خلاصه مالی و دکمه‌های عملیاتی -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm border mb-4 gap-3">
+                        <div class="d-flex flex-wrap gap-4">
+                            <div>
+                                <span class="text-muted d-block mb-1" style="font-size: 0.85rem;"><i class="fas fa-money-bill-wave me-1"></i> مبلغ کل</span>
+                                <strong class="fs-6">{{ order.formatted_total }} تومان</strong>
+                            </div>
+                            <div class="border-end d-none d-sm-block"></div>
+                            <div>
+                                <span class="text-muted d-block mb-1" style="font-size: 0.85rem;"><i class="fas fa-credit-card me-1"></i> وضعیت پرداخت</span>
+                                <span class="badge px-3 py-2 {% if order.payment_status == 'paid' %}bg-success{% elif order.payment_status == 'partial' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if order.status != 'delivered' and order.status != 'cancelled' %}
+                            <a href="{% url 'reception:edit-order' order.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> ویرایش کلی
+                            </a>
+                            {% else %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                                    title="سفارش‌های تحویل‌داده‌شده یا لغو‌شده قابل ویرایش نیستند">
+                                <i class="fas fa-lock"></i> ویرایش کلی
+                            </button>
+                            {% endif %}
+                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#paymentModal{{ order.id }}">
+                                <i class="fas fa-wallet"></i> عملیات پرداخت
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#invoiceModal{{ order.id }}">
+                                <i class="fas fa-receipt"></i> ثبت فاکتور
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteOrderModal{{ order.id }}">
+                                <i class="fas fa-trash-alt"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- بخش اقلام سفارش (کارت‌های تفکیک‌شده) -->
+                    {% if order.items.all %}
+                    <h6 class="border-bottom pb-2 mb-3 text-success fw-bold">
+                        <i class="fas fa-box-open me-1"></i> اقلام سفارش (خدمات و کالاها)
+                    </h6>
+                    <div class="row">
+                        {% with total_items=order.items.all|length %}
+                            {% for item in order.items.all %}
+                            <!-- بررسی فرد بودن تعداد و اعمال col-12 برای آخرین آیتم -->
+                            <div class="{% if forloop.last and not total_items|divisibleby:2 %}col-12{% else %}col-md-6{% endif %} mb-3">
+                                <div class="card border-success border-opacity-50 shadow-sm h-100">
+                                    <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center py-2 border-success border-opacity-25">
+                                        <strong class="text-success"><i class="fas fa-cube me-1"></i> {{ item.service.name }}</strong>
+                                        <span class="badge bg-success shadow-sm">{{ item.get_status_display }}</span>
+                                    </div>
+                                    <div class="card-body py-3">
+    <!-- بخش نمایش تعداد، قیمت واحد و هزینه طراحی -->
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3 border-bottom pb-2 bg-light p-2 rounded">
+        <span class="small"><strong>تعداد:</strong> {{ item.quantity }} عدد</span>
+        
+        <span class="small"><strong>قیمت پایه:</strong> {{ item.formatted_price }} تومان</span>
+
+        <!-- نمایش هزینه طراحی فقط در صورتی که این آیتم طراحی داشته باشد -->
+        {% if item.designs_total_price > 0 %}
+        <span class="small text-info">
+            <strong>هزینه طراحی:</strong> {{ item.formatted_designs_total }} تومان
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- بخش قیمت کل آیتم -->
+    <div class="d-flex justify-content-between mb-2 px-2 bg-success bg-opacity-10 py-2 rounded">
+        <span class="small text-success fw-bold">
+            <i class="fas fa-calculator me-1"></i> قیمت کل (محصول + طراحی):
+        </span>
+        <span class="small fw-bold text-success fs-6">{{ item.formatted_item_total }} تومان</span>
+    </div>
+
+    <!-- بخش ارسال -->
+    <div class="small px-1 mt-3">
+        {% if item.send_to %}
+            <div class="d-flex justify-content-between text-muted">
+                <span><i class="fas fa-truck me-1"></i> ارسال به:</span>
+                <span class="fw-bold">{{ item.send_to }}</span>
+            </div>
+        {% endif %}
+    </div>
+</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal تایید حذف -->
+        <div class="modal fade" id="deleteOrderModal{{ order.id }}" tabindex="-1" aria-labelledby="deleteOrderModalLabel{{ order.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="deleteOrderModalLabel{{ order.id }}"><i class="fas fa-exclamation-triangle me-2"></i>تایید حذف سفارش</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-4">
+                        <p class="mb-2">آیا از حذف سفارش <strong>#{{ order.id }}</strong> اطمینان دارید؟</p>
+                        <p class="text-danger small mb-0"><i class="fas fa-info-circle me-1"></i> این عملیات غیرقابل بازگشت است و تمام اقلام سفارش حذف خواهند شد.</p>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                        <form action="{% url 'reception:delete-order' order.id %}" method="POST" class="m-0 p-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger px-4">بله، حذف شود</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="paymentModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="fas fa-wallet me-2"></i>عملیات پرداخت سفارش #{{ order.id }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row text-center mb-4 g-2">
+          <div class="col-4">
+            <div class="p-2 bg-light rounded">
+              <div class="text-muted small">مبلغ کل</div>
+              <div class="fw-bold">{{ order.formatted_total }} تومان</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-success bg-opacity-10 rounded">
+              <div class="text-muted small">پرداخت‌شده</div>
+              <div class="fw-bold text-success">{{ order.formatted_total_paid }} تومان</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-danger bg-opacity-10 rounded">
+              <div class="text-muted small">باقی‌مانده</div>
+              <div class="fw-bold text-danger">{{ order.formatted_remaining }} تومان</div>
+            </div>
+          </div>
+        </div>
+
+        <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-history me-1"></i> تاریخچه پرداخت‌ها</h6>
+        {% if order.payments.all %}
+        <div class="table-responsive mb-4">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr><th>تاریخ</th><th>مبلغ</th><th>روش</th><th>شماره پیگیری</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for payment in order.payments.all %}
+              <tr>
+                <td class="small">{{ payment.paid_at|jformat:"%Y/%m/%d - %H:%M" }}</td>
+                <td class="fw-bold">{{ payment.formatted_amount }} تومان</td>
+                <td><span class="badge bg-secondary">{{ payment.get_method_display }}</span></td>
+                <td class="small text-muted">{{ payment.reference_number|default:"-" }}</td>
+                <td>
+                  <form action="{% url 'reception:delete-payment' payment.id %}" method="POST" class="m-0 p-0"
+                        onsubmit="return confirm('آیا از حذف این پرداخت اطمینان دارید؟');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash-alt"></i></button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-4">هنوز پرداختی برای این سفارش ثبت نشده است.</p>
+        {% endif %}
+
+        <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-plus-circle me-1"></i> ثبت پرداخت جدید</h6>
+        <form action="{% url 'reception:add-payment' order.id %}" method="POST" class="payment-form" data-max="{{ order.remaining_amount|floatformat:0 }}">
+  {% csrf_token %}
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label small">مبلغ</label>
+      <div class="input-group">
+        <input type="text" class="form-control amount-display" inputmode="numeric"
+               data-target="amount_{{ order.id }}"
+               value="{% if order.total_paid > 0 %}{{ order.formatted_remaining }}{% else %}{{ order.formatted_suggested_deposit }}{% endif %}"
+               data-max="{{ order.remaining_amount|floatformat:0 }}">
+        <span class="input-group-text">تومان</span>
+        <button type="button" class="btn btn-outline-secondary calc-toggle" data-target="amount_{{ order.id }}">
+          <i class="fas fa-calculator"></i>
+        </button>
+      </div>
+      <input type="hidden" name="amount" id="amount_{{ order.id }}"
+             value="{% if order.total_paid > 0 %}{{ order.remaining_amount|floatformat:0 }}{% else %}{{ order.suggested_deposit|floatformat:0 }}{% endif %}">
+      {% if order.total_paid == 0 %}
+      <small class="text-muted">پیشنهاد بیعانه: ۷۰٪ مبلغ کل (قابل ویرایش)</small>
+      {% endif %}
+      <div class="invalid-feedback-custom text-danger small d-none">مبلغ نمی‌تواند از باقی‌مانده سفارش بیشتر باشد</div>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small">روش پرداخت</label>
+      <select name="method" class="form-select">
+        {% for value, label in payment_methods %}
+        <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small">حساب</label>
+      <select name="account" class="form-select">
+        <option value="">— بدون حساب مشخص —</option>
+        {% regroup payment_accounts by get_method_display as accounts_by_method %}
+        {% for group in accounts_by_method %}
+        <optgroup label="{{ group.grouper }}">
+          {% for acc in group.list %}
+          <option value="{{ acc.id }}">{{ acc.name }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label small">شماره پیگیری (اختیاری)</label>
+      <input type="text" name="reference_number" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label small">یادداشت</label>
+      <input type="text" name="notes" class="form-control">
+    </div>
+  </div>
+  <div class="text-end mt-3">
+    <button type="submit" class="btn btn-success px-4"><i class="fas fa-check me-1"></i> ثبت پرداخت</button>
+  </div>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
+{% include "reception/partials/_order_invoice_modal.html" with order=order %}
+
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-light rounded-3 border border-dashed">
+        <i class="fas fa-clipboard-list fa-4x text-muted mb-3 opacity-25"></i>
+        <h5 class="text-muted fw-normal">هنوز سفارشی برای این بیمار ثبت نشده است</h5>
+    </div>
+    {% endif %}
+</div>
+
+{% include "reception/partials/calculator.html" %}
+
+
+                    <!-- ۴. لیست پیگیری‌ها (جدید) -->
+                    <div class="tab-pane fade" id="followups" role="tabpanel">
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-check fa-5x text-muted mb-4"></i>
+                            <h5 class="text-muted">لیست پیگیری‌ها</h5>
+                            <p class="text-muted">این بخش در حال توسعه است و به‌زودی پیگیری‌های تلفنی و ویزیت‌های
+                                بعدی
+                                اینجا نمایش داده خواهد شد.</p>
+                        </div>
+                    </div>
+
+                    <!-- ۵. مدارک (اصلاح‌شده: کد نمونه اضافه شد) -->
+                    <div class="tab-pane fade" id="documents" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">مدارک ثبت‌شده ({{ documents|length }} مورد)</h4>
+                            <!-- اگر فرمی برای آپلود دارید، لینک بدید -->
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
+                                <i class="fas fa-plus me-2"></i> آپلود مدرک جدید
+                            </button>
+                        </div>
+                        {% if documents %}
+                        <div class="row">
+                            {% for doc in documents %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="document-preview">
+                                    <i class="fas fa-file-alt fa-3x text-primary"></i>
+                                    <div>
+                                        <h6>{{ doc.description|default:doc.file.name }}</h6>
+
+                                        <p class="text-muted">
+                                            آپلود: {{ doc.uploaded_at|jformat:"%Y/%m/%d" }}
+                                        </p>
+
+                                        <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="fas fa-download"></i> دانلود
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-5x text-muted mb-4"></i>
+                            <h5 class="text-muted">هنوز مدارکی ثبت نشده است</h5>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- upload document modal -->
+                    {% include "reception/partials/_upload_document_modal.html" %}
+                    <div class="tab-pane fade" id="invoices" role="tabpanel"></div>
+                   <div class="tab-pane fade" id="financial" role="tabpanel">
+    <h4 class="mb-4">اطلاعات مالی بیمار</h4>
+    <div class="financial-summary row g-3 mb-4">
+        <div>
+            <div class="financial-card success text-center p-4 border rounded-3 shadow-sm bg-white">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h6 class="text-muted">مبلغ پرداخت‌شده</h6>
+                <h3 class="text-success">{{ total_paid_formatted }} تومان</h3>
+            </div>
+        </div>
+        <div>
+            <div class="financial-card warning text-center p-4 border rounded-3 shadow-sm bg-white">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h6 class="text-muted">مبلغ باقی‌مانده</h6>
+                <h3 class="text-warning">{{ total_remaining_formatted }} تومان</h3>
+            </div>
+        </div>
+        <div>
+            <div class="financial-card danger text-center p-4 border rounded-3 shadow-sm bg-white">
+                <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                <h6 class="text-muted">مبلغ تأخیری</h6>
+                <h3 class="text-danger">{{ total_overdue_formatted }} تومان</h3>
+            </div>
+        </div>
+    </div>
+
+    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-list me-1"></i> لیست تمام تراکنش‌های بیمار</h6>
+    {% if payments %}
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle bg-white">
+            <thead class="table-light">
+                <tr>
+                    <th>تاریخ</th>
+                    <th>سفارش</th>
+                    <th>مبلغ</th>
+                    <th>روش</th>
+                    <th>حساب</th>
+                    <th>شماره پیگیری</th>
+                    <th>دریافت‌کننده</th>
+                    {% if is_manager %}<th></th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td class="small">{{ payment.paid_at|jformat:"%Y/%m/%d - %H:%M" }}</td>
+                    <td><span class="badge bg-secondary">#{{ payment.order.id }}</span></td>
+                    <td class="fw-bold">{{ payment.formatted_amount }} تومان</td>
+                    <td><span class="badge bg-info text-dark">{{ payment.get_method_display }}</span></td>
+                    <td class="small">{{ payment.account.name|default:"-" }}</td>
+                    <td class="small text-muted">{{ payment.reference_number|default:"-" }}</td>
+                    <td class="small">{{ payment.received_by.get_full_name|default:payment.received_by.username|default:"-" }}</td>
+                    {% if is_manager %}
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary edit-payment-btn"
+                                data-bs-toggle="modal" data-bs-target="#editPaymentModal{{ payment.id }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted small">هنوز پرداختی برای این بیمار ثبت نشده است.</p>
+    {% endif %}
+</div>
+
+{% if is_manager %}
+{% for payment in payments %}
+<div class="modal fade" id="editPaymentModal{{ payment.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">ویرایش تراکنش (سفارش #{{ payment.order.id }})</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{% url 'reception:edit-payment' payment.id %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small">مبلغ (تومان)</label>
+            <div class="input-group">
+              <input type="text" class="form-control amount-display" inputmode="numeric"
+                     data-target="edit_amount_{{ payment.id }}" value="{{ payment.formatted_amount }}"
+                     data-max="{{ payment.order.total_price|floatformat:0 }}">
+              <span class="input-group-text">تومان</span>
+              <button type="button" class="btn btn-outline-secondary calc-toggle" data-target="edit_amount_{{ payment.id }}">
+                <i class="fas fa-calculator"></i>
+              </button>
+            </div>
+            <input type="hidden" name="amount" id="edit_amount_{{ payment.id }}" value="{{ payment.amount|floatformat:0 }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small">روش پرداخت</label>
+            <select name="method" class="form-select">
+              {% for value, label in payment_methods %}
+              <option value="{{ value }}" {% if payment.method == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small">حساب</label>
+            <select name="account" class="form-select">
+              <option value="">— بدون حساب مشخص —</option>
+              {% regroup payment_accounts by get_method_display as accounts_by_method %}
+              {% for group in accounts_by_method %}
+              <optgroup label="{{ group.grouper }}">
+                {% for acc in group.list %}
+                <option value="{{ acc.id }}" {% if payment.account_id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small">شماره پیگیری</label>
+            <input type="text" name="reference_number" class="form-control" value="{{ payment.reference_number|default:'' }}">
+          </div>
+          <div class="mb-0">
+            <label class="form-label small">یادداشت</label>
+            <textarea name="notes" class="form-control" rows="2">{{ payment.notes }}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+          <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+                </div>
+
+
+                <!-- دکمه‌های عملیات -->
+                
+<div class="d-flex flex-wrap gap-3 justify-content-center mt-5 action">
+    <!-- <a href="#" class="btn text-white action-btn"
+        style="background: #28a745;">
+        <i class="fas fa-plus-circle me-2"></i> ثبت سفارش جدید
+    </a> -->
+    
+    <a href="{% url 'reception:edit-patient' patient.id %}" class="btn text-white action-btn"
+        style="background: var(--primary);">
+        <i class="fas fa-edit me-2"></i> ویرایش اطلاعات بیمار
+    </a>
+    
+    <a href="{% url 'reception:print-patient' patient.id %}" class="btn text-white action-btn"
+        style="background: #17a2b8;">
+        <i class="fas fa-print me-2"></i> چاپ پرونده
+    </a>
+
+    <!-- دکمه جدید برای حذف بیمار -->
+    <a href="{% url 'reception:delete-patient' patient.id %}" class="btn text-white action-btn"
+        style="background: #dc3545;" 
+        onclick="return confirm('آیا از حذف کامل این بیمار و تمام اطلاعات وابسته به او (معاینات، سفارشات و مدارک) کاملاً مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');">
+        <i class="fas fa-trash-alt me-2"></i> حذف بیمار
+    </a>
+    
+    <a href="{% url 'reception:dashboard' %}" class="btn btn-outline-secondary action-btn">
+        <i class="fas fa-arrow-left me-2"></i> بازگشت به لیست
+    </a>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/reception/mini_calculator.js' %}"></script>
+<script src="{% static 'js/reception/order_invoice.js' %}"></script>
+<script>
+    //document.addEventListener('DOMContentLoaded', function () {
+    //var swiper = new Swiper('.nav-tabs-container', {
+    // direction: 'horizontal',
+    ///   slidesPerView: 4,
+    // spaceBetween: 0,
+    //navigation: {
+    //nextEl: '.swiper-button-next',
+    //  prevEl: '.swiper-button-prev',
+    //},
+    //breakpoints: {
+    //992: {
+    //   slidesPerView: 4,  // همیشه 4 تا
+    // },
+    // 768: {
+    //       slidesPerView: 3,
+    // },
+    //   576: {
+    //         slidesPerView: 2,
+    //       }
+    //     },
+    //       rtl: true  // برای RTL
+    //     });
+    //   });
+    function scrollTabs(direction) {
+        const wrapper = document.querySelector('.tabs-scroll-wrapper');
+        // RTL هست پس جهت برعکسه
+        wrapper.scrollLeft += direction * -150;
+    }
+</script>
+{% endblock %}

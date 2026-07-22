@@ -1,0 +1,1003 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if exam %}ویرایش معاینه {{ patient.full_name }}{% else %}ثبت معاینه جدید برای {{ patient.full_name }}{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/select2.min.css' %}" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'css/jalali-datepicker.css' %}">
+<style>
+    /* تمام استایل‌های شما بدون تغییر در اینجا قرار می‌گیرد */
+    :root {
+        --primary: #2563eb; --primary-hover: #1d4ed8; --secondary: #3b82f6;
+        --success: #10b981; --danger: #ef4444; --bg-body: #f1f5f9;
+        --bg-surface: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
+        --border-light: #e2e8f0; --radius-md: 16px; --radius-lg: 24px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        --transition: all 0.3s ease;
+        --right-bg: #ecfdf5; --right-border: #6ee7b7;
+        --left-bg: #eff6ff; --left-border: #93c5fd;
+    }
+    body { font-family: 'vazir', 'Vazirmatn', sans-serif; background-color: var(--bg-body); color: var(--text-main); padding-bottom: 80px; }
+    /* ... سایر استایل‌های اختصاصی شما ... */
+    /* خلاصه شده برای جلوگیری از تکرار در پاسخ - استایل های خودتان را کامل اینجا بگذارید */
+    .patient-profile-card { background: var(--bg-surface); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-md); text-align: center; position: sticky; top: 20px; }
+    .profile-img-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; }
+    .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-surface); box-shadow: 0 0 0 3px var(--primary); }
+    .patient-stat { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border-light); font-size: 0.95rem; }
+    .main-form-card { background: var(--bg-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+    .form-header { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 2rem; position: relative; }
+    .form-header h3 { font-weight: 800; margin: 0; font-size: 1.8rem; }
+    .form-section { padding: 2rem; border-bottom: 1px solid var(--border-light); }
+    .section-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+    .form-control, .select2-container--default[dir="rtl"] .select2-selection--multiple { border-radius: 12px; border: 2px solid var(--border-light); padding: 0.75rem 1rem; }
+    .modern-switch { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .modern-switch input { display: none; }
+    .switch-track { width: 50px; height: 26px; background: #cbd5e1; border-radius: 20px; position: relative; transition: var(--transition); }
+    .switch-thumb { width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: var(--transition); }
+    .modern-switch input:checked + .switch-track { background: var(--success); }
+    .modern-switch input:checked + .switch-track .switch-thumb { transform: translateX(24px); }
+    .service-card { border: 1px solid var(--border-light); border-radius: var(--radius-md); margin-bottom: 1.5rem; background: var(--bg-surface); box-shadow: var(--shadow-sm); animation: fadeIn 0.4s ease; overflow: hidden; }
+    .service-card-header { background: #f8fafc; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; }
+    .service-card-body { padding: 1.5rem; }
+    .side-box { padding: 1.5rem; border-radius: 12px; border: 2px solid transparent; height: 100%; transition: var(--transition); }
+    .side-box.right-foot { background: var(--right-bg); border-color: var(--right-border); }
+    .side-box.left-foot { background: var(--left-bg); border-color: var(--left-border); }
+    .side-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .btn-transfer { background: white; border: 1px solid rgba(0,0,0,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .empty-state { text-align: center; padding: 3rem 1rem; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: var(--radius-md); color: var(--text-muted); }
+    .sticky-actions { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 1rem 2rem; border-top: 1px solid var(--border-light); z-index: 1000; display: flex; justify-content: flex-end; gap: 1rem; }
+    .btn-action { padding: 0.75rem 2rem; border-radius: 12px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; }
+    .btn-save { background: var(--primary); color: white; }
+    .btn-cancel { background: #f1f5f9; color: #475569; }
+    /* =========================================
+   بهینه‌سازی و مدرن‌سازی Select2
+========================================= */
+.select2-container {
+    width: 100% !important;
+}
+
+/* بدنه اصلی باکس انتخاب */
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--single {
+    border-radius: 12px;
+    border: 2px solid var(--border-light);
+    min-height: 52px;
+    padding: 4px 8px;
+    background-color: var(--bg-surface);
+    transition: var(--transition);
+    display: block;
+    align-items: center;
+}
+
+/* حالت فوکوس (انتخاب شده) */
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+
+
+/* ۳. تنظیم مجدد تگ‌ها (حذف مارجین‌های مزاحم) */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 4px 12px;
+    color: var(--primary-hover);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0 !important; /* مهم: مارجین پیش‌فرض Select2 را حذف می‌کنیم چون از gap استفاده کردیم */
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 8px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
+    background-color: #dbeafe;
+}
+
+/* دکمه ضربدر حذف تگ */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--danger);
+    border: none;
+    background: none;
+    margin: 0;
+    padding: 0;
+    font-size: 1.2rem;
+    font-weight: normal;
+    line-height: 1;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background: none;
+    color: #b91c1c;
+}
+
+/* منوی کشویی (Dropdown) */
+.select2-dropdown {
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    z-index: 1050;
+    margin-top: 4px;
+}
+
+/* گزینه‌های داخل منو */
+.select2-results__option {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.select2-results__option:last-child {
+    border-bottom: none;
+}
+
+/* گزینه انتخاب شده در منو (هاور) */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* فیلد جستجو داخل Select2 */
+.select2-search__field {
+    font-family: inherit;
+    color: var(--text-main);
+}
+
+/* تنظیم ارتفاع input و فرم‌های معمولی */
+.form-control {
+    min-height: 52px;
+}
+
+
+/* ۴. اصلاح موقعیت Placeholder و فیلد تایپ */
+.select2-container--default .select2-search--inline {
+    margin: 0 !important;
+    float: none !important;
+    display: flex;
+    align-items: center;
+}
+
+.select2-container--default .select2-search--inline .select2-search__field {
+    margin-top: 0 !important; /* حذف فاصله از بالای پیش‌فرض Select2 که باعث پایین رفتن Placeholder می‌شد */
+    height: auto !important;
+    line-height: normal !important;
+}
+
+
+/* ۲. تنظیم لیست داخلی برای چیدمان ردیفی بج‌ها و تنظیم عمودی Placeholder */
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex !important;
+    flex-wrap: wrap;       /* اگر بج‌ها زیاد شدند به خط بعد بروند */
+    align-items: center;   /* وسط‌چین کردن عمودی محتوا و Placeholder */
+    gap: 6px;              /* فاصله بین بج‌ها */
+    min-height: 48px;
+    padding: 4px 12px;
+    margin: 0;
+}
+
+
+/* =========================================
+   استایل‌های بخش شرح حال (تگ‌های سریع و میکروفون)
+========================================= */
+.quick-tag {
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+    font-weight: 500;
+}
+.quick-tag:hover {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+.voice-input-wrapper {
+    position: relative;
+}
+.voice-input-wrapper textarea {
+    padding-left: 50px; /* فضای خالی برای قرارگیری دکمه میکروفون در سمت چپ */
+}
+.btn-mic {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+.btn-mic:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.05);
+}
+.btn-mic.recording {
+    background-color: var(--danger);
+    animation: pulse-red 1.5s infinite;
+}
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.design-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+}
+
+.design-checkbox-item {
+    position: relative;
+}
+
+.design-checkbox-item input {
+    display: none;
+}
+
+.design-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.design-checkbox-label::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    background: white;
+    flex-shrink: 0;
+}
+
+.design-checkbox-item input:checked + .design-checkbox-label {
+    border-color: var(--primary);
+    background: #eff6ff;
+    color: var(--primary-hover);
+}
+
+.design-checkbox-item input:checked + .design-checkbox-label::before {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: inset 0 0 0 4px white;
+}
+
+.design-checkbox-item input:disabled + .design-checkbox-label {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row gx-4">
+        <!-- Sidebar -->
+        <div class="col-12 col-lg-3 mb-4">
+            <div class="patient-profile-card">
+                <div class="profile-img-wrap">
+                    <img src="{% if patient.photo %}
+                    {{ patient.photo.url }}
+                    {% elif patient.gender == 'male' %}
+                    {% static 'images/man.png' %}
+                    {% elif patient.gender == 'female' %}
+                    {% static 'images/woman.png' %}
+                    {% endif %}" class="profile-img">
+                </div>
+                <h4 class="fw-bold mb-1">{{ patient.full_name }}</h4>
+                <p class="text-muted small mb-4">پرونده: {{ patient.case_number }}</p>
+                
+                <div class="patient-stat"><span class="label">سن</span><span class="val">{{ patient.age|default:"-" }}</span></div>
+                <div class="patient-stat"><span class="label">جنسیت</span><span class="val">{{ patient.get_gender_display|default:"-" }}</span></div>
+                <div class="patient-stat"><span class="label">تلفن</span><span class="val">{{ patient.phone|default:"-" }}</span></div>
+                <div class="patient-stat border-0"><span class="label">بیماری زمینه‌ای</span><span class="val text-danger">{{ patient.underlying_diseases|default:"ندارد" }}</span></div>
+            </div>
+        </div>
+
+        <!-- Main Form -->
+        <div class="col-12 col-lg-9">
+            <div class="main-form-card">
+                <div class="form-header">
+                    <h3><i class="fas fa-stethoscope"></i> {% if exam %}ویرایش معاینه{% else %}فرم معاینه و تجویز{% endif %}</h3>
+                    <p class="mb-0 mt-2 opacity-75">ثبت دقیق اطلاعات بالینی و تجویزها</p>
+                </div>
+
+
+
+                
+                <form method="post" id="examinationForm">
+                    {% csrf_token %}
+
+
+                                        <!-- در ابتدای فرم -->
+                    <div class="form-section">
+                        <label class="form-label fw-bold">تاریخ معاینه</label>
+                        <input type="text" 
+                            name="exam_date" 
+                            id="exam-date" 
+                            class="form-control form-control-lg" 
+                            value="{% if exam %}{{ persian_exam_date }}{% else %}{{ current_persian_date }}{% endif %}">
+                    </div>
+                    <!-- شرح حال و گفته‌های مراجع -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="fas fa-comments"></i> شرح حال و شکایت اصلی مراجع</h4>
+                        
+                        <!-- تگ‌های سریع -->
+                        <div class="mb-3">
+                            <span class="text-muted small me-2">افزودن سریع:</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">صافی کف پا و تشخیص توسط</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">درد زانو</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">کمردرد</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">خستگی زودرس</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">انحراف زانو</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">خارپاشنه</span>
+                            <span class="badge bg-white text-dark border quick-tag me-1 mb-1">درد پاشنه</span>
+                        </div>
+
+                        <!-- باکس متن با قابلیت تایپ صوتی -->
+                        <div class="voice-input-wrapper">
+                            <textarea id="chief_complaint" name="chief_complaint" class="form-control" rows="3" placeholder="گفته‌های مراجع را اینجا تایپ کنید یا دکمه میکروفون را بزنید و صحبت کنید...">{% if exam %}{{ exam.chief_complaint }}{% endif %}</textarea>
+                            
+                            <!-- دکمه میکروفون -->
+                            <button type="button" class="btn-mic" id="start_speech_btn" title="تبدیل گفتار به متن">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted mt-2 d-block" id="speech_status_text">برای تایپ صوتی روی میکروفون کلیک کنید.</small>
+                    </div>
+
+                    <!-- مشاهدات بالینی -->
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="section-title mb-0"><i class="fas fa-clipboard-list"></i> مشاهدات بالینی</h4>
+                            
+                            <!-- سوییچ مدرن اختصاصی به جای سوییچ پیش‌فرض بوت‌استرپ -->
+                            <label class="modern-switch">
+                                <input type="checkbox" id="toggle_obs_separation" name="is_separated_observations" {% if exam.is_separated_observations or is_separated_observations %}checked{% endif %}>                                <div class="switch-track"><div class="switch-thumb"></div></div>
+                                <span class="switch-label text-sm fw-bold">تمایز پای چپ و راست</span>
+                            </label>
+                        </div>
+
+                        <!-- حالت یکپارچه -->
+                        <div id="obs_unified_container" class="{% if exam.is_separated_observations or is_separated_observations %}d-none{% endif %}">
+                            <label class="form-label text-muted">علائم و مشاهدات (عمومی یا مشترک)</label>
+                            <select class="form-control select2-tags" name="observations" multiple="multiple">
+                                {% for obs in observations %}
+                                    <option value="{{ obs.id }}" {% if obs.id in selected_observations %}selected{% endif %}>{{ obs.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- حالت تفکیک شده با باکس‌های راست و چپ (هم‌شکل با بخش تجویز) -->
+                        <div id="obs_separated_container" class="row g-4 {% if not exam.is_separated_observations and not is_separated_observations %}d-none{% endif %}">
+                            <div class="col-md-6">
+                                <div class="side-box right-foot">
+                                    <div class="side-header">
+                                        <span class="side-title fw-bold">مشاهدات پای راست</span>
+
+                                        <button type="button"
+                                                class="btn-transfer copy-observations"
+                                                data-from="right"
+                                                data-to="left">
+                                            کپی به چپ
+                                        </button>
+                                    </div>
+
+                                    <select class="form-control select2-tags" name="observations_right" multiple="multiple">
+                                        {% for obs in observations %}
+                                            <option value="{{ obs.id }}" {% if obs.id in selected_observations_right %}selected{% endif %}>{{ obs.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="side-box left-foot">
+                                    <div class="side-header">
+                                        <span class="side-title fw-bold">مشاهدات پای چپ</span>
+
+                                        <button type="button"
+                                                class="btn-transfer copy-observations"
+                                                data-from="left"
+                                                data-to="right">
+                                            کپی به راست
+                                        </button>
+                                    </div>
+
+                                    <select class="form-control select2-tags" name="observations_left" multiple="multiple">
+                                        {% for obs in observations %}
+                                            <option value="{{ obs.id }}" {% if obs.id in selected_observations_left %}selected{% endif %}>{{ obs.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- تجویز سرویس‌ها -->
+                    <div class="form-section bg-light">
+                        <h4 class="section-title"><i class="fas fa-prescription"></i> تجویز خدمات (اورتز / پروتز)</h4>
+                        <div class="mb-4">
+                            <select id="prescription-services" class="form-control select2-tags" multiple>
+                                <!-- از طریق JS پر می‌شود -->
+                            </select>
+                        </div>
+                        
+                        <div id="designs-sections">
+                            <div class="empty-state" id="empty-services-state">
+                                <i class="fas fa-box-open"></i>
+                                <h5>هیچ خدمتی انتخاب نشده است</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تمرینات و یادداشت -->
+                    <div class="form-section">
+                        <div class="row">
+                            <div class="col-md-6 mb-4 mb-md-0">
+                                <h4 class="section-title"><i class="fas fa-dumbbell"></i> برنامه تمرینی</h4>
+                                <select name="exercises" class="form-control select2-tags" id="exercises" multiple></select>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="section-title"><i class="fas fa-comment-medical"></i> یادداشت بالینی</h4>
+                                <!-- مقداردهی اولیه یادداشت در حالت ویرایش -->
+                                <textarea name="notes" class="form-control" rows="4" placeholder="توضیحات تکمیلی...">{% if exam %}{{ exam.notes }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sticky-actions">
+                        <a href="{% url 'reception:patient-detail' patient.id %}" class="btn-action btn-cancel">انصراف</a>
+                        <button type="submit" class="btn-action btn-save"><i class="fas fa-check"></i> ثبت و ذخیره</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/jquery-4.0.0.min.js' %}"></script>
+<script src="{% static 'js/select2.min.js' %}"></script>
+
+<!-- داده‌های پایه -->
+{{ observations|json_script:"observations-data" }}
+{{ services|json_script:"services-data" }}
+{{ dynamic_fields|json_script:"dynamic-fields-data" }}
+{{ designs_data|json_script:"designs-data" }}
+{{ exercises|json_script:"exercises-data" }}
+
+<!-- داده‌های حالت ویرایش (Edit Mode Data) -->
+{{ selected_observations|default:"[]"|json_script:"selected-obs-data" }}
+{{ selected_exercises|default:"[]"|json_script:"selected-ex-data" }}
+
+<!-- داده‌های حالت ویرایش (Edit Mode Data) -->
+{{ selected_observations|default:"[]"|json_script:"selected-obs-data" }}
+{{ selected_observations_left|default:"[]"|json_script:"selected-obs-left-data" }} <!-- اضافه شود -->
+{{ selected_observations_right|default:"[]"|json_script:"selected-obs-right-data" }} <!-- اضافه شود -->
+{{ selected_exercises|default:"[]"|json_script:"selected-ex-data" }}
+
+
+<script id="prescription-data" type="application/json">
+    {{ prescription_data|default:"{}"|safe }}
+</script>
+<script src="{% static 'js/persian-date-simple.js' %}"></script>
+<script src="{% static 'js/jalali-datepicker.js' %}"></script>
+<script>
+$(document).ready(function () {
+
+    if (typeof jalaliDatepicker !== 'undefined') {
+    jalaliDatepicker.startWatch({
+        selector: '#exam-date',
+        autoHide: true,
+        showTodayBtn: true,
+        showEmptyBtn: true,
+        persianDigits: true
+    });
+}
+
+$('#exam-date').persianDatepicker({
+    format: 'YYYY/MM/DD',
+    autoClose: true,
+    initialValue: false,
+    persianDigit: true,
+    observer: true,
+    inputDelay: 800,
+    calendar: {
+        persian: {
+            locale: 'fa',
+            showHint: true,
+            leapYearMode: 'astronomical'
+        }
+    },
+    navigator: {
+        enabled: true,
+        scroll: { enabled: false }
+    },
+    toolbox: {
+        enabled: true,
+        calendarSwitch: { enabled: true }
+    }
+});
+
+$('#exam-date').on('focus click', function() {
+    $(this).persianDatepicker('show');
+});
+
+    const parseData = (id) => JSON.parse(document.getElementById(id)?.textContent || '[]');
+
+    const observationsData = parseData('observations-data');
+    const exercisesData = parseData('exercises-data');
+    const services = parseData('services-data'); 
+    const dynamicFields = parseData('dynamic-fields-data');
+    const designs = parseData('designs-data');
+
+    // لود داده‌های حالت ویرایش
+    const preSelectedObs = parseData('selected-obs-data');
+    const preSelectedObsLeft = parseData('selected-obs-left-data'); // اضافه شده
+    const preSelectedObsRight = parseData('selected-obs-right-data'); // اضافه شده
+    const preSelectedEx = parseData('selected-ex-data');
+    
+    let prePrescriptionData = {};
+    try {
+        prePrescriptionData = JSON.parse(document.getElementById('prescription-data').textContent || '{}');
+    } catch(e) {}
+
+    const servicesArray = Array.isArray(services) ? services : Object.values(services);
+
+    // =======================
+    // مقداردهی اولیه Select2ها
+    // =======================
+
+    // تنظیمات پایه Select2 برای مشاهدات
+    const obsSelect2Options = {
+        tags: true, 
+        placeholder: 'انتخاب یا وارد کنید...', 
+        allowClear: true,
+        data: observationsData.map(o => ({ id: o.id, text: o.name }))
+    };
+
+    // 1. مقداردهی Select2 برای حالت یکپارچه
+    $('select[name="observations"]').select2(obsSelect2Options);
+    if (preSelectedObs.length > 0) {
+        $('select[name="observations"]').val(preSelectedObs).trigger('change');
+    }
+
+    // 2. مقداردهی Select2 برای پای راست
+    $('select[name="observations_right"]').select2(obsSelect2Options);
+    if (preSelectedObsRight.length > 0) {
+        $('select[name="observations_right"]').val(preSelectedObsRight).trigger('change');
+    }
+
+    // 3. مقداردهی Select2 برای پای چپ
+    $('select[name="observations_left"]').select2(obsSelect2Options);
+    if (preSelectedObsLeft.length > 0) {
+        $('select[name="observations_left"]').val(preSelectedObsLeft).trigger('change');
+    }
+
+    // مقداردهی Select2 برای تمرینات
+    $('#exercises').select2({
+        tags: true, 
+        placeholder: 'انتخاب یا وارد کنید...', 
+        allowClear: true,
+        data: exercisesData.map(e => ({ id: e.id, text: e.name }))
+    });
+    // ست کردن مقادیر قبلی تمرینات
+    if (preSelectedEx.length > 0) $('#exercises').val(preSelectedEx).trigger('change');
+
+    // مقداردهی Select2 برای سرویس‌های تجویزی
+    $('#prescription-services').select2({
+        placeholder: 'انتخاب سرویس (مثلا کفی طبی، بریس و...)',
+        allowClear: true,
+        data: servicesArray.map(s => ({ id: s.id, text: s.name }))
+    });
+
+    // =======================
+    // منطق ساخت فرم‌های داینامیک
+    // =======================
+    function buildPrescription() {
+        const selectedServiceIds = $('#prescription-services').val() || [];
+        const container = $('#designs-sections');
+        
+        if (selectedServiceIds.length === 0) {
+            container.html(`
+                <div class="empty-state" id="empty-services-state">
+                    <i class="fas fa-box-open"></i><h5>هیچ خدمتی انتخاب نشده است</h5>
+                </div>
+            `);
+            return;
+        }
+
+        container.empty();
+
+        selectedServiceIds.forEach(serviceId => {
+            const service = servicesArray.find(s => String(s.id) === String(serviceId));
+            if (!service) return;
+
+            const safeId = `srv_${service.id}`;
+            const serviceDynamicFields = dynamicFields.filter(df => String(df.service_id) === String(service.id));
+            let dynFieldsHtml = '';
+            
+            serviceDynamicFields.forEach(field => {
+                let inputHtml = '';
+                const inputName = `dyn_${safeId}_${field.name}`;
+                if (field.field_type === 'text' || field.field_type === 'number') {
+                    inputHtml = `<input type="${field.field_type}" name="${inputName}" class="form-control">`;
+                } else if (field.field_type === 'checkbox') {
+                    inputHtml = `<label class="modern-switch mt-2">
+                        <input type="checkbox" name="${inputName}" value="true">
+                        <div class="switch-track"><div class="switch-thumb"></div></div><span class="switch-label text-sm fw-normal">بله / خیر</span>
+                    </label>`;
+                } else if (field.field_type === 'textarea') {
+                    inputHtml = `<textarea name="${inputName}" class="form-control" rows="2"></textarea>`;
+                } else if (field.field_type === 'select') {
+                    const opts = (field.dropdown_options || "").split(',').filter(o => o.trim());
+                    let optionsHtml = `<option value="">انتخاب کنید...</option>` + opts.map(o => `<option value="${o.trim()}">${o.trim()}</option>`).join('');
+                    inputHtml = `<select name="${inputName}" class="form-control">${optionsHtml}</select>`;
+                }
+                dynFieldsHtml += `<div class="col-md-4 mb-3"><label class="form-label">${field.label}</label>${inputHtml}</div>`;
+            });
+
+            const validDesigns = designs.filter(d =>
+    d.service_ids && d.service_ids.map(String).includes(String(service.id))
+);
+
+function renderDesignCheckboxes(inputName, selectedIds = [], disabled = false) {
+    if (!validDesigns.length) {
+        return `<div class="text-muted small">برای این خدمت طراحی ثبت نشده است.</div>`;
+    }
+
+    return `
+        <div class="design-checkbox-grid">
+            ${validDesigns.map(d => {
+                const checked = selectedIds.map(String).includes(String(d.id)) ? 'checked' : '';
+                const disabledAttr = disabled ? 'disabled' : '';
+
+                return `
+                    <div class="design-checkbox-item">
+                        <input 
+                            type="checkbox" 
+                            id="${inputName}_${d.id}" 
+                            name="${inputName}" 
+                            value="${d.id}" 
+                            ${checked} 
+                            ${disabledAttr}
+                        >
+                        <label class="design-checkbox-label" for="${inputName}_${d.id}">
+                            ${d.name}
+                        </label>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+
+            let html = `
+            <div class="service-card" id="card_${safeId}">
+                <div class="service-card-header">
+                    <h5><i class="fas fa-stethoscope me-2"></i> ${service.name}</h5>
+                    <label class="modern-switch">
+                        <input type="checkbox" name="is_separated_${safeId}" class="separate-sides-toggle" data-target="${safeId}">
+                        <div class="switch-track"><div class="switch-thumb"></div></div><span class="switch-label text-sm">تمایز پای چپ و راست</span>
+                    </label>
+                </div>
+                <div class="service-card-body">
+                    <input type="hidden" name="type_${safeId}" value="${service.id}">
+                    <div class="row mb-3">
+                        <div class="col-md-3"><label class="form-label">تعداد</label><input type="number" name="quantity_${safeId}" class="form-control" min="1" value="1"></div>
+                        </div>
+                        <div class="row mb-4">${dynFieldsHtml}</div>
+                        <hr class="my-4">
+                    <div id="unified_${safeId}">
+                        <label class="form-label">طراحی و مشخصات (هر دو پا مشترک)</label>
+                        ${renderDesignCheckboxes(`designs_${safeId}`)}
+                    </div>
+
+                    <div id="separated_${safeId}" class="row g-4" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="side-box right-foot">
+                                <div class="side-header">
+                                    <span class="side-title">طراحی پای راست</span>
+
+                                    <button type="button"
+                                            class="btn-transfer copy-designs"
+                                            data-target="${safeId}"
+                                            data-from="right"
+                                            data-to="left">
+                                        کپی به چپ
+                                    </button>
+                                </div>
+
+                                ${renderDesignCheckboxes(`designs_${safeId}_right`, [], true)}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="side-box left-foot">
+                                <div class="side-header">
+                                    <span class="side-title">طراحی پای چپ</span>
+
+                                    <button type="button"
+                                            class="btn-transfer copy-designs"
+                                            data-target="${safeId}"
+                                            data-from="left"
+                                            data-to="right">
+                                        کپی به راست
+                                    </button>
+                                </div>
+                                ${renderDesignCheckboxes(`designs_${safeId}_left`, [], true)}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>`;
+            container.append(html);
+            
+            // === لود داده‌های فرم در حالت ویرایش (Edit Auto-Fill) ===
+            let pData = Object.values(prePrescriptionData).find(p => String(p.type_id) === String(service.id));
+            if (pData) {
+                $(`input[name="quantity_${safeId}"]`).val(pData.quantity || 1);
+                
+                // پر کردن فیلدهای داینامیک
+                if (pData.dynamic_fields) {
+                    for (const [fName, fVal] of Object.entries(pData.dynamic_fields)) {
+                        const inputEl = $(`[name="dyn_${safeId}_${fName}"]`);
+                        if (inputEl.attr('type') === 'checkbox') inputEl.prop('checked', fVal === 'true');
+                        else inputEl.val(fVal);
+                    }
+                }
+                // پر کردن دیزاین‌ها (حالت یکپارچه یا تفکیک‌شده)
+                function checkDesignInputs(inputName, values) {
+                    (values || []).forEach(value => {
+                        $(`input[name="${inputName}"][value="${value}"]`).prop('checked', true);
+                    });
+                }
+
+                if (pData.is_separated || pData.designs_left || pData.designs_right) {
+                    $(`.separate-sides-toggle[data-target="${safeId}"]`)
+                        .prop('checked', true)
+                        .trigger('change');
+
+                    checkDesignInputs(`designs_${safeId}_right`, pData.designs_right);
+                    checkDesignInputs(`designs_${safeId}_left`, pData.designs_left);
+                } else if (pData.designs) {
+                    checkDesignInputs(`designs_${safeId}`, pData.designs);
+                }
+
+            }
+        });
+    }
+
+$(document).on('change', '.separate-sides-toggle', function() {
+    const targetId = $(this).data('target');
+
+    if ($(this).is(':checked')) {
+        $(`#unified_${targetId}`)
+            .hide()
+            .find('input[type="checkbox"]')
+            .prop('disabled', true)
+            .prop('checked', false);
+
+        $(`#separated_${targetId}`)
+            .fadeIn()
+            .find('input[type="checkbox"]')
+            .prop('disabled', false);
+    } else {
+        $(`#separated_${targetId}`)
+            .hide()
+            .find('input[type="checkbox"]')
+            .prop('disabled', true)
+            .prop('checked', false);
+
+        $(`#unified_${targetId}`)
+            .fadeIn()
+            .find('input[type="checkbox"]')
+            .prop('disabled', false);
+    }
+});
+
+
+    $('#prescription-services').on('change', buildPrescription);
+
+    // =======================
+    // فعال‌سازی اولیه سرویس‌ها (برای حالت ویرایش)
+    // =======================
+    if (Object.keys(prePrescriptionData).length > 0) {
+        const initialServiceIds = Object.values(prePrescriptionData).map(p => p.type_id).filter(id => id);
+        $('#prescription-services').val(initialServiceIds).trigger('change');
+    }
+
+    // =======================
+    // سوییچ نمایش مشاهدات تفکیک شده یا یکپارچه
+    // =======================
+    document.getElementById('toggle_obs_separation').addEventListener('change', function() {
+        const unifiedContainer = document.getElementById('obs_unified_container');
+        const separatedContainer = document.getElementById('obs_separated_container');
+        
+        if (this.checked) {
+            unifiedContainer.classList.add('d-none');
+            separatedContainer.classList.remove('d-none');
+        } else {
+            unifiedContainer.classList.remove('d-none');
+            separatedContainer.classList.add('d-none');
+        }
+    });
+    // =======================
+    // سوییچ نمایش مشاهدات تفکیک شده یا یکپارچه
+    // =======================
+    const toggleObsSep = document.getElementById('toggle_obs_separation');
+    const unifiedContainer = document.getElementById('obs_unified_container');
+    const separatedContainer = document.getElementById('obs_separated_container');
+
+    function updateObsVisibility() {
+        if (toggleObsSep.checked) {
+            unifiedContainer.classList.add('d-none');
+            separatedContainer.classList.remove('d-none');
+        } else {
+            unifiedContainer.classList.remove('d-none');
+            separatedContainer.classList.add('d-none');
+        }
+    }
+
+    // اتصال رویداد به تغییر چک‌باکس
+    toggleObsSep.addEventListener('change', updateObsVisibility);
+    
+    // فراخوانی در زمان لود اولیه صفحه (برای حالت ویرایش)
+    updateObsVisibility();
+
+
+        // =======================
+    // منطق تگ‌های سریع (Quick Tags)
+    // =======================
+    const complaintInput = document.getElementById('chief_complaint');
+    $('.quick-tag').on('click', function() {
+        const tagText = $(this).text();
+        const currentText = complaintInput.value.trim();
+        // اگر باکس خالی نبود، یک " - " اضافه کن و سپس متن جدید
+        complaintInput.value = currentText ? `${currentText} - ${tagText}` : tagText;
+        // فوکوس مجدد روی باکس متن
+        complaintInput.focus();
+    });
+
+    // =======================
+    // منطق تبدیل گفتار به متن (Speech-to-Text)
+    // =======================
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('start_speech_btn');
+    const statusText = document.getElementById('speech_status_text');
+
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'fa-IR'; // تنظیم زبان به فارسی
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        micBtn.addEventListener('click', () => {
+            if (micBtn.classList.contains('recording')) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+
+        recognition.onstart = function() {
+            micBtn.classList.add('recording');
+            micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+            statusText.textContent = "در حال شنیدن... لطفاً صحبت کنید.";
+            statusText.classList.add('text-danger');
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const currentText = complaintInput.value.trim();
+            complaintInput.value = currentText ? `${currentText} ${transcript}` : transcript;
+        };
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+        };
+
+        recognition.onend = function() {
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            statusText.textContent = "برای تایپ صوتی روی میکروفون کلیک کنید.";
+            statusText.classList.remove('text-danger');
+        };
+
+        recognition.onerror = function(event) {
+            micBtn.classList.remove('recording');
+            micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            statusText.textContent = "خطا در تشخیص صدا! لطفاً مجدداً تلاش کنید یا تایپ کنید.";
+            statusText.classList.remove('text-danger');
+            console.error('Speech recognition error:', event.error);
+        };
+    } else {
+        // اگر مرورگر از این قابلیت پشتیبانی نکند
+        micBtn.style.display = 'none';
+        statusText.textContent = "مرورگر شما از تایپ صوتی پشتیبانی نمی‌کند. لطفاً از مرورگر کروم استفاده کنید.";
+    }
+    // copy observation
+        $(document).on('click', '.copy-observations', function () {
+            const from = $(this).data('from');
+            const to = $(this).data('to');
+
+            const fromSelector = `select[name="observations_${from}"]`;
+            const toSelector = `select[name="observations_${to}"]`;
+
+            const values = $(fromSelector).val() || [];
+            const $fromSelect = $(fromSelector);
+            const $toSelect = $(toSelector);
+
+            values.forEach(value => {
+                const fromOption = $fromSelect.find(`option[value="${value}"]`);
+                const optionText = fromOption.text() || value;
+
+                if ($toSelect.find(`option[value="${value}"]`).length === 0) {
+                    const newOption = new Option(optionText, value, true, true);
+                    $toSelect.append(newOption);
+                }
+            });
+
+            $toSelect.val(values).trigger('change');
+        });
+
+
+    // design copy
+    $(document).on('click', '.copy-designs', function () {
+        const targetId = $(this).data('target');
+        const from = $(this).data('from');
+        const to = $(this).data('to');
+
+        const fromName = `designs_${targetId}_${from}`;
+        const toName = `designs_${targetId}_${to}`;
+
+        const selectedValues = [];
+
+        $(`input[name="${fromName}"]:checked`).each(function () {
+            selectedValues.push(String($(this).val()));
+        });
+
+        $(`input[name="${toName}"]`).each(function () {
+            const currentValue = String($(this).val());
+            $(this).prop('checked', selectedValues.includes(currentValue));
+        });
+    });
+
+
+});
+
+</script>
+
+{% endblock %}

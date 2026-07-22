@@ -1,0 +1,117 @@
+{% extends 'workshop/base.html' %}
+{% load static %}
+
+{% block title %}ساخت سفارش جدید - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="text-primary mb-4">
+        ساخت سفارش جدید برای: 
+        <strong>{{ patient.full_name }}</strong>
+        <small class="text-muted">(شماره پرونده: {{ patient.case_number }})</small>
+    </h2>
+
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">جزئیات سفارش</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.media }}  <!-- برای Select2 اگر استفاده می‌کنی -->
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">{{ form.device_type.label }}</label>
+                                {{ form.device_type }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">{{ form.side.label }}</label>
+                                {{ form.side }}
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ form.different_designs }}
+                                    <label class="form-check-label fw-bold" for="{{ form.different_designs.id_for_label }}">
+                                        آیا دو پا متفاوت هستند؟
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">طراحی پای چپ</label>
+                                <textarea name="designes_left" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">طراحی پای راست</label>
+                                <textarea name="designes_right" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">خلاصه پرونده پای چپ</label>
+                                <textarea name="technical_notes_left" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">خلاصه پرونده پای راست</label>
+                                <textarea name="technical_notes_right" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">{{ form.priority.label }}</label>
+                                {{ form.priority }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">{{ form.send_to.label }}</label>
+                                {{ form.send_to }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">{{ form.status.label }}</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i> ثبت سفارش
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- سایدبار اطلاعات بیمار -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">اطلاعات بیمار</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>شماره پرونده:</strong> {{ patient.case_number }}</p>
+                    <p><strong>تلفن:</strong> {{ patient.phone|default:"—" }}</p>
+                    <p><strong>سن / جنسیت:</strong> {{ patient.age|default:"—" }} / {{ patient.get_gender_display|default:"—" }}</p>
+                    <p><strong>آدرس:</strong> {{ patient.address|default:"—" }}</p>
+                    {% if patient.medical_notes %}
+                    <hr>
+                    <p><strong>یادداشت پزشکی:</strong></p>
+                    <p class="small">{{ patient.medical_notes }}</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{% url 'reception:dashboard' %}" class="btn btn-outline-dark btn-sm w-100">
+                            بازگشت به جستجو
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+<!-- templates/includes/_sidebar_calendar.html -->
+
+<style>
+    /* =========================================
+       استایل‌های اختصاصی سایدبار و کارت‌ها
+    ========================================= */
+    .modern-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f8fafc;
+        padding: 20px;
+    }
+
+    .sidebar-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 10px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+
+    .legend-color {
+        width: 12px; height: 12px; border-radius: 50%; margin-left: 10px;
+    }
+
+    .sticky-sidebar { position: sticky; top: 20px; z-index: 100; }
+
+    /* =========================================
+       استایل‌های سفارشی تقویم کوچک (Inline Datepicker)
+    ========================================= */
+    #inline-datepicker {
+        width: 100% !important; position: relative !important;
+        display: block !important; min-height: 310px; 
+    }
+    #inline-datepicker .datepicker-plot-area {
+        position: absolute !important; top: 0 !important; left: 0 !important;
+        right: 0 !important; width: 100% !important; max-width: 100% !important;
+        min-width: 100% !important; box-sizing: border-box !important;
+        box-shadow: none !important; border: none !important;
+        background: transparent !important; transform: none !important;
+        padding: 0 !important;
+    }
+    #inline-datepicker .datepicker-plot-area table {
+        width: 100% !important; table-layout: fixed !important; margin: 0 !important;
+    }
+    #inline-datepicker .datepicker-plot-area .datepicker-day-view .table-days td {
+        padding: 0 !important; height: 32px !important;
+    }
+    #inline-datepicker .datepicker-plot-area .datepicker-day-view .table-days td span {
+        display: block !important; width: 28px !important; height: 28px !important;
+        line-height: 28px !important; margin: 0 auto !important; border-radius: 6px !important;
+        font-size: 0.85rem !important; color: #334155 !important;
+        text-align: center !important; transition: all 0.2s;
+    }
+    #inline-datepicker .datepicker-plot-area .datepicker-day-view .table-days td span.other-month { color: #cbd5e1 !important; }
+    #inline-datepicker .datepicker-plot-area .datepicker-day-view .table-days td span.selected {
+        background-color: #3b82f6 !important; color: white !important; font-weight: bold;
+    }
+    #inline-datepicker .datepicker-header {
+        width: 100% !important; display: flex; justify-content: space-between;
+    }
+    .datepicker-plot-area .datepicker-day-view .month-grid-box .header,
+    .datepicker-plot-area .datepicker-navigator,
+    #inline-datepicker .datepicker-plot-area .datepicker-day-view .table-days td {
+        font-family: 'Vazir', sans-serif !important;
+    }
+    .plot-area .datepicker-day-view .table-days td span:hover { color:#fff }
+
+    /* ریسپانسیو پایه برای کارت‌ها */
+    @media (max-width: 767.98px) {
+        .modern-card { padding: 12px; }
+        .page-header-container { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+    }
+</style>
+
+<div class="sticky-sidebar">
+    <div class="modern-card mb-4" style="min-height: 380px;"> 
+        <h5 class="sidebar-title"><i class="fa-solid fa-magnifying-glass-calendar ms-1 text-primary"></i> پرش به تاریخ</h5>
+        <div id="inline-datepicker"></div>
+    </div>
+    <div class="modern-card">
+        <h5 class="sidebar-title"><i class="fa-solid fa-palette ms-1 text-primary"></i> راهنمای نوع مراجعه</h5>
+        <div class="legend-item"><div class="legend-color" style="background-color: #10b981;"></div><span>ویزیت جدید</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #3b82f6;"></div><span>ویزیت فالوآپ</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #0b3578;"></div><span>ویزیت فالوآپ تماسی</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #f59e0b;"></div><span>تحویل خدمات</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #f5d20b;"></div><span>بررسی خدمات</span></div>
+    </div>
+</div>
+
+<script>
+/* 
+ * فایل: sidebar-calendar.js
+ * وظیفه: راه‌اندازی تقویم کوچک (Persian Datepicker) و ارسال تاریخ انتخاب شده به کل صفحه
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    // بررسی بارگذاری کتابخانه دیت‌پیکر
+    if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
+        $('#inline-datepicker').persianDatepicker({
+            inline: true, 
+            format: 'YYYY/MM/DD', 
+            initialValue: true,
+            navigator: { scroll: { enabled: false } },
+            onSelect: function(unixTimestamp) {
+                // تبدیل زمان یونیکس به شیء Date استاندارد جاوااسکریپت
+                var selectedDate = new persianDate(unixTimestamp).toDate();
+                
+                // ایجاد یک رویداد سفارشی و سراسری
+                var event = new CustomEvent('sidebarDateSelected', { 
+                    detail: { 
+                        date: selectedDate, 
+                        timestamp: unixTimestamp 
+                    } 
+                });
+                
+                // ارسال رویداد به کل داکیومنت
+                document.dispatchEvent(event);
+            }
+        });
+    } else {
+        console.error("خطا: کتابخانه jQuery یا Persian Datepicker بارگذاری نشده است.");
+    }
+});
+
+</script>

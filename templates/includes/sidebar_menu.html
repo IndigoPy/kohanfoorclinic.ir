@@ -1,0 +1,56 @@
+<div class="sidebar-menu-inner">
+    <div class="sidebar-header text-center">
+        <h3>کلینیک ارتوپدی فنی کهن</h3>
+        <p>سیستم مدیریت کلینیک</p>
+    </div>
+
+    <div class="mt-4">
+        {% if 'Reception' in user.groups.all|join:"," %}
+        <a href="{% url 'reception:dashboard' %}" class="nav-link-custom {% if request.resolver_match.namespace == 'reception' %}active{% endif %}">
+            <i class="fas fa-user-check"></i>
+            <span>پذیرش بیمار</span>
+        </a>
+        {% endif %}
+
+        {% if 'Reception' in user.groups.all|join:"," %}
+        <a href="{% url 'appointments:list' %}" class="nav-link-custom {% if request.resolver_match.namespace == 'appointments' %}active{% endif %}">
+            <i class="fas fa-user-plus"></i>
+            <span>نوبت دهی</span>
+        </a>
+        {% endif %}
+
+        {% if 'Reception' in user.groups.all|join:"," %}
+        <a href="{% url 'workshop:dashboard' %}" class="nav-link-custom {% if request.resolver_match.namespace == 'workshop' %}active{% endif %}">
+            <i class="fas fa-tools"></i>
+            <span>کارگاه تولید</span>
+        </a>
+        {% endif %}
+
+        <a href="#" class="nav-link-custom">
+            <i class="fas fa-chart-bar"></i>
+            <span>گزارشات و آمار</span>
+        </a>
+
+        <a href="#" class="nav-link-custom">
+            <i class="fas fa-calendar-check"></i>
+            <span>پیگیری مراجعین</span>
+        </a>
+
+        <a href="#" class="nav-link-custom">
+            <i class="fas fa-users"></i>
+            <span>مدیریت پرسنل</span>
+        </a>
+
+        <a href="#" class="nav-link-custom">
+            <i class="fas fa-box-open"></i>
+            <span>انبار و موجودی</span>
+        </a>
+
+        <hr class="mx-3 my-4 border-light opacity-25">
+
+        <a href="{% url 'users:logout' %}" class="nav-link-custom">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>خروج از سیستم</span>
+        </a>
+    </div>
+</div>

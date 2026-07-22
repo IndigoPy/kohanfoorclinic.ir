@@ -1,0 +1,2163 @@
+WARNING 2026-06-20 14:36:41,187 log Not Found: /favicon.ico
+WARNING 2026-06-20 14:36:41,385 log Not Found: /favicon.png
+WARNING 2026-06-20 16:40:42,908 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 16:45:01,780 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 16:46:15,619 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 16:50:13,318 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+ERROR 2026-06-20 16:50:13,394 log Internal Server Error: /appointments/create/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/views/generic/base.py", line 144, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/views/generic/edit.py", line 184, in post
+    return super().post(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/views/generic/edit.py", line 155, in post
+    return self.form_invalid(form)
+  File "/home/kohanfo2/kohanfootclinic/apps/appointments/views/form_views.py", line 23, in form_invalid
+    logger.log(f'request was {self.request}')
+TypeError: Logger.log() missing 1 required positional argument: 'msg'
+WARNING 2026-06-20 16:50:16,566 log Not Found: /favicon.ico
+WARNING 2026-06-20 16:50:39,078 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 16:50:39,079 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 16:50:55,584 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 16:50:55,584 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 16:51:23,596 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 16:51:23,597 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 17:44:34,019 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 17:44:34,019 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 17:45:14,280 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 17:45:14,280 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 17:58:46,339 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 17:58:46,339 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 17:59:27,565 form_views Form validation failed: {"date": [{"message": "\u06cc\u06a9 \u062a\u0627\u0631\u06cc\u062e \u0645\u0639\u062a\u0628\u0631 \u0648\u0627\u0631\u062f \u06a9\u0646\u06cc\u062f.", "code": "invalid"}], "status": [{"message": "\u0627\u06cc\u0646 \u0641\u06cc\u0644\u062f \u0644\u0627\u0632\u0645 \u0627\u0633\u062a.", "code": "required"}]}
+WARNING 2026-06-20 17:59:27,565 form_views request was <WSGIRequest: POST '/appointments/create/'>
+WARNING 2026-06-20 18:24:06,398 log Not Found: /favicon.ico
+ERROR 2026-06-20 21:30:54,369 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 10:36:38,939 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-21 10:36:39,107 log Not Found: /favicon.ico
+ERROR 2026-06-21 10:36:39,386 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-21 10:36:39,429 log Not Found: /favicon.ico
+WARNING 2026-06-21 10:36:43,437 log Not Found: /favicon.ico
+WARNING 2026-06-21 10:36:43,585 log Not Found: /favicon.ico
+WARNING 2026-06-21 10:36:43,812 log Not Found: /ads.txt
+WARNING 2026-06-21 10:36:43,996 log Not Found: /app-ads.txt
+WARNING 2026-06-21 10:36:44,185 log Not Found: /sellers.json
+ERROR 2026-06-21 10:36:45,097 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 10:36:54,350 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 10:36:54,643 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 10:36:54,942 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-21 10:36:55,937 log Not Found: /ads.txt
+WARNING 2026-06-21 10:36:56,216 log Not Found: /app-ads.txt
+WARNING 2026-06-21 10:36:56,494 log Not Found: /sellers.json
+WARNING 2026-06-21 12:31:08,495 log Not Found: /favicon.ico
+ERROR 2026-06-21 15:29:06,824 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+WARNING 2026-06-21 15:29:07,715 log Not Found: /favicon.ico
+ERROR 2026-06-21 15:29:35,413 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:29:58,447 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:31:40,937 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:31:45,998 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:32:02,859 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:33:47,231 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:40:34,491 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:41:02,250 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:41:02,896 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:41:04,850 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:41:19,274 log Internal Server Error: /reception/patient/39/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:52:50,108 log Internal Server Error: /reception/patient/41/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 15:53:08,792 log Internal Server Error: /reception/patient/41/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:34:33,902 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:35:02,822 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:35:21,858 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:36:17,063 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:36:48,279 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:36:56,477 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:37:04,948 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:37:33,707 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:37:41,622 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:37:51,293 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:40:48,112 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 16:40:55,517 log Internal Server Error: /reception/patient/46/edit/
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2053, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: ''
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/core/decorators.py", line 15, in wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/home/kohanfo2/kohanfootclinic/apps/reception/views/patient_views.py", line 304, in edit_patient
+    patient.save()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 990, in _save_table
+    updated = self._do_update(
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1233, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1984, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1549, in execute_sql
+    sql, params = self.as_sql()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1947, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 954, in get_db_prep_save
+    return self.get_db_prep_value(value, connection=connection, prepared=False)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2060, in get_db_prep_value
+    value = super().get_db_prep_value(value, connection, prepared)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 947, in get_db_prep_value
+    value = self.get_prep_value(value)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2055, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'foot_size' expected a number but got ''.
+ERROR 2026-06-21 17:50:18,550 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 17:50:18,788 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 17:50:20,669 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 17:50:23,004 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 18:03:10,623 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 18:03:10,849 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 18:03:12,746 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-21 18:03:15,087 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-22 12:46:53,852 log Not Found: /.env
+WARNING 2026-06-22 12:51:33,891 log Not Found: /.well-known/ucp
+ERROR 2026-06-22 16:32:57,087 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-22 19:27:20,067 log Not Found: /robots.txt
+WARNING 2026-06-22 19:29:52,048 log Not Found: /favicon.ico
+WARNING 2026-06-22 19:29:56,621 log Not Found: /favicon.ico
+WARNING 2026-06-22 20:48:48,352 log Not Found: /xmlrpc.php
+WARNING 2026-06-22 20:48:48,354 log Not Found: /wp-admin/
+WARNING 2026-06-22 20:48:50,329 log Not Found: /wp-admin/
+WARNING 2026-06-22 20:48:50,341 log Not Found: /xmlrpc.php
+WARNING 2026-06-22 20:48:52,839 log Not Found: /wp-admin/
+WARNING 2026-06-22 20:48:52,854 log Not Found: /xmlrpc.php
+WARNING 2026-06-22 20:48:53,635 log Not Found: /.env
+WARNING 2026-06-22 20:50:48,434 log Not Found: /wp-login.php
+ERROR 2026-06-23 13:14:14,141 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-23 18:59:50,202 log Not Found: /console/
+WARNING 2026-06-23 18:59:50,773 log Not Found: /console/
+WARNING 2026-06-23 18:59:51,145 log Not Found: /server
+WARNING 2026-06-23 18:59:51,850 log Not Found: /server
+WARNING 2026-06-23 18:59:52,724 log Not Found: /server-status
+WARNING 2026-06-23 18:59:54,735 log Not Found: /about
+WARNING 2026-06-23 18:59:55,309 log Not Found: /about
+WARNING 2026-06-23 18:59:55,732 log Not Found: /login.action
+WARNING 2026-06-23 18:59:57,376 log Not Found: /login.action
+WARNING 2026-06-23 18:59:57,591 log Not Found: /___proxy_subdomain_whm/login
+WARNING 2026-06-23 18:59:58,145 log Not Found: /___proxy_subdomain_cpanel
+WARNING 2026-06-23 18:59:58,957 log Not Found: /v2/_catalog
+WARNING 2026-06-23 18:59:59,610 log Not Found: /___proxy_subdomain_whm/login
+WARNING 2026-06-23 19:00:00,974 log Not Found: /___proxy_subdomain_cpanel
+WARNING 2026-06-23 19:00:01,006 log Not Found: /.DS_Store
+WARNING 2026-06-23 19:00:01,729 log Not Found: /v2/_catalog
+WARNING 2026-06-23 19:00:01,785 log Not Found: /.env
+WARNING 2026-06-23 19:00:03,318 log Not Found: /.DS_Store
+WARNING 2026-06-23 19:00:04,113 log Not Found: /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application
+WARNING 2026-06-23 19:00:04,532 log Not Found: /.env
+WARNING 2026-06-23 19:00:06,303 log Not Found: /ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application
+WARNING 2026-06-23 19:00:07,507 log Not Found: /graphql
+WARNING 2026-06-23 19:00:08,681 log Not Found: /api
+WARNING 2026-06-23 19:00:09,459 log Not Found: /graphql
+WARNING 2026-06-23 19:00:10,048 log Not Found: /api
+WARNING 2026-06-23 19:00:10,060 log Not Found: /api/graphql
+WARNING 2026-06-23 19:00:10,906 log Not Found: /api/graphql
+WARNING 2026-06-23 19:00:11,013 log Not Found: /graphql/api
+WARNING 2026-06-23 19:00:11,526 log Not Found: /graphql/api
+WARNING 2026-06-23 19:00:11,540 log Not Found: /api/gql
+WARNING 2026-06-23 19:00:12,202 log Not Found: /api/gql
+WARNING 2026-06-23 19:00:12,737 log Not Found: /s/938313e2330323e23333e2231323/_/;/META-INF/maven/com.atlassian.jira/jira-webapp-dist/pom.properties
+WARNING 2026-06-23 19:00:12,746 log Not Found: /s/938313e2330323e23333e2231323/_/;/META-INF/maven/com.atlassian.jira/jira-webapp-dist/pom.properties
+WARNING 2026-06-23 19:00:13,494 log Not Found: /config.json
+WARNING 2026-06-23 19:00:13,826 log Not Found: /config.json
+WARNING 2026-06-23 19:00:15,283 log Not Found: /telescope/requests
+WARNING 2026-06-23 19:00:15,615 log Not Found: /telescope/requests
+WARNING 2026-06-23 19:00:15,901 log Not Found: /info.php
+WARNING 2026-06-23 19:00:16,083 log Not Found: /info.php
+WARNING 2026-06-23 19:00:16,883 log Not Found: /actuator/env
+WARNING 2026-06-23 19:00:16,922 log Not Found: /actuator/env
+WARNING 2026-06-23 19:00:18,895 log Not Found: /trace.axd
+WARNING 2026-06-23 19:00:18,984 log Not Found: /trace.axd
+WARNING 2026-06-23 19:00:19,182 log Not Found: /@vite/env
+WARNING 2026-06-23 19:00:19,776 log Not Found: /@vite/env
+WARNING 2026-06-23 19:00:20,185 log Not Found: /.vscode/sftp.json
+WARNING 2026-06-23 19:00:20,605 log Not Found: /.vscode/sftp.json
+WARNING 2026-06-23 19:00:23,376 log Not Found: /debug/default/view
+WARNING 2026-06-23 19:00:23,619 log Not Found: /debug/default/view
+WARNING 2026-06-24 10:06:59,280 log Forbidden (Referer checking failed - no Referer.): /
+WARNING 2026-06-24 18:44:35,570 log Not Found: /.env
+WARNING 2026-06-25 14:07:18,631 log Not Found: /favicon.ico
+WARNING 2026-06-25 14:07:18,806 log Not Found: /favicon.png
+ERROR 2026-06-25 16:32:19,809 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-25 22:12:00,908 log Not Found: /wp-json/gravitysmtp/v1/tests/mock-data
+WARNING 2026-06-25 22:12:01,622 log Not Found: /info.php.bak
+WARNING 2026-06-25 22:12:01,725 log Not Found: /php-info.php
+WARNING 2026-06-25 22:12:01,827 log Not Found: /newinfo.php
+WARNING 2026-06-25 22:12:01,929 log Not Found: /siteinfo.php
+WARNING 2026-06-25 22:12:02,032 log Not Found: /info.php.1
+WARNING 2026-06-25 22:12:02,530 log Not Found: /pageinfo.php
+WARNING 2026-06-25 22:12:02,632 log Not Found: /info.php.back
+WARNING 2026-06-25 22:12:02,735 log Not Found: /phpbb/phpinfo.php
+WARNING 2026-06-25 22:12:02,836 log Not Found: /release_info.php
+WARNING 2026-06-25 22:12:02,945 log Not Found: /test/info.php
+WARNING 2026-06-25 22:12:03,055 log Not Found: /info
+WARNING 2026-06-25 22:12:03,156 log Not Found: /info.php
+WARNING 2026-06-25 22:12:03,258 log Not Found: /phpinfo.php3
+WARNING 2026-06-25 22:12:03,360 log Not Found: /phpinfo.php.txt
+WARNING 2026-06-25 22:12:03,461 log Not Found: /info.php.save.1
+WARNING 2026-06-25 22:12:03,563 log Not Found: /info.php_
+WARNING 2026-06-25 22:12:03,666 log Not Found: /_info.php
+WARNING 2026-06-25 22:12:03,767 log Not Found: /admin_phpinfo.php
+WARNING 2026-06-25 22:12:03,870 log Not Found: /dbinfo.php
+WARNING 2026-06-25 22:12:03,972 log Not Found: /admin_info.php
+WARNING 2026-06-25 22:12:04,076 log Not Found: /.aws/credentials
+WARNING 2026-06-25 22:12:04,181 log Not Found: /config.php
+WARNING 2026-06-25 22:12:04,284 log Not Found: /phpinfo.php
+WARNING 2026-06-25 22:12:04,386 log Not Found: /phpinfo.php.bak
+WARNING 2026-06-25 22:12:04,687 log Not Found: /pinfo.php
+WARNING 2026-06-25 22:12:04,790 log Not Found: /.env.bak
+WARNING 2026-06-25 22:12:04,892 log Not Found: /.env
+WARNING 2026-06-25 22:12:04,998 log Not Found: /.env.backup
+WARNING 2026-06-25 22:12:05,106 log Not Found: /.env_sample
+WARNING 2026-06-25 22:12:05,208 log Not Found: /.env.old
+WARNING 2026-06-25 22:12:05,310 log Not Found: /.env.www
+WARNING 2026-06-25 22:12:05,418 log Not Found: /.docker/.env
+WARNING 2026-06-25 22:12:05,521 log Not Found: /.env.dev
+WARNING 2026-06-25 22:12:05,623 log Not Found: /.env.example
+WARNING 2026-06-25 22:12:05,725 log Not Found: /.env_1
+WARNING 2026-06-25 22:12:05,840 log Not Found: /.env.stage
+WARNING 2026-06-25 22:12:05,941 log Not Found: /config.env
+WARNING 2026-06-25 22:12:06,043 log Not Found: /.pam_environment
+WARNING 2026-06-25 22:12:06,157 log Not Found: /.environment
+WARNING 2026-06-25 22:12:06,259 log Not Found: /.env.production
+WARNING 2026-06-25 22:12:06,365 log Not Found: /.env.production.local
+WARNING 2026-06-25 22:12:06,466 log Not Found: /env.js
+WARNING 2026-06-25 22:12:06,568 log Not Found: /.powenv
+WARNING 2026-06-25 22:12:06,669 log Not Found: /.rbenv-gemsets
+WARNING 2026-06-25 22:12:06,770 log Not Found: /.envs
+WARNING 2026-06-25 22:12:06,872 log Not Found: /.env.docker
+WARNING 2026-06-25 22:12:06,974 log Not Found: /.env.sample
+WARNING 2026-06-25 22:12:07,076 log Not Found: /.env_bak
+WARNING 2026-06-25 22:12:07,187 log Not Found: /.env.php
+WARNING 2026-06-25 22:12:07,288 log Not Found: /.env.development.local
+WARNING 2026-06-25 22:12:07,390 log Not Found: /.env-example
+WARNING 2026-06-25 22:12:07,491 log Not Found: /.env.prod
+WARNING 2026-06-25 22:12:07,592 log Not Found: /.env.docker.dev
+WARNING 2026-06-25 22:12:07,694 log Not Found: /.env.test
+WARNING 2026-06-25 22:12:07,796 log Not Found: /env
+WARNING 2026-06-25 22:12:07,893 log Not Found: /env.list
+WARNING 2026-06-25 22:12:07,995 log Not Found: /.ghc.environment
+WARNING 2026-06-25 22:12:08,096 log Not Found: /env.txt
+WARNING 2026-06-25 22:12:08,197 log Not Found: /printenv
+WARNING 2026-06-25 22:12:08,299 log Not Found: /.hsenv
+WARNING 2026-06-25 22:12:08,400 log Not Found: /environment
+WARNING 2026-06-25 22:12:08,502 log Not Found: /env.json
+WARNING 2026-06-25 22:12:08,604 log Not Found: /envrc
+WARNING 2026-06-25 22:12:08,705 log Not Found: /.env.dev.local
+WARNING 2026-06-25 22:12:08,807 log Not Found: /environment.ts
+WARNING 2026-06-25 22:12:08,908 log Not Found: /.env_old
+WARNING 2026-06-25 22:12:09,010 log Not Found: /.zshenv
+WARNING 2026-06-25 22:12:09,112 log Not Found: /.env.development.sample
+WARNING 2026-06-25 22:12:09,214 log Not Found: /.rbenv-version
+WARNING 2026-06-25 22:12:09,316 log Not Found: /.env-sample
+WARNING 2026-06-25 22:12:09,418 log Not Found: /.env.prod.local
+WARNING 2026-06-25 22:12:09,519 log Not Found: /.env.travis
+WARNING 2026-06-25 22:12:09,621 log Not Found: /.env.test.sample
+WARNING 2026-06-25 22:12:09,722 log Not Found: /.env.2
+WARNING 2026-06-25 22:12:09,824 log Not Found: /.vscode/.env
+WARNING 2026-06-25 22:12:09,926 log Not Found: /.env.local
+WARNING 2026-06-25 22:12:10,028 log Not Found: /.env.txt
+WARNING 2026-06-25 22:12:10,130 log Not Found: /.env.save
+WARNING 2026-06-25 22:12:10,231 log Not Found: /printenv.tmp
+WARNING 2026-06-25 22:12:10,334 log Not Found: /.flaskenv
+WARNING 2026-06-25 22:12:10,437 log Not Found: /.env.test.local
+WARNING 2026-06-25 22:12:10,539 log Not Found: /.jenv-version
+WARNING 2026-06-25 22:12:10,641 log Not Found: /.envrc
+WARNING 2026-06-25 22:12:10,743 log Not Found: /.env.dist
+WARNING 2026-06-25 22:12:10,844 log Not Found: /.env.sample.php
+WARNING 2026-06-25 22:12:10,946 log Not Found: /.env1
+WARNING 2026-06-25 22:12:11,047 log Not Found: /.venv
+WARNING 2026-06-25 22:12:11,149 log Not Found: /env.prod.js
+WARNING 2026-06-25 22:12:11,250 log Not Found: /env.test.js
+WARNING 2026-06-25 22:12:11,352 log Not Found: /env.bak
+WARNING 2026-06-25 22:12:11,454 log Not Found: /env.php
+WARNING 2026-06-25 22:12:11,751 log Not Found: /pms
+WARNING 2026-06-25 22:12:11,862 log Not Found: /k8s/.env
+WARNING 2026-06-25 22:12:11,963 log Not Found: /config/.env
+WARNING 2026-06-25 22:12:12,065 log Not Found: /app/.env
+WARNING 2026-06-25 22:12:12,167 log Not Found: /api/.env
+WARNING 2026-06-25 22:12:12,268 log Not Found: /backend/.env
+WARNING 2026-06-25 22:12:12,370 log Not Found: /src/.env
+WARNING 2026-06-25 22:12:12,666 log Not Found: /public/.env
+WARNING 2026-06-25 22:12:12,768 log Not Found: /web/.env
+WARNING 2026-06-25 22:12:12,870 log Not Found: /server/.env
+WARNING 2026-06-25 22:12:12,972 log Not Found: /client/.env
+WARNING 2026-06-25 22:12:13,073 log Not Found: /frontend/.env
+WARNING 2026-06-25 22:12:13,179 log Not Found: /.env.development
+WARNING 2026-06-25 22:12:13,280 log Not Found: /.env.staging
+WARNING 2026-06-25 22:12:13,383 log Not Found: /.env.live
+WARNING 2026-06-25 22:12:13,485 log Not Found: /config.json
+WARNING 2026-06-25 22:12:13,782 log Not Found: /api/config.php
+WARNING 2026-06-25 22:12:13,884 log Not Found: /config/config.php
+WARNING 2026-06-25 22:12:13,987 log Not Found: /app/config.php
+WARNING 2026-06-25 22:12:14,088 log Not Found: /backend/config.php
+WARNING 2026-06-25 22:12:14,190 log Not Found: /src/config.php
+WARNING 2026-06-25 22:12:14,291 log Not Found: /config/database.php
+WARNING 2026-06-25 22:12:14,393 log Not Found: /config/mail.php
+WARNING 2026-06-25 22:12:14,495 log Not Found: /config/app.php
+WARNING 2026-06-25 22:12:14,596 log Not Found: /config/services.php
+WARNING 2026-06-25 22:12:14,698 log Not Found: /wp-config.php
+WARNING 2026-06-25 22:12:14,799 log Not Found: /configuration.php
+WARNING 2026-06-25 22:12:14,901 log Not Found: /.aws/config
+WARNING 2026-06-25 22:12:15,003 log Not Found: /config/aws.json
+WARNING 2026-06-25 22:12:15,105 log Not Found: /config/sendgrid.json
+WARNING 2026-06-25 22:12:15,207 log Not Found: /config/mailgun.json
+WARNING 2026-06-25 22:12:15,309 log Not Found: /sendgrid.json
+WARNING 2026-06-25 22:12:15,411 log Not Found: /aws.json
+WARNING 2026-06-25 22:12:15,512 log Not Found: /api_keys.json
+WARNING 2026-06-25 22:12:15,614 log Not Found: /keys.json
+WARNING 2026-06-25 22:12:15,716 log Not Found: /secrets.json
+WARNING 2026-06-25 22:12:15,818 log Not Found: /config/secrets.json
+WARNING 2026-06-25 22:12:15,920 log Not Found: /private/.env
+WARNING 2026-06-25 22:12:16,022 log Not Found: /backup/.env
+WARNING 2026-06-25 22:12:16,124 log Not Found: /test/.env
+WARNING 2026-06-25 22:12:16,226 log Not Found: /dev/.env
+WARNING 2026-06-25 22:12:16,328 log Not Found: /staging/.env
+WARNING 2026-06-25 22:12:16,431 log Not Found: /production/.env
+WARNING 2026-06-25 22:12:16,533 log Not Found: /laravel/.env
+WARNING 2026-06-25 22:12:16,635 log Not Found: /config/config.json
+WARNING 2026-06-25 22:12:16,738 log Not Found: /app/config.json
+WARNING 2026-06-25 22:12:16,839 log Not Found: /test/phpinfo.php
+WARNING 2026-06-25 22:12:16,941 log Not Found: /backup/config.php
+WARNING 2026-06-25 22:12:17,042 log Not Found: /private/config.php
+WARNING 2026-06-25 22:12:17,144 log Not Found: /settings.php
+WARNING 2026-06-25 22:12:17,245 log Not Found: /app/settings.php
+WARNING 2026-06-25 22:12:17,347 log Not Found: /config/settings.php
+WARNING 2026-06-25 22:12:17,449 log Not Found: /database.yml
+WARNING 2026-06-25 22:12:17,550 log Not Found: /config/database.json
+WARNING 2026-06-25 22:12:17,652 log Not Found: /administrator/.env
+WARNING 2026-06-25 22:12:17,754 log Not Found: /cms/.env
+WARNING 2026-06-25 22:12:17,855 log Not Found: /portal/.env
+WARNING 2026-06-25 22:12:17,957 log Not Found: /dashboard/.env
+WARNING 2026-06-25 22:12:18,058 log Not Found: /crm/.env
+WARNING 2026-06-25 22:12:18,159 log Not Found: /mail/.env
+WARNING 2026-06-25 22:12:18,261 log Not Found: /mailer/.env
+WARNING 2026-06-25 22:12:18,363 log Not Found: /deployment/.env
+WARNING 2026-06-25 22:12:18,464 log Not Found: /docker/.env
+WARNING 2026-06-25 22:12:18,566 log Not Found: /helm/.env
+WARNING 2026-06-25 22:12:18,667 log Not Found: /terraform/.env
+WARNING 2026-06-25 22:12:18,769 log Not Found: /ansible/.env
+WARNING 2026-06-25 22:12:18,871 log Not Found: /config/mail.json
+WARNING 2026-06-25 22:12:18,973 log Not Found: /config/smtp.php
+WARNING 2026-06-25 22:12:19,075 log Not Found: /config/database.yml
+WARNING 2026-06-25 22:12:19,177 log Not Found: /secrets/config.json
+WARNING 2026-06-25 22:12:19,279 log Not Found: /private/keys.json
+WARNING 2026-06-25 22:12:19,388 log Not Found: /.env_example
+WARNING 2026-06-25 22:12:19,489 log Not Found: /core/.env
+WARNING 2026-06-25 22:12:19,592 log Not Found: /api
+WARNING 2026-06-25 22:12:19,694 log Not Found: /backend
+WARNING 2026-06-25 22:12:19,796 log Not Found: /local/.env
+WARNING 2026-06-25 22:12:19,904 log Not Found: /application/.env
+WARNING 2026-06-25 22:12:20,009 log Not Found: /phpinfo
+WARNING 2026-06-25 22:12:20,114 log Not Found: /_profiler/phpinfo
+WARNING 2026-06-25 22:12:20,216 log Not Found: /config/settings.ini
+WARNING 2026-06-25 22:12:20,317 log Not Found: /env/.env
+WARNING 2026-06-25 22:12:20,419 log Not Found: /new/.env
+WARNING 2026-06-25 22:12:20,523 log Not Found: /new/.env.local
+WARNING 2026-06-25 22:12:20,624 log Not Found: /new/.env.production
+WARNING 2026-06-25 22:12:20,726 log Not Found: /new/.env.staging
+WARNING 2026-06-25 22:12:20,828 log Not Found: /_phpinfo.php
+WARNING 2026-06-25 22:12:20,929 log Not Found: /_profiler/phpinfo/info.php
+WARNING 2026-06-25 22:12:21,031 log Not Found: /_profiler/phpinfo/phpinfo.php
+WARNING 2026-06-25 22:12:21,139 log Not Found: /wp-config
+WARNING 2026-06-25 22:12:21,241 log Not Found: /aws-secret.yaml
+WARNING 2026-06-25 22:12:21,343 log Not Found: /awstats/.env
+WARNING 2026-06-25 22:12:21,445 log Not Found: /conf/.env
+WARNING 2026-06-25 22:12:21,550 log Not Found: /cron/.env
+WARNING 2026-06-25 22:12:21,652 log Not Found: /www/.env
+WARNING 2026-06-25 22:12:21,754 log Not Found: /docker/app/.env
+WARNING 2026-06-25 22:12:21,855 log Not Found: /env.backup
+WARNING 2026-06-25 22:12:21,957 log Not Found: /xampp/phpinfo.php
+WARNING 2026-06-25 22:12:22,060 log Not Found: /lara/info.php
+WARNING 2026-06-25 22:12:22,162 log Not Found: /lara/phpinfo.php
+WARNING 2026-06-25 22:12:22,263 log Not Found: /laravel/info.php
+WARNING 2026-06-25 22:12:22,365 log Not Found: /js/.env
+WARNING 2026-06-25 22:12:22,467 log Not Found: /laravel/core/.env
+WARNING 2026-06-25 22:12:22,569 log Not Found: /nginx/.env
+WARNING 2026-06-25 22:12:22,671 log Not Found: /site/.env
+WARNING 2026-06-25 22:12:22,774 log Not Found: /xampp/.env
+WARNING 2026-06-25 22:12:22,877 log Not Found: /.docker/laravel/app/.env
+WARNING 2026-06-25 22:12:22,979 log Not Found: /laravel/.env.local
+WARNING 2026-06-25 22:12:23,081 log Not Found: /laravel/.env.production
+WARNING 2026-06-25 22:12:23,182 log Not Found: /laravel/.env.staging
+WARNING 2026-06-25 22:12:23,284 log Not Found: /laravel/core/.env.local
+WARNING 2026-06-25 22:12:23,385 log Not Found: /laravel/core/.env.production
+WARNING 2026-06-25 22:12:23,487 log Not Found: /laravel/core/.env.staging
+WARNING 2026-06-25 22:12:23,589 log Not Found: /main/.env
+WARNING 2026-06-25 22:12:23,693 log Not Found: /bootstrap/cache/config.php
+WARNING 2026-06-25 22:12:23,794 log Not Found: /storage/app/private/.env
+WARNING 2026-06-25 22:12:23,896 log Not Found: /storage/logs/laravel.log
+WARNING 2026-06-25 22:12:23,997 log Not Found: /composer.lock
+WARNING 2026-06-25 22:12:24,098 log Not Found: /server.key
+WARNING 2026-06-25 22:12:24,201 log Not Found: /dump.sh
+WARNING 2026-06-25 22:12:24,303 log Not Found: /php5.ini
+WARNING 2026-06-25 22:12:24,405 log Not Found: /config.php.bak
+WARNING 2026-06-25 22:12:24,506 log Not Found: /src/app.js
+WARNING 2026-06-25 22:12:24,608 log Not Found: /server-info
+WARNING 2026-06-25 22:12:24,711 log Not Found: /docker.sh
+WARNING 2026-06-25 22:12:24,813 log Not Found: /config.php.save
+WARNING 2026-06-25 22:12:24,914 log Not Found: /pi.php
+WARNING 2026-06-25 22:12:25,017 log Not Found: /wp-config.php.bak
+WARNING 2026-06-25 22:12:25,120 log Not Found: /test.php
+WARNING 2026-06-25 22:12:25,224 log Not Found: /wp-config.php.backup
+WARNING 2026-06-25 22:12:25,327 log Not Found: /aws-credentials.txt
+WARNING 2026-06-25 22:12:25,429 log Not Found: /api/info
+WARNING 2026-06-25 22:12:25,532 log Not Found: /config.ini
+WARNING 2026-06-25 22:12:25,634 log Not Found: /%c0
+WARNING 2026-06-25 22:12:25,737 log Not Found: /.aws/credentials.bak
+WARNING 2026-06-25 22:12:25,839 log Not Found: /.aws/credentials/admin/.env
+WARNING 2026-06-25 22:12:25,941 log Not Found: /.azure-pipelines.yml
+WARNING 2026-06-25 22:12:26,043 log Not Found: /.bak
+WARNING 2026-06-25 22:12:26,145 log Not Found: /.bitbucket-pipelines.yml
+WARNING 2026-06-25 22:12:26,247 log Not Found: /.bitbucket/.env
+WARNING 2026-06-25 22:12:26,348 log Not Found: /.boto
+WARNING 2026-06-25 22:12:26,450 log Not Found: /.bzr/
+WARNING 2026-06-25 22:12:26,552 log Not Found: /.c9/metadata/environment/.env
+WARNING 2026-06-25 22:12:26,653 log Not Found: /.circleci/.env
+WARNING 2026-06-25 22:12:26,756 log Not Found: /.circleci/config.yml
+WARNING 2026-06-25 22:12:26,858 log Not Found: /.dockerignore
+WARNING 2026-06-25 22:12:26,960 log Not Found: /.env-db
+WARNING 2026-06-25 22:12:27,061 log Not Found: /.env.back
+WARNING 2026-06-25 22:12:27,163 log Not Found: /.env.bkp
+WARNING 2026-06-25 22:12:27,279 log Not Found: /.env.credentials
+WARNING 2026-06-25 22:12:27,381 log Not Found: /.env.email
+WARNING 2026-06-25 22:12:27,482 log Not Found: /.env.hidden
+WARNING 2026-06-25 22:12:27,584 log Not Found: /.env.hide
+WARNING 2026-06-25 22:12:27,685 log Not Found: /.env.js
+WARNING 2026-06-25 22:12:27,787 log Not Found: /.env.key
+WARNING 2026-06-25 22:12:27,888 log Not Found: /.env.mail
+WARNING 2026-06-25 22:12:27,990 log Not Found: /.env.smtp
+WARNING 2026-06-25 22:12:28,091 log Not Found: /.env.swp
+WARNING 2026-06-25 22:12:28,196 log Not Found: /.env.testing
+WARNING 2026-06-25 22:12:28,298 log Not Found: /.env.uat
+WARNING 2026-06-25 22:12:28,399 log Not Found: /.env_aws
+WARNING 2026-06-25 22:12:28,500 log Not Found: /.env_backup
+WARNING 2026-06-25 22:12:28,602 log Not Found: /.env_copy
+WARNING 2026-06-25 22:12:28,704 log Not Found: /.env_private
+WARNING 2026-06-25 22:12:28,806 log Not Found: /.env_secret
+WARNING 2026-06-25 22:12:28,907 log Not Found: /.env~
+WARNING 2026-06-25 22:12:29,194 log Not Found: /.github/.env
+WARNING 2026-06-25 22:12:29,295 log Not Found: /.github/workflows/*.yml
+WARNING 2026-06-25 22:12:29,396 log Not Found: /.gitignore
+WARNING 2026-06-25 22:12:29,498 log Not Found: /.gitlab-ci.yml
+WARNING 2026-06-25 22:12:29,599 log Not Found: /.gitlab-ci/.env
+WARNING 2026-06-25 22:12:29,701 log Not Found: /.gitlab/.env
+WARNING 2026-06-25 22:12:29,985 log Not Found: /.idea/.env
+WARNING 2026-06-25 22:12:30,087 log Not Found: /.local
+WARNING 2026-06-25 22:12:30,188 log Not Found: /.next/
+WARNING 2026-06-25 22:12:30,289 log Not Found: /.npmrc
+WARNING 2026-06-25 22:12:30,390 log Not Found: /.nuxt/
+WARNING 2026-06-25 22:12:30,493 log Not Found: /.output/
+WARNING 2026-06-25 22:12:30,595 log Not Found: /.phpinfo
+WARNING 2026-06-25 22:12:30,697 log Not Found: /.production
+WARNING 2026-06-25 22:12:30,798 log Not Found: /.pypirc
+WARNING 2026-06-25 22:12:30,900 log Not Found: /.remote
+WARNING 2026-06-25 22:12:31,003 log Not Found: /.ssh/id_rsa
+WARNING 2026-06-25 22:12:31,105 log Not Found: /.ssh/id_rsa.pub
+WARNING 2026-06-25 22:12:31,298 log Not Found: /.travis.yml
+WARNING 2026-06-25 22:12:31,400 log Not Found: /.vite/
+WARNING 2026-06-25 22:12:31,502 log Not Found: /.vscode/settings.json
+WARNING 2026-06-25 22:12:31,603 log Not Found: /.well-known/openid-configuration
+WARNING 2026-06-25 22:12:31,704 log Not Found: /.well-known/security.txt
+WARNING 2026-06-25 22:12:31,806 log Not Found: /07-accessing-data/begin/vue-heroes/.env
+WARNING 2026-06-25 22:12:31,908 log Not Found: /07-accessing-data/end/vue-heroes/.env
+WARNING 2026-06-25 22:12:32,010 log Not Found: /08-routing/begin/vue-heroes/.env
+WARNING 2026-06-25 22:12:32,112 log Not Found: /08-routing/end/vue-heroes/.env
+WARNING 2026-06-25 22:12:32,214 log Not Found: /09-managing-state/begin/vue-heroes/.env
+WARNING 2026-06-25 22:12:32,316 log Not Found: /09-managing-state/end/vue-heroes/.env
+WARNING 2026-06-25 22:12:32,418 log Not Found: /123.php
+WARNING 2026-06-25 22:12:32,520 log Not Found: /3-sequelize/final/.env
+WARNING 2026-06-25 22:12:32,622 log Not Found: /31_structure_tests/.env
+WARNING 2026-06-25 22:12:33,299 log Not Found: /__debug__
+WARNING 2026-06-25 22:12:33,399 log Not Found: /__debugbar
+WARNING 2026-06-25 22:12:33,501 log Not Found: /__tests__/test-become/.env
+WARNING 2026-06-25 22:12:33,602 log Not Found: /_astro/[chunk-name].[hash].js
+WARNING 2026-06-25 22:12:33,704 log Not Found: /_dev
+WARNING 2026-06-25 22:12:33,805 log Not Found: /_ignition/
+WARNING 2026-06-25 22:12:33,907 log Not Found: /_next/static/chunks/945-34f67d7c0866cf61b970.js
+WARNING 2026-06-25 22:12:34,009 log Not Found: /_next/static/chunks/app/%5B...not-found%5D/page-63e952e68a371605.js
+WARNING 2026-06-25 22:12:34,111 log Not Found: /_next/static/chunks/app/error.js
+WARNING 2026-06-25 22:12:34,212 log Not Found: /_next/static/chunks/app/global-error.js
+WARNING 2026-06-25 22:12:34,314 log Not Found: /_next/static/chunks/app/layout-a908fe02173ed4b1.js
+WARNING 2026-06-25 22:12:34,416 log Not Found: /_next/static/chunks/framework-[hash].js
+WARNING 2026-06-25 22:12:34,517 log Not Found: /_next/static/chunks/main-app-[hash].js
+WARNING 2026-06-25 22:12:34,618 log Not Found: /_next/static/chunks/pages/_app-a9fba37d935ce3f3.js
+WARNING 2026-06-25 22:12:34,721 log Not Found: /_next/static/chunks/pages/_app-d1b5411bacd03f02.js
+WARNING 2026-06-25 22:12:34,823 log Not Found: /_next/static/chunks/pages/_app-d25b242610000153a081.js
+WARNING 2026-06-25 22:12:34,925 log Not Found: /_next/static/chunks/webpack-[hash].js
+WARNING 2026-06-25 22:12:35,026 log Not Found: /_static/.env
+WARNING 2026-06-25 22:12:35,128 log Not Found: /a.php
+WARNING 2026-06-25 22:12:35,229 log Not Found: /acme-challenge/.env
+WARNING 2026-06-25 22:12:35,331 log Not Found: /acme/.env
+WARNING 2026-06-25 22:12:35,432 log Not Found: /acme_challenges/.env
+WARNING 2026-06-25 22:12:35,533 log Not Found: /actions-server/.env
+WARNING 2026-06-25 22:12:35,634 log Not Found: /actuator/
+WARNING 2026-06-25 22:12:35,736 log Not Found: /admin-api/
+WARNING 2026-06-25 22:12:35,837 log Not Found: /admin-app/.env
+WARNING 2026-06-25 22:12:35,938 log Not Found: /admin-panel/.env
+WARNING 2026-06-25 22:12:36,041 log Not Found: /admin.php
+WARNING 2026-06-26 01:52:47,399 log Not Found: /wp-json/gravitysmtp/v1/tests/mock-data
+ERROR 2026-06-26 06:03:10,338 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 10:36:51,773 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 10:36:58,052 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 10:37:05,558 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 11:03:57,952 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-26 15:15:12,303 log Not Found: /.well-known/acme-challenge/M16DVJH9SGIMDIFQ5HFCKR6LEMKXYAFT
+ERROR 2026-06-26 15:15:12,422 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 15:15:12,490 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-26 15:15:12,562 log Not Found: /.well-known/acme-challenge/2VQOB0V0_85Z82H0XCK_MU1X9NT9CGVL
+WARNING 2026-06-26 15:15:12,629 log Not Found: /.well-known/acme-challenge/7GPS9CL3JTAMQ0HI4267HQ3TKM1Q26Y6
+WARNING 2026-06-26 15:15:12,696 log Not Found: /.well-known/acme-challenge/4-ZWD4QG5EFWGSYWB-YUAGNTZ_GEB0N5
+WARNING 2026-06-26 15:15:12,756 log Not Found: /.well-known/acme-challenge/6JT-35QX_PKF_DU6XJH1W2KOQ0QP93FU
+WARNING 2026-06-26 15:15:12,816 log Not Found: /.well-known/acme-challenge/RGYUEP4LH8Z82QTBM0IXKHVW-_HHAOIQ
+WARNING 2026-06-26 15:15:12,869 log Not Found: /.well-known/acme-challenge/D9L8IH-1VI8FQCBO36GDNQ-KSVPIZXDC
+WARNING 2026-06-26 15:36:26,050 log Not Found: /.well-known/acme-challenge/3N4WT4H-2I0JGKSDECC_JSM1IKKO3O_4
+ERROR 2026-06-26 15:36:26,110 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 15:36:26,168 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-26 15:36:26,287 log Not Found: /.well-known/acme-challenge/P4L1PCHCQWFC2E57DLFU4B_83YS1NNYY
+WARNING 2026-06-26 15:36:26,355 log Not Found: /.well-known/acme-challenge/53ATNS-408CWRTH8OU2SKX_8WZ5I4AAG
+WARNING 2026-06-26 15:36:26,400 log Not Found: /.well-known/acme-challenge/S7GDLV5_N1I3SRNPZ5N_Q1J3UP829GET
+WARNING 2026-06-26 15:36:26,458 log Not Found: /.well-known/acme-challenge/1SKT5ATPEQXTZS52JWNI6QHL4K4MJTZI
+WARNING 2026-06-26 15:36:26,500 log Not Found: /.well-known/acme-challenge/XJDAUROXE8NG964C_TMHMG19XAPFWMS0
+WARNING 2026-06-26 15:36:26,566 log Not Found: /.well-known/acme-challenge/ZD2X31W171VAFKM1K4_2Q1AS-DJ_93ES
+WARNING 2026-06-26 17:14:18,053 log Not Found: /.well-known/acme-challenge/FR7V05PKEFGST76J49Q_OCH8K9IDI256
+ERROR 2026-06-26 17:14:18,167 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 17:14:18,225 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-26 17:14:18,293 log Not Found: /.well-known/acme-challenge/WMWSS0GBF0M2X_N4LPQSMZ0O15-ZJLKT
+WARNING 2026-06-26 17:14:18,362 log Not Found: /.well-known/acme-challenge/5WOYO87JRDO6BE1F8JOV5I_AGGZCNDEZ
+WARNING 2026-06-26 17:14:18,431 log Not Found: /.well-known/acme-challenge/COKNZJ7IYO474_KD59RIIS2JZ31ILD-L
+WARNING 2026-06-26 17:14:18,474 log Not Found: /.well-known/acme-challenge/_UU88_E49CYL50QO2E19CTRH2LSTFVHS
+WARNING 2026-06-26 17:14:18,540 log Not Found: /.well-known/acme-challenge/ETQHHN-F_4NVM9-J3DMF129_5P6H35AQ
+WARNING 2026-06-26 17:14:18,602 log Not Found: /.well-known/acme-challenge/ARW98OWVDV0DH6M6YRNTFYG-CBK-NJ-6
+WARNING 2026-06-26 18:37:04,412 log Not Found: /.well-known/acme-challenge/IIJT806DCDH33YDK6CR8JMDZDZYT-VX8
+ERROR 2026-06-26 18:37:04,483 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 18:37:04,611 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-26 18:37:04,741 log Not Found: /.well-known/acme-challenge/C15QSWKSDQ0F5UNQT2WH51OBQV7BMMW6
+WARNING 2026-06-26 18:51:35,524 log Not Found: /.well-known/acme-challenge/_JYd9vdOjY7LbuUSpz6QSRGKyNvsgawWsKR2sMtiak8
+WARNING 2026-06-26 19:00:02,311 log Not Found: /robots.txt
+WARNING 2026-06-26 21:35:31,391 log Not Found: /.well-known/acme-challenge/XV5V7YHGZ3L9KB0XETL4X5H7Y2C8IYL4
+ERROR 2026-06-26 21:35:31,450 log Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'www.kohanfootclinic.ir'. You may need to add 'www.kohanfootclinic.ir' to ALLOWED_HOSTS.
+ERROR 2026-06-26 21:35:31,509 log Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/home/kohanfo2/virtualenv/kohanfootclinic/3.10/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'mail.kohanfootclinic.ir'. You may need to add 'mail.kohanfootclinic.ir' to ALLOWED_HOSTS.
+WARNING 2026-06-26 21:35:31,642 log Not Found: /.well-known/acme-challenge/V0MWWJ74KJY7ZA8UN9HBXMKT9B68GP76
+WARNING 2026-06-26 21:35:31,711 log Not Found: /.well-known/acme-challenge/UK_6NX8P_G8CU_XT_0Q57L1149-4IK-X
+WARNING 2026-06-26 21:35:31,766 log Not Found: /.well-known/acme-challenge/OBGIQ_X7TXVO8NYIEWU1X7TX3DO44Z_6
+WARNING 2026-06-26 21:35:31,833 log Not Found: /.well-known/acme-challenge/DP9OJNYHSPT43-U16Z5CKTLB25SB2J10
+WARNING 2026-06-26 21:35:31,895 log Not Found: /.well-known/acme-challenge/QDDAH7ID4VN8SV7C0LCRLN79MZ8B0QGW
+WARNING 2026-06-26 21:35:31,983 log Not Found: /.well-known/acme-challenge/Z757HQQL3E4FN5S8QWT4HYEEJ7HTLLBT
+WARNING 2026-06-27 00:59:18,896 log Not Found: /favicon.ico
+WARNING 2026-06-27 00:59:22,477 log Forbidden (CSRF cookie not set.): /
+WARNING 2026-06-27 01:06:31,779 log Forbidden (CSRF cookie not set.): /
+WARNING 2026-06-27 01:08:06,995 log Not Found: /favicon.ico
+WARNING 2026-06-27 01:08:09,686 log Forbidden (CSRF cookie not set.): /
+WARNING 2026-06-27 01:08:27,319 log Not Found: /favicon.ico
+WARNING 2026-06-27 01:08:27,470 log Not Found: /favicon.ico
+WARNING 2026-06-27 01:08:27,599 log Not Found: /favicon.ico
+WARNING 2026-06-27 01:08:39,325 log Forbidden (CSRF cookie not set.): /
+WARNING 2026-06-27 01:12:43,159 log Not Found: /favicon.ico
+ERROR 2026-06-27 01:51:48,032 log Internal Server Error: /reception/
+Traceback (most recent call last):
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/base.py", line 187, in _get_session
+    return self._session_cache
+AttributeError: 'SessionStore' object has no attribute '_session_cache'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+    self.connect()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 269, in connect
+    self.connection = self.get_new_connection(conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/postgresql/base.py", line 275, in get_new_connection
+    connection = self.Database.connect(**conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/psycopg/connection.py", line 122, in connect
+    raise last_ex.with_traceback(None)
+psycopg.OperationalError: connection failed: no pg_hba.conf entry for host "127.0.0.1", user "kohanfoo_Ali_Habibi", database "kohanfoo_kohanfootclinic", SSL off
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfoo/kohanfootclinic_app/apps/core/decorators.py", line 11, in wrapper
+    if not request.user.is_authenticated:
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/functional.py", line 266, in inner
+    self._setup()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/functional.py", line 419, in _setup
+    self._wrapped = self._setupfunc()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/middleware.py", line 25, in <lambda>
+    request.user = SimpleLazyObject(lambda: get_user(request))
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/middleware.py", line 11, in get_user
+    request._cached_user = auth.get_user(request)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 191, in get_user
+    user_id = _get_user_session_key(request)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 60, in _get_user_session_key
+    return get_user_model()._meta.pk.to_python(request.session[SESSION_KEY])
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/base.py", line 53, in __getitem__
+    return self._session[key]
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/base.py", line 192, in _get_session
+    self._session_cache = self.load()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/db.py", line 42, in load
+    s = self._get_session_from_db()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/db.py", line 32, in _get_session_from_db
+    return self.model.objects.get(
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 635, in get
+    num = len(clone)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 382, in __len__
+    self._fetch_all()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1886, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 93, in __iter__
+    results = compiler.execute_sql(
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1560, in execute_sql
+    cursor = self.connection.cursor()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 329, in cursor
+    return self._cursor()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 305, in _cursor
+    self.ensure_connection()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 287, in ensure_connection
+    with self.wrap_database_errors:
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+    self.connect()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 269, in connect
+    self.connection = self.get_new_connection(conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/postgresql/base.py", line 275, in get_new_connection
+    connection = self.Database.connect(**conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/psycopg/connection.py", line 122, in connect
+    raise last_ex.with_traceback(None)
+django.db.utils.OperationalError: connection failed: no pg_hba.conf entry for host "127.0.0.1", user "kohanfoo_Ali_Habibi", database "kohanfoo_kohanfootclinic", SSL off
+ERROR 2026-06-27 01:51:53,295 log Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/base.py", line 187, in _get_session
+    return self._session_cache
+AttributeError: 'SessionStore' object has no attribute '_session_cache'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+    self.connect()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 269, in connect
+    self.connection = self.get_new_connection(conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/postgresql/base.py", line 275, in get_new_connection
+    connection = self.Database.connect(**conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/psycopg/connection.py", line 122, in connect
+    raise last_ex.with_traceback(None)
+psycopg.OperationalError: connection failed: no pg_hba.conf entry for host "127.0.0.1", user "kohanfoo_Ali_Habibi", database "kohanfoo_kohanfootclinic", SSL off
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/kohanfoo/kohanfootclinic_app/apps/users/views.py", line 9, in custom_login
+    if request.user.is_authenticated:
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/functional.py", line 266, in inner
+    self._setup()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/functional.py", line 419, in _setup
+    self._wrapped = self._setupfunc()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/middleware.py", line 25, in <lambda>
+    request.user = SimpleLazyObject(lambda: get_user(request))
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/middleware.py", line 11, in get_user
+    request._cached_user = auth.get_user(request)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 191, in get_user
+    user_id = _get_user_session_key(request)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 60, in _get_user_session_key
+    return get_user_model()._meta.pk.to_python(request.session[SESSION_KEY])
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/base.py", line 53, in __getitem__
+    return self._session[key]
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/base.py", line 192, in _get_session
+    self._session_cache = self.load()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/db.py", line 42, in load
+    s = self._get_session_from_db()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/contrib/sessions/backends/db.py", line 32, in _get_session_from_db
+    return self.model.objects.get(
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 635, in get
+    num = len(clone)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 382, in __len__
+    self._fetch_all()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 1886, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/query.py", line 93, in __iter__
+    results = compiler.execute_sql(
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1560, in execute_sql
+    cursor = self.connection.cursor()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 329, in cursor
+    return self._cursor()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 305, in _cursor
+    self.ensure_connection()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 287, in ensure_connection
+    with self.wrap_database_errors:
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+    self.connect()
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/base/base.py", line 269, in connect
+    self.connection = self.get_new_connection(conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/utils/asyncio.py", line 26, in inner
+    return func(*args, **kwargs)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/django/db/backends/postgresql/base.py", line 275, in get_new_connection
+    connection = self.Database.connect(**conn_params)
+  File "/home/kohanfoo/virtualenv/kohanfootclinic_app/3.10/lib/python3.10/site-packages/psycopg/connection.py", line 122, in connect
+    raise last_ex.with_traceback(None)
+django.db.utils.OperationalError: connection failed: no pg_hba.conf entry for host "127.0.0.1", user "kohanfoo_Ali_Habibi", database "kohanfoo_kohanfootclinic", SSL off
+WARNING 2026-06-29 15:10:42,577 log Not Found: /favicon.ico

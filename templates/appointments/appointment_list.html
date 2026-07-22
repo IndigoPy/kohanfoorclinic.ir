@@ -1,0 +1,1197 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load jformat %}
+{% block title %}لیست نوبت‌ها{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/persian-datepicker.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/flatpickr.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/select2.min.css' %}" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-soft: #eef2ff;
+        --secondary-soft: #f8f9fa;
+    }
+    .page-header-container {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .filter-card {
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    .filter-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #f1f1f1;
+        font-weight: 700;
+        color: #333;
+    }
+    .table-container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+        border: none;
+        overflow: hidden;
+    }
+    .table thead th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border-top: none;
+        padding: 1rem;
+    }
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #444;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    /* استایل‌های مربوط به هایلایت ردیف‌ها */
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    /* استایل کلیک ردیف جدول */
+    .table tbody tr.clickable-row {
+        cursor: pointer;
+    }
+    .table tbody tr.clickable-row:hover {
+        box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.02);
+}
+
+    .row-type-new { border-right: 8px solid #10b981; background-color: rgba(16, 185, 129, 0.03); }
+    .row-type-followup { border-right: 8px solid #3b82f6; background-color: rgba(59, 130, 246, 0.03); }
+    .row-type-call { border-right: 8px solid #0b3578; background-color: rgba(11, 53, 120, 0.03); }
+    .row-type-delivery { border-right: 8px solid #f59e0b; background-color: rgba(245, 158, 11, 0.03); }
+    .row-type-review { border-right: 8px solid #f5d20b; background-color: rgba(245, 210, 11, 0.03); }
+    .row-type-cancelled { border-right: 8px solid #ef4444; background-color: rgba(239, 68, 68, 0.03); }
+
+    .table tbody tr:hover {
+        background-color: #3b82f6;
+    }
+
+    /* استایل‌های مدال */
+    .modal-content {
+        border-radius: 1.25rem;
+        border: none;
+    }
+    .modal-header {
+        background-color: #f8f9fa;
+        border-top-left-radius: 1.25rem;
+        border-top-right-radius: 1.25rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .badge-status {
+        padding: 0.5em 0.8em;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    .patient-avatar {
+        width: 35px;
+        height: 35px;
+        background: var(--primary-soft);
+        color: var(--bs-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+    .form-control, .form-select {
+        border-radius: 0.6rem;
+        border: 1px solid #dee2e6;
+        padding: 0.6rem 1rem;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+        /* =========================================
+       استایل‌های سفارشی تقویم شمسی (Persian Datepicker)
+       ========================================= */
+    
+
+    .datepicker-container{
+        min-width: 250px;
+    }
+    /* استایل اینپوت تاریخ */
+    .date-filter {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 1rem center;
+        background-size: 1.1rem;
+        padding-left: 2.5rem !important; /* فضا برای نمایش آیکون در سمت چپ */
+        cursor: pointer;
+    }
+
+    /* کادر اصلی پاپ‌آپ تقویم */
+    .datepicker-plot-area {
+        border-radius: 1rem !important;
+        border: 1px solid #eaeaea !important;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08) !important;
+        font-family: inherit !important; /* هماهنگی با فونت قالب */
+        padding: 0.8rem !important;
+        background-color: #ffffff !important;
+        width: 100%;
+    }
+
+    /* هدر تقویم (ماه و سال) */
+    .datepicker-plot-area .datepicker-header {
+        border-bottom: 1px dashed #e2e8f0 !important;
+        padding-bottom: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* دکمه‌های ناوبری (ماه بعد و قبل) */
+    .datepicker-plot-area .datepicker-navigator .pwt-btn {
+        border-radius: 0.5rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .datepicker-plot-area .datepicker-navigator .pwt-btn:hover {
+        background-color: var(--primary-soft) !important;
+        color: var(--bs-primary) !important;
+    }
+
+    /* خانه‌های روزهای هفته و اعداد */
+    .datepicker-plot-area .datepicker-day-view .table-days td span {
+        border-radius: 0.4rem !important;
+        transition: all 0.2s ease !important;
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        margin: 2px auto !important;
+    }
+
+    /* افکت هاور روی روزها */
+    .datepicker-plot-area .datepicker-day-view .table-days td span:hover {
+        background-color: var(--primary-soft) !important;
+        color: var(--bs-primary) !important;
+    }
+
+    /* روز انتخاب شده */
+    .datepicker-plot-area .datepicker-day-view .table-days td.selected span {
+        background-color: var(--bs-primary) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3) !important;
+        font-weight: bold !important;
+    }
+
+    /* روز جاری (امروز) */
+    .datepicker-plot-area .datepicker-day-view .table-days td.today span {
+        border: 1px solid var(--bs-primary) !important;
+        background-color: #ffffff !important;
+        color: var(--bs-primary) !important;
+    }
+
+    /* غیرفعال کردن دکمه‌های اضافی پایین تقویم (مثل رفتن به امروز) برای سادگی بیشتر - اختیاری */
+    .datepicker-plot-area .datepicker-time-view,
+    .datepicker-plot-area .toolbox {
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 0.5rem !important;
+        margin-top: 0.5rem !important;
+    }
+    #sms-context-menu .dropdown-item:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    /* جلوگیری از انتخاب متن هنگام لانگ‌پرس در موبایل */
+    .appointment-row {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- هدر صفحه -->
+    <div class="page-header-container d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h4 class="mb-1 text-dark fw-bold">مدیریت نوبت‌های کلینیک</h4>
+            <p class="text-muted small mb-0">نمایش و مدیریت تمامی نوبت‌های ثبت شده در سیستم</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'appointments:calendar' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fa-solid fa-calendar-days me-1"></i> تقویم
+            </a>
+            <!-- دکمه تغییر یافته به Button برای باز کردن Modal -->
+            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createAppointmentModal">
+                <i class="fa-solid fa-plus me-1"></i> نوبت جدید
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- سایدبار (تقویم کوچک) -->
+        <div class="col-xl-3 col-lg-4 mb-4">
+            <div class="sticky-top" style="top: 20px; z-index: 10;">
+                <div class="mb-4">
+                    {% include 'appointments/components/sidebar_calendar.html' %}
+                </div>
+            </div>
+        </div>
+
+        <!-- محتوای اصلی -->
+        <div class="col-xl-9 col-lg-8">
+            <!-- فیلترها -->
+            <div class="card filter-card shadow-sm mb-4">
+                <div class="card-header d-flex align-items-center">
+                    <i class="fa-solid fa-sliders me-2 text-primary"></i> فیلتر پیشرفته نوبت‌ها
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">نام بیمار</label>
+                            {{ filter.form.patient_name }}
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">از تاریخ</label>
+                            {{ filter.form.start_date }}
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">تا تاریخ</label>
+                            {{ filter.form.end_date }}
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">نوع نوبت</label>
+                            {{ filter.form.appointment_type }}
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label class="form-label small fw-bold">وضعیت</label>
+                            {{ filter.form.status }}
+                        </div>
+                        <div class="col-md-4 col-lg-2 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary w-100 rounded-3" title="اعمال فیلتر">
+                                <i class="fa-solid fa-magnifying-glass me-1"></i> اعمال
+                            </button>
+                            <a href="{{ request.path }}" class="btn btn-outline-secondary w-50 rounded-3 text-center" title="پاک کردن فیلترها">
+                                <i class="fa-solid fa-eraser"></i>
+                            </a>
+                        </div>
+                    </form>
+
+
+                </div>
+            </div>
+
+            <!-- جدول اصلی -->
+            <div class="card table-container shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0"> 
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">#</th>
+                                    <th>بیمار</th>
+                                    <th>زمان ملاقات</th>
+                                    <th>وضعیت</th>
+                                    <th class="text-center">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr class="clickable-row
+                                    {% if appointment.appointment_type == 'new' %} row-type-new
+                                    {% elif appointment.appointment_type == 'follow_up' %} row-type-followup
+                                    {% elif appointment.appointment_type == 'clinic_call' %} row-type-call
+                                    {% elif appointment.appointment_type == 'delivery' %} row-type-delivery
+                                    {% elif appointment.appointment_type == 'checkup' %} row-type-review
+                                    {% endif %}
+                                    appointment-row
+                                    " 
+                                    data-id="{{ appointment.id }}"
+                                    data-detail-url="{% url 'appointments:detail' pk=appointment.pk %}">
+                                    <td class="text-center text-muted small">
+                                        {{ forloop.counter0|add:page_obj.start_index }}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="patient-avatar">
+                                                <i class="fa-solid fa-user-injured small"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark">
+                                                    {% if appointment.patient %}
+                                                        {{ appointment.patient }}
+                                                    {% else %}
+                                                        {{ appointment.first_name }} {{ appointment.last_name }}
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">کد پرونده: {{ appointment.patient.id|default:"---" }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold"><i class="fa-regular fa-calendar text-primary me-1"></i> {{ appointment.date|jformat:"%Y/%m/%d" }}</span>
+                                            <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ appointment.start_time|time:"H:i" }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if appointment.status == 'scheduled' %}
+                                            <span class="badge-status bg-primary bg-opacity-10 text-primary">رزرو شده</span>
+                                        {% elif appointment.status == 'confirmed' %}
+                                            <span class="badge-status bg-success bg-opacity-10 text-success">تایید شده</span>
+                                        {% elif appointment.status == 'completed' %}
+                                            <span class="badge-status bg-info bg-opacity-10 text-info">انجام شده</span>
+                                        {% elif appointment.status == 'cancelled' %}
+                                            <span class="badge-status bg-danger bg-opacity-10 text-danger">لغو شده</span>
+                                        {% elif appointment.status == 'no_show' %}
+                                            <span class="badge-status bg-warning bg-opacity-10 text-warning">عدم حضور</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            {% if appointment.appointment_type == 'new' %}
+            <a
+                href="{% url 'reception:new-patient' %}?first_name={{ appointment.first_name|urlencode }}&last_name={{ appointment.last_name|urlencode }}&phone={{ appointment.phone_number_1|urlencode }}&phone2={{ appointment.phone_number_2|default:''|urlencode }}&referrer={{ appointment.referrer|default:''|urlencode }}"
+                class="btn btn-outline-info btn-action"
+                title="تشکیل پرونده"
+            >
+                <i class="fas fa-folder-plus"></i>
+
+            </a>
+        {% else %}
+            {% if appointment.patient %}
+                <a
+                    href="{% url 'reception:patient-detail' appointment.patient.id %}"
+                    class="btn btn-outline-success btn-action"
+                    title="مشاهده پرونده"
+                >
+                    <i class="fas fa-folder-open"></i>
+                   
+                </a>
+            {% else %}
+                <a
+                    href="{% url 'reception:new-patient' %}?first_name={{ appointment.first_name|urlencode }}&last_name={{ appointment.last_name|urlencode }}&phone={{ appointment.phone_number_1|urlencode }}&phone2={{ appointment.phone_number_2|default:''|urlencode }}&referrer={{ appointment.referrer|default:''|urlencode }}"
+                    class="btn btn-outline-info btn-action"
+                    title="تشکیل پرونده"
+                >
+                    <i class="fas fa-folder-plus"></i>
+                   
+                </a>
+            {% endif %}
+        {% endif %}
+
+                                            <!-- جایگزین دکمه ویرایش قبلی شود -->
+                                            <button type="button" class="btn btn-action btn-outline-primary btn-edit" 
+                                                    data-url="{% url 'appointments:update' pk=appointment.pk %}" title="ویرایش">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            <!-- جایگزین دکمه ارسال پیامک قبلی در حلقه for -->
+                                            <button type="button" class="btn btn-action btn-outline-warning btn-open-sms-modal" 
+                                                    data-id="{{ appointment.pk }}"
+                                                    data-phone1="{{ appointment.phone_number_1|default:'' }}"
+                                                    data-phone2="{{ appointment.phone_number_2|default:'' }}"
+                                                    title="ارسال پیامک">
+                                                <i class="fa fa-paper-plane"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-action btn-outline-danger btn-delete" 
+                                                    data-url="{% url 'appointments:delete' pk=appointment.pk %}" title="حذف">
+                                                <i class="fa-solid fa-remove"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fa-solid fa-calendar-xmark fa-3x mb-3 opacity-25"></i>
+                                            <p>هیچ نوبتی برای نمایش یافت نشد.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- پجینیشن -->
+                {% if is_paginated %}
+                <div class="card-footer bg-white border-top-0 py-3">
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center mb-0 gap-1">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link rounded-circle border-0 text-dark" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link rounded-pill px-3 mx-2 border-0 shadow-sm">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link rounded-circle border-0 text-dark" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal افزودن نوبت -->
+<div class="modal fade" id="createAppointmentModal" tabindex="-1" aria-labelledby="createAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            
+            <!-- فرم ما که در فایل جداگانه قرار دارد در اینجا لود می‌شود -->
+            {% include 'appointments/appointment_form.html' with form=create_form %}
+            
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal مدیریت و ارسال پیامک -->
+<div class="modal fade" id="smsModal" tabindex="-1" aria-labelledby="smsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="smsModalLabel">ارسال پیامک به بیمار</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="smsForm">
+                    <input type="hidden" id="smsAppointmentId" name="appointment_id">
+                    
+                    <!-- پیام‌های آماده (در آینده از دیتابیس خوانده می‌شود) -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">پیام‌های آماده:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark border cursor-pointer sms-template" style="cursor: pointer;">یادآوری نوبت فردا</span>
+                            <span class="badge bg-light text-dark border cursor-pointer sms-template" style="cursor: pointer;">تغییر ساعت حضور</span>
+                            <span class="badge bg-light text-dark border cursor-pointer sms-template" style="cursor: pointer;">لغو نوبت</span>
+                        </div>
+                    </div>
+
+                    <!-- متن پیام -->
+                    <div class="mb-3">
+                        <label for="smsMessageText" class="form-label small fw-bold">متن پیامک <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="smsMessageText" name="message" rows="4" required placeholder="متن پیام خود را بنویسید یا از پیام‌های آماده انتخاب کنید..."></textarea>
+                    </div>
+
+                    <!-- انتخاب شماره تماس -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">ارسال به شماره‌های: <span class="text-danger">*</span></label>
+                        <div id="phoneCheckboxes" class="d-flex flex-column gap-2">
+                            <!-- چک‌باکس‌ها توسط جاوااسکریپت مقداردهی می‌شوند -->
+                        </div>
+                        <div class="invalid-feedback d-none" id="phoneError">لطفاً حداقل یک شماره را انتخاب کنید.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-warning rounded-pill px-4 shadow-sm" id="btnSendSms">
+                    <i class="fa fa-paper-plane me-1"></i> ارسال پیامک
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal نمایش جزئیات نوبت -->
+<div class="modal fade" id="appointmentDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg border-0 rounded-4" id="detailModalContent">
+            <!-- محتوا با Ajax لود می‌شود -->
+        </div>
+    </div>
+</div>
+<!-- تاگل پیامک کلیک راست  -->
+<ul id="sms-context-menu" class="dropdown-menu shadow-sm" style="display: none; position: absolute; z-index: 1050; min-width: 200px;" data-target-id="">
+    <li><h6 class="dropdown-header">تغییر وضعیت پیامک (دستی)</h6></li>
+    <li>
+        <a class="dropdown-item d-flex align-items-center justify-content-between" href="#" onclick="event.preventDefault();">
+            <span><i class="fa-solid fa-location-dot ms-2 text-muted"></i> پیامک آدرس</span>
+            <div class="form-check form-switch mb-0" onclick="event.stopPropagation();">
+                <input class="form-check-input" type="checkbox" id="toggle-address"
+                       onchange="toggleSmsStatus('address_sms_sent', event)">
+            </div>
+        </a>
+    </li>
+    <li>
+        <a class="dropdown-item d-flex align-items-center justify-content-between" href="#" onclick="event.preventDefault();">
+            <span><i class="fa-solid fa-bell ms-2 text-muted"></i> پیامک یادآوری</span>
+            <div class="form-check form-switch mb-0" onclick="event.stopPropagation();">
+                <input class="form-check-input" type="checkbox" id="toggle-reminder"
+                       onchange="toggleSmsStatus('reminder_sms_sent', event)">
+            </div>
+        </a>
+    </li>
+</ul>
+
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+    <script src="{% static 'js/jquery-4.0.0.min.js' %}"></script>
+    <script src="{% static 'js/persian-date.min.js' %}"></script>
+    <script src="{% static 'js/persian-datepicker.min.js' %}"></script>
+    <script src="{% static 'js/select2.min.js' %}"></script>
+    <script src="{% static 'js/flatpickr.min.js' %}"></script>
+<script>
+// تعریف تابع دریافت کوکی در سطح بالا برای استفاده در تمام درخواست‌ها
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$(document).ready(function() {
+
+    // ─────────────────────────────────────────────
+    // ۱. مقداردهی اولیه پلاگین‌ها
+    // ─────────────────────────────────────────────
+    function initModalPlugins() {
+        $('#createAppointmentModal .select2').each(function() {
+            if ($(this).data('select2')) {
+                $(this).select2('destroy');
+            }
+        });
+        $('#createAppointmentModal .select2').select2({
+            dropdownParent: $('#createAppointmentModal'),
+            width: '100%',
+            dir: 'rtl'
+        });
+
+        let $jalaliInput = $('#id_date_jalali');
+        let $gregorianInput = $('#id_date');
+
+        function toEnglishDigits(str) {
+            if (!str) return str;
+            const persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
+            let englishStr = str.toString();
+            for (let i = 0; i < 10; i++) {
+                englishStr = englishStr.replace(persianNumbers[i], i);
+            }
+            return englishStr;
+        }
+
+        if ($jalaliInput.length) {
+            if ($jalaliInput.data('datepicker')) {
+                $jalaliInput.data('datepicker').destroy();
+            }
+
+            let rawJalali = $jalaliInput.val();
+            if (rawJalali) {
+                $jalaliInput.val(toEnglishDigits(rawJalali));
+            }
+
+            let dp = $jalaliInput.persianDatepicker({
+                format: 'YYYY-MM-DD',
+                initialValueType: 'persian',
+                initialValue: true,
+                autoClose: true,
+                altField: '#id_date',
+                altFormat: 'YYYY-MM-DD',
+                onSelect: function (unix) {
+                    let date = new persianDate(unix);
+                    date.formatPersian = false; 
+                    $('#id_date').val(date.format('YYYY-MM-DD'));
+                }
+            });
+
+            if (!rawJalali && $gregorianInput.val()) {
+                try {
+                    let dateObj = new Date($gregorianInput.val());
+                    let pDate = new persianDate(dateObj);
+                    dp.setDate(pDate.valueOf());
+                    $jalaliInput.val(pDate.format('YYYY-MM-DD'));
+                } catch(e) {
+                    console.warn('خطا در تبدیل تاریخ میلادی به شمسی:', e);
+                }
+            }
+        }
+
+        $('.time-picker').each(function() {
+            if (this._flatpickr) {
+                this._flatpickr.destroy();
+            }
+        });
+        if ($('.time-picker').length) {
+            $('.time-picker').flatpickr({
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: 'H:i',
+                time_24hr: true
+            });
+        }
+    }
+
+    function isUpdateMode() {
+        let val = $('#appointmentForm').data('is-update');
+        return val === true || val === 'true';
+    }
+
+    $(document).on('change', '#id_appointment_type', function() {
+        let type = $(this).val();
+        if (!type || isUpdateMode()) return;
+
+        let currentDate = $('#id_date').val();
+        let url = "{% url 'appointments:create' %}?type=" + type;
+        if (currentDate) {
+            url += "&date=" + encodeURIComponent(currentDate);
+        }
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                $('#createAppointmentModal .modal-content').html(response);
+                initModalPlugins();
+            },
+            error: function() {
+                console.error('خطا در بارگذاری فیلدهای داینامیک');
+            }
+        });
+    });
+
+    $('#createAppointmentModal').on('shown.bs.modal', function() {
+        if (!isUpdateMode()) {
+            let $typeSelect = $('#id_appointment_type');
+            if ($typeSelect.length && $typeSelect.val()) {
+                $typeSelect.trigger('change');
+            }
+        }
+        initModalPlugins();
+    });
+
+    $('[data-bs-target="#createAppointmentModal"]').on('click', function() {
+        if (!isUpdateMode()) return;
+
+        $.ajax({
+            url: "{% url 'appointments:create' %}",
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                $('#createAppointmentModal .modal-content').html(response);
+                initModalPlugins();
+            },
+            error: function() {
+                console.error('خطا در بارگذاری فرم افزودن');
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-edit', function(e) {
+        e.preventDefault();
+        let url = $(this).data('url');
+
+        $('#createAppointmentModal .modal-content').html(
+            '<div class="p-5 text-center">' +
+                '<i class="fa-solid fa-spinner fa-spin fa-3x text-primary mb-3"></i>' +
+                '<p class="text-muted mt-2">در حال دریافت اطلاعات...</p>' +
+            '</div>'
+        );
+        $('#createAppointmentModal').modal('show');
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                $('#createAppointmentModal .modal-content').html(response);
+                initModalPlugins();
+            },
+            error: function() {
+                $('#createAppointmentModal .modal-content').html(
+                    '<div class="p-5 text-center text-danger">' +
+                        '<i class="fa-solid fa-circle-exclamation fa-3x mb-3"></i>' +
+                        '<p>خطا در دریافت اطلاعات. لطفاً دوباره تلاش کنید.</p>' +
+                    '</div>'
+                );
+            }
+        });
+    });
+
+    $(document).on('submit', '#appointmentForm', function(e) {
+        e.preventDefault();
+        let $form = $(this);
+        let url = $form.attr('action');
+        let formData = new FormData(this);
+        let $submitBtn = $form.find('button[type="submit"]');
+        let originalBtnHtml = $submitBtn.html();
+
+        $submitBtn.prop('disabled', true).html(
+            '<i class="fa-solid fa-spinner fa-spin me-1"></i> در حال پردازش...'
+        );
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response && response.success) {
+                    $('#createAppointmentModal').modal('hide');
+                    window.location.reload();
+                } else {
+                    $('#createAppointmentModal .modal-content').html(response);
+                    initModalPlugins();
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 400 && xhr.responseText) {
+                    $('#createAppointmentModal .modal-content').html(xhr.responseText);
+                    initModalPlugins();
+                } else {
+                    $submitBtn.prop('disabled', false).html(originalBtnHtml);
+                    alert('خطای سرور. لطفاً دوباره تلاش کنید.');
+                }
+            }
+        });
+    });
+
+    $('#createAppointmentModal').on('hidden.bs.modal', function() {
+        $('#createAppointmentModal .select2').each(function() {
+            if ($(this).data('select2')) {
+                $(this).select2('destroy');
+            }
+        });
+        $('.time-picker').each(function() {
+            if (this._flatpickr) {
+                this._flatpickr.destroy();
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete', function(e) {
+        e.preventDefault();
+        let url = $(this).data('url');
+        let $row = $(this).closest('tr'); 
+        let csrftoken = getCookie('csrftoken');
+
+        if (confirm('آیا از حذف این نوبت اطمینان دارید؟ این عملیات غیرقابل بازگشت است.')) {
+            let $btn = $(this);
+            let originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $row.fadeOut(400, function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert('خطا در حذف نوبت.');
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                },
+                error: function() {
+                    alert('ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.');
+                    $btn.prop('disabled', false).html(originalHtml);
+                }
+            });
+        }
+    });
+
+    $(document).on('click', '.btn-open-sms-modal', function(e) {
+        e.preventDefault();
+        let id = $(this).data('id');
+        let phone1 = $(this).data('phone1');
+        let phone2 = $(this).data('phone2');
+
+        $('#smsAppointmentId').val(id);
+        $('#smsMessageText').val(''); 
+        $('#phoneError').addClass('d-none');
+
+        let phoneHtml = '';
+        if (phone1) {
+            phoneHtml += `
+                <div class="form-check">
+                    <input class="form-check-input phone-selector" type="checkbox" value="${phone1}" id="chkPhone1" checked>
+                    <label class="form-check-label" for="chkPhone1">${phone1} (شماره اول)</label>
+                </div>`;
+        }
+        if (phone2) {
+            phoneHtml += `
+                <div class="form-check">
+                    <input class="form-check-input phone-selector" type="checkbox" value="${phone2}" id="chkPhone2">
+                    <label class="form-check-label" for="chkPhone2">${phone2} (شماره دوم)</label>
+                </div>`;
+        }
+        
+        if (!phone1 && !phone2) {
+            phoneHtml = '<span class="text-danger small">شماره تماسی برای این نوبت ثبت نشده است.</span>';
+            $('#btnSendSms').prop('disabled', true);
+        } else {
+            $('#btnSendSms').prop('disabled', false);
+        }
+
+        $('#phoneCheckboxes').html(phoneHtml);
+        $('#smsModal').modal('show');
+    });
+
+    $(document).on('click', '.sms-template', function() {
+        let templateText = $(this).text();
+        let fullText = "";
+        if(templateText === "یادآوری نوبت فردا") {
+            fullText = "بیمار گرامی، یادآوری می‌شود نوبت شما برای فردا در کلینیک ثبت شده است.";
+        } else if (templateText === "تغییر ساعت حضور") {
+            fullText = "بیمار گرامی، لطفا یک ساعت زودتر از زمان مقرر در کلینیک حضور یابید.";
+        } else if (templateText === "لغو نوبت") {
+            fullText = "بیمار گرامی، نوبت شما به دلیل مشکلات پیش‌بینی نشده لغو گردید. برای دریافت نوبت جدید با کلینیک تماس بگیرید.";
+        }
+        $('#smsMessageText').val(fullText);
+    });
+
+    $(document).on('click', '#btnSendSms', function() {
+        let message = $('#smsMessageText').val().trim();
+        let appointmentId = $('#smsAppointmentId').val();
+        let selectedPhones = [];
+
+        $('.phone-selector:checked').each(function() {
+            selectedPhones.push($(this).val());
+        });
+
+        if (selectedPhones.length === 0) {
+            $('#phoneError').removeClass('d-none');
+            return;
+        }
+        if (!message) {
+            alert('لطفاً متن پیامک را وارد کنید.');
+            return;
+        }
+
+        let $btn = $(this);
+        let originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin me-1"></i> در حال ارسال...');
+
+        let csrftoken = getCookie('csrftoken');
+
+        $.ajax({
+            url: `/appointments/${appointmentId}/send-sms/`,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            },
+            data: JSON.stringify({
+                message: message,
+                phones: selectedPhones
+            }),
+            success: function(response) {
+                if (response.success) {
+                    alert('پیامک با موفقیت در صف ارسال قرار گرفت.');
+                    $('#smsModal').modal('hide');
+                } else {
+                    alert(response.error || 'خطا در ارسال پیامک.');
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'ارتباط با سرور برقرار نشد.';
+                if(xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                alert(errorMsg);
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
+
+    $(document).on('click', '.clickable-row', function(e) {
+        if ($(e.target).closest('a, button, .btn-action').length) {
+            return;
+        }
+        let url = $(this).data('detail-url');
+        if (!url) return;
+
+        let $modalContent = $('#detailModalContent');
+        $modalContent.html(
+            '<div class="p-5 text-center">' +
+                '<i class="fa-solid fa-spinner fa-spin fa-3x text-primary mb-3"></i>' +
+                '<p class="text-muted mt-2">در حال دریافت اطلاعات پرونده...</p>' +
+            '</div>'
+        );
+        $('#appointmentDetailModal').modal('show');
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                $modalContent.html(response);
+            },
+            error: function() {
+                $modalContent.html(
+                    '<div class="p-5 text-center text-danger">' +
+                        '<i class="fa-solid fa-circle-exclamation fa-3x mb-3"></i>' +
+                        '<p>خطا در دریافت جزئیات نوبت.</p>' +
+                        '<button class="btn btn-outline-secondary mt-2" data-bs-dismiss="modal">بستن</button>' +
+                    '</div>'
+                );
+            }
+        });
+    });
+
+    if ($('.date-filter').length) {
+        $('.date-filter').persianDatepicker({
+            format: 'YYYY-MM-DD',
+            initialValueType: 'persian',
+            initialValue: false, 
+            autoClose: true
+        });
+    }
+
+    document.addEventListener('sidebarDateSelected', function(e) {
+        let pd = new persianDate(e.detail.timestamp);
+        pd.formatPersian = false; 
+        let pDate = pd.format('YYYY-MM-DD');
+        $('input[name="start_date"]').val(pDate);
+        $('input[name="end_date"]').val(pDate);
+        $('input[name="start_date"]').closest('form').submit();
+    });
+
+    let startDateVal = $('input[name="start_date"]').val();
+    let endDateVal = $('input[name="end_date"]').val();
+
+    if (startDateVal) {
+        let startParts = startDateVal.split('-');
+        if (startParts.length === 3) {
+            let startUnix = new persianDate([parseInt(startParts[0]), parseInt(startParts[1]), parseInt(startParts[2])]).valueOf();
+            let inlineDp = $('#inline-datepicker').data('datepicker');
+            if (inlineDp) {
+                inlineDp.setDate(startUnix);
+            }
+
+            if (endDateVal && startDateVal !== endDateVal) {
+                let endParts = endDateVal.split('-');
+                let endUnix = new persianDate([parseInt(endParts[0]), parseInt(endParts[1]), parseInt(endParts[2])]).valueOf();
+
+                setTimeout(function() {
+                    $('#inline-datepicker .datepicker-plot-area .table-days td').each(function() {
+                        let cellUnix = $(this).data('date');
+                        if (cellUnix) {
+                            let $span = $(this).find('span');
+                            if (cellUnix > startUnix && cellUnix < endUnix) {
+                                $span.css({
+                                    'background-color': 'rgba(59, 130, 246, 0.1)',
+                                    'color': '#3b82f6',
+                                    'border-radius': '0',
+                                    'width': '100%'
+                                });
+                            }
+                            else if (cellUnix === startUnix || cellUnix === endUnix) {
+                                $span.css({
+                                    'background-color': '#3b82f6',
+                                    'color': '#ffffff',
+                                    'border-radius': '6px',
+                                    'box-shadow': '0 4px 8px rgba(59, 130, 246, 0.3)'
+                                });
+                            }
+                        }
+                    });
+                }, 150);
+            }
+        }
+    }
+
+    $('.select2').select2({
+        width: '100%',
+        dir: 'rtl',
+        dropdownParent: $('#appointmentModal')
+    });
+
+    const appointmentTypeSelect = $('#id_appointment_type');
+    const servicesContainer = $('#id_provided_services').closest('.form-group');
+    const patientFileContainer = $('#id_dynamic_patient_file').closest('.form-group');
+
+    function toggleDynamicFields() {
+        const type = appointmentTypeSelect.val();
+        if (type === 'delivery') {
+            servicesContainer.show();
+        } else {
+            servicesContainer.hide();
+            $('#id_provided_services').val(null).trigger('change');
+        }
+
+        const requireFileTypes = ['delivery', 'follow_up', 'clinic_call', 'checkup'];
+        if (requireFileTypes.includes(type)) {
+            patientFileContainer.show();
+        } else {
+            patientFileContainer.hide();
+            $('#id_dynamic_patient_file').val(null).trigger('change');
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // بخش اصلاح شده منوی کلیک راست پیامک
+    // ─────────────────────────────────────────────
+    const contextMenu = document.getElementById('sms-context-menu');
+
+    document.querySelectorAll('.appointment-row').forEach(row => {
+        row.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showContextMenu(e, this);
+        });
+
+        let pressTimer;
+        row.addEventListener('touchstart', function(e) {
+            pressTimer = window.setTimeout(() => {
+                showContextMenu(e.touches[0], this);
+            }, 800);
+        });
+        row.addEventListener('touchend', () => clearTimeout(pressTimer));
+        row.addEventListener('touchmove', () => clearTimeout(pressTimer));
+    });
+
+    function showContextMenu(e, rowElement) {
+        // خواندن ID از ویژگی data-id تگ tr
+        const apptId = rowElement.getAttribute('data-id');
+        if (!apptId) {
+            console.error("مشکل: ویژگی data-id در سطر مربوطه یافت نشد.");
+            return;
+        }
+        
+        // ذخیره ID به صورت مستقیم در المان منوی زمینه
+        contextMenu.setAttribute('data-target-id', apptId);
+        
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = e.pageX + 'px';
+        contextMenu.style.top = e.pageY + 'px';
+
+        const addressIcon = rowElement.querySelector('.address-sms-icon');
+        const reminderIcon = rowElement.querySelector('.reminder-sms-icon');
+        
+        document.getElementById('toggle-address').checked = addressIcon && addressIcon.classList.contains('text-success');
+        document.getElementById('toggle-reminder').checked = reminderIcon && reminderIcon.classList.contains('text-success');
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#sms-context-menu') === null) {
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    // تعریف تابع در دامنه سراسری و استخراج ID به صورت ایمن
+    window.toggleSmsStatus = function(smsType, event) {
+    // دیگه preventDefault لازم نیست چون داریم روی change خود checkbox گوش می‌دیم
+    event.stopPropagation();
+
+    const menuElement = document.getElementById('sms-context-menu');
+    const contextApptId = menuElement.getAttribute('data-target-id');
+
+    if (!contextApptId) {
+        alert('خطا: شناسه نوبت نامعتبر است.');
+        return;
+    }
+
+    const checkbox = event.currentTarget; // خودِ چک‌باکس هدف رویداد change است
+    const newState = checkbox.checked;    // الان مقدار نهایی و درستِ بعد از کلیک است
+    const csrfToken = getCookie('csrftoken');
+
+    fetch(`/appointments/${contextApptId}/toggle-sms-status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ sms_type: smsType, state: newState })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            updateRowUI(contextApptId, smsType, newState);
+        } else {
+            // در صورت خطا، وضعیت چک‌باکس رو برگردون
+            checkbox.checked = !newState;
+            alert('خطا از سمت سرور: ' + (data.message || ''));
+        }
+    })
+    .catch(err => {
+        console.error('Fetch Error:', err);
+        checkbox.checked = !newState; // rollback
+        alert('خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.');
+    });
+};  
+    function updateRowUI(apptId, smsType, isSent) {
+        const row = document.querySelector(`tr[data-id="${apptId}"]`);
+        if (!row) return;
+
+        const iconClass = smsType === 'address_sms_sent' ? '.address-sms-icon' : '.reminder-sms-icon';
+        const iconContainer = row.querySelector(iconClass);
+        
+        if (iconContainer) {
+            if (isSent) {
+                iconContainer.className = `${iconClass.replace('.','')} text-success small`;
+                iconContainer.style.opacity = '1';
+                iconContainer.innerHTML = `<i class="fa-solid fa-${smsType === 'address_sms_sent' ? 'location-dot' : 'bell'}"></i><i class="fa-solid fa-check" style="font-size: 0.6em; margin-right: -3px;"></i>`;
+            } else {
+                iconContainer.className = `${iconClass.replace('.','')} text-muted small opacity-25`;
+                iconContainer.innerHTML = `<i class="fa-solid fa-${smsType === 'address_sms_sent' ? 'location-dot' : 'bell'}"></i>`;
+            }
+        }
+    }
+
+    toggleDynamicFields();
+
+    appointmentTypeSelect.on('change', function() {
+        toggleDynamicFields();
+    });
+
+    initModalPlugins();
+});
+</script>
+
+{% endblock %}

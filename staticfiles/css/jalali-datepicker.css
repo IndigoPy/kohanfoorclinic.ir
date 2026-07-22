@@ -1,0 +1,171 @@
+/* ─── Jalali Datepicker - Pure CSS ─────────────────────────── */
+.jalali-picker {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    width: 280px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    font-family: 'Vazir', 'Tahoma', sans-serif;
+    direction: rtl;
+    user-select: none;
+    overflow: hidden;
+}
+
+/* ── هدر ── */
+.jalali-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #1a6fc4;
+    color: #fff;
+}
+
+.jalali-month-year {
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+}
+
+.jalali-nav {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 6px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.jalali-nav:hover { background: rgba(255,255,255,0.2); }
+
+/* ── گرید ── */
+.jalali-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    padding: 10px 12px;
+}
+
+.jalali-day-name {
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    padding: 4px 0 6px;
+    font-weight: bold;
+}
+
+.jalali-cell {
+    text-align: center;
+    padding: 7px 2px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: default;
+}
+
+.jalali-day {
+    cursor: pointer;
+    color: #333;
+    transition: background 0.12s, color 0.12s;
+}
+.jalali-day:hover {
+    background: #e8f0fe;
+    color: #1a6fc4;
+}
+
+.jalali-today {
+    background: #e8f0fe;
+    color: #1a6fc4;
+    font-weight: bold;
+}
+
+.jalali-selected {
+    background: #1a6fc4 !important;
+    color: #fff !important;
+    font-weight: bold;
+}
+
+.jalali-empty { cursor: default; }
+
+/* ── فوتر ── */
+.jalali-picker-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.jalali-today-btn,
+.jalali-clear-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+
+.jalali-today-btn {
+    background: #e8f0fe;
+    color: #1a6fc4;
+}
+.jalali-today-btn:hover { background: #d0e2fd; }
+
+.jalali-clear-btn {
+    background: #ffeaea;
+    color: #c0392b;
+}
+.jalali-clear-btn:hover { background: #ffd0d0; }
+
+/* ===== نمای انتخاب سال ===== */
+.jalali-month-year {
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.jalali-month-year:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.jalali-year-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 10px;
+    max-height: 240px;
+    overflow-y: auto;
+    direction: rtl;
+}
+
+.jalali-year-cell {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+}
+
+.jalali-year-cell:hover {
+    background: #e8f4f8;
+    border-color: #4a90d9;
+}
+
+.jalali-today-year {
+    color: #4a90d9;
+    font-weight: bold;
+}
+
+.jalali-selected-year {
+    background: #4a90d9 !important;
+    color: white !important;
+    font-weight: bold;
+}

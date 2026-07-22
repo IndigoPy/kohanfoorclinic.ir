@@ -1,0 +1,130 @@
+{% load jformat %}
+<div class="invoice-sheet" dir="rtl">
+  <div class="border-bottom pb-3 mb-4">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h4 class="mb-1">فاکتور سفارش</h4>
+        <div class="text-muted small">شماره سفارش: #{{ order.id }}</div>
+        <div class="text-muted small">تاریخ ثبت: {{ order.created_at|jformat:"%Y/%m/%d - %H:%M" }}</div>
+      </div>
+      <div class="text-end">
+        <div class="fw-bold">کلینیک / مرکز شما</div>
+        <div class="small text-muted">kohanfootclinic.ir</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6">
+      <div class="small text-muted">نام بیمار</div>
+      <div class="fw-bold">{{ order.patient }}</div>
+    </div>
+    <div class="col-6 text-end">
+      <div class="small text-muted">وضعیت پرداخت</div>
+      <div class="fw-bold">{{ order.get_payment_status_display }}</div>
+    </div>
+
+    {% if order.examination %}
+    <div class="col-6">
+      <div class="small text-muted">ارجاع از معاینه</div>
+      <div class="fw-bold">#{{ order.examination.id }}</div>
+    </div>
+    {% endif %}
+
+    <div class="col-6 text-end">
+      <div class="small text-muted">وضعیت سفارش</div>
+      <div class="fw-bold">{{ order.get_status_display }}</div>
+    </div>
+  </div>
+
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>ردیف</th>
+          <th>شرح</th>
+          <th>تعداد</th>
+          <th>قیمت واحد</th>
+          <th>هزینه طراحی</th>
+          <th>جمع</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <div class="fw-bold">{{ item.service.name }}</div>
+            {% if item.designs.all %}
+            <div class="small text-muted mt-1">
+              طراحی‌ها:
+              {% for design in item.designs.all %}
+                {{ design.design.name }}{% if not forloop.last %}، {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+          </td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.formatted_price }} تومان</td>
+          <td>{{ item.formatted_designs_total }} تومان</td>
+          <td class="fw-bold">{{ item.formatted_item_total }} تومان</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted">آیتمی برای این سفارش ثبت نشده است.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-7">
+      <div class="border rounded p-3 h-100">
+        <div class="fw-bold mb-2">توضیحات</div>
+        <div class="small text-muted">
+          {% if order.general_notes %}
+            {{ order.general_notes }}
+          {% elif order.notes %}
+            {{ order.notes }}
+          {% else %}
+            موردی ثبت نشده است.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-5">
+      <div class="border rounded p-3">
+        <div class="d-flex justify-content-between mb-2">
+          <span>مبلغ کل:</span>
+          <strong>{{ order.formatted_total }} تومان</strong>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span>پرداخت‌شده:</span>
+          <strong class="text-success">{{ order.formatted_total_paid }} تومان</strong>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span>باقی‌مانده:</span>
+          <strong class="text-danger">{{ order.formatted_remaining }} تومان</strong>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between fs-5">
+          <span>مبلغ قابل پرداخت:</span>
+          <strong>{{ order.formatted_remaining }} تومان</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 pt-4">
+    <div class="row">
+      <div class="col-6 text-center">
+        <div class="border-top pt-2 mx-4">امضای پذیرش</div>
+      </div>
+      <div class="col-6 text-center">
+        <div class="border-top pt-2 mx-4">امضای بیمار</div>
+      </div>
+    </div>
+  </div>
+</div>

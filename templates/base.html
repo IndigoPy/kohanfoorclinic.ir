@@ -1,0 +1,392 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}کلینیک کهن{% endblock %}</title>
+
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/all.min.css' %}" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Vazir', Tahoma, sans-serif;
+            background: #f8f9ff;
+            min-height: 100vh;
+        }
+
+        a {
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn {
+            border-radius: 12px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .hamburger-btn {
+            border: none;
+            background: transparent;
+            font-size: 1.4rem;
+            color: #0d6efd;
+        }
+
+        .offcanvas.offcanvas-end {
+            width: 300px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .offcanvas-header {
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .offcanvas-title {
+            font-weight: bold;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .sidebar-header h3 {
+            color: white;
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.92);
+            transition: all 0.3s ease;
+            border-right: 4px solid transparent;
+        }
+
+        .nav-link-custom:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-right-color: #f093fb;
+            transform: translateX(-4px);
+        }
+
+        .nav-link-custom.active {
+            background: rgba(255,255,255,0.18);
+            border-right-color: #fff;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .nav-link-custom i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .page-content {
+            padding: 1rem;
+        }
+
+        @media (min-width: 992px) {
+            .page-content {
+                padding: 1.5rem 2rem;
+            }
+        }
+
+        .notification-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 14px;
+    background: #f1f4ff;
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.notification-btn:hover {
+    background: #e4e9ff;
+    color: #3730a3;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.72rem;
+    line-height: 20px;
+    font-weight: bold;
+    border: 2px solid #fff;
+}
+
+.notifications-offcanvas {
+    width: 390px;
+    max-width: 100%;
+    background: #f8f9ff;
+}
+
+.notifications-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #fff;
+    border-bottom: none;
+}
+
+.notifications-header small {
+    color: rgba(255,255,255,0.8);
+}
+
+.notifications-body {
+    background: #f8f9ff;
+}
+
+.notifications-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 1rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.notification-tabs {
+    gap: 0.5rem;
+}
+
+.notification-tabs .nav-link {
+    border-radius: 14px;
+    color: #64748b;
+    background: #fff;
+    font-size: 0.9rem;
+    padding: 0.65rem 0.5rem;
+}
+
+.notification-tabs .nav-link.active {
+    background: #4f46e5;
+    color: #fff;
+}
+
+.notifications-tab-content {
+    padding: 1rem;
+}
+
+.notification-section-title {
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: bold;
+    margin: 0.75rem 0 0.5rem;
+}
+
+.chat-item,
+.system-notification {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    background: #fff;
+    color: #1f2937;
+    border-radius: 18px;
+    padding: 0.85rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.chat-item:hover {
+    color: #1f2937;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+}
+
+.chat-item.unread,
+.system-notification.unread {
+    border-right: 4px solid #4f46e5;
+}
+
+.avatar-wrapper {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.notification-avatar,
+.system-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.online-dot {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 13px;
+    height: 13px;
+    background: #22c55e;
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+.chat-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.chat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
+.chat-row small,
+.system-notification small {
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.chat-content p,
+.system-notification p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.86rem;
+    line-height: 1.7;
+}
+
+.unread-badge {
+    align-self: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.78rem;
+    line-height: 24px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.cartable-empty {
+    background: #fff;
+    border-radius: 22px;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #64748b;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.cartable-empty i {
+    display: block;
+    font-size: 2.5rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+}
+
+.cartable-empty strong {
+    display: block;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
+.cartable-empty p {
+    margin: 0;
+    line-height: 1.8;
+}
+
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <nav class="navbar navbar-light bg-white shadow-sm mb-3 px-3">
+        <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+            <button class="hamburger-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainSidebar" aria-controls="mainSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            {% endif %}
+
+            <a class="navbar-brand text-primary mb-0" href="{% url 'main-dashboard' %}">
+                <i class="fas fa-clinic-medical me-2"></i> ارتوپدی فنی کهن
+            </a>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+                <button class="notification-btn position-relative" type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#notificationsSidebar"
+                        aria-controls="notificationsSidebar"
+                        aria-label="اعلان‌ها">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">۵</span>
+                </button>
+
+                <span class="me-3 text-muted d-none d-md-inline">
+                    خوش آمدید، {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+
+                <a href="{% url 'users:logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i> خروج
+                </a>
+            {% endif %}
+        </div>
+
+    </nav>
+
+    {% if user.is_authenticated %}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="mainSidebar" aria-labelledby="mainSidebarLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="mainSidebarLabel">منوی سیستم</h5>
+            <button type="button" class="btn-close btn-close-white ms-0" data-bs-dismiss="offcanvas" aria-label="بستن"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            {% include 'includes/sidebar_menu.html' %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% include 'includes/notifications_panel.html' %}
+
+    <div class="container-fluid page-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

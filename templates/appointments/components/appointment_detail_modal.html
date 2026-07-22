@@ -1,0 +1,127 @@
+{% load jformat %}
+
+<div class="modal-header">
+    <h5 class="modal-title fw-bold">
+        <i class="fa-solid fa-address-card text-primary me-2"></i>جزئیات نوبت
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body p-4">
+    <div class="row g-4">
+        <!-- اطلاعات پایه بیمار -->
+        <div class="col-md-6">
+            <div class="card h-100 border-0 bg-light rounded-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-secondary border-bottom pb-2">اطلاعات بیمار</h6>
+                    
+                    <div class="mb-2">
+                        <span class="text-muted small">نام و نام خانوادگی:</span>
+                        <div class="fw-bold fs-5">
+                            {% if appointment.patient %}
+                                <a href="#" class="text-decoration-none">{{ appointment.patient }}</a>
+                                <span class="badge bg-info text-white ms-2 text-xs">دارای پرونده</span>
+                            {% else %}
+                                {{ appointment.first_name }} {{ appointment.last_name }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <span class="text-muted small">شماره تماس اصلی:</span>
+                        <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.phone_number_1|default:"ثبت نشده" }}</div>
+                    </div>
+
+                    {% if appointment.phone_number_2 %}
+                    <div class="mb-2">
+                        <span class="text-muted small">شماره تماس دوم:</span>
+                        <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.phone_number_2 }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if appointment.referrer %}
+                    <div class="mb-2">
+                        <span class="text-muted small">معرف:</span>
+                        <div class="fw-bold">{{ appointment.referrer }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- اطلاعات زمان و وضعیت -->
+        <div class="col-md-6">
+            <div class="card h-100 border-0 bg-light rounded-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-secondary border-bottom pb-2">اطلاعات زمان و رزرو</h6>
+                    
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <span class="text-muted small">نوع نوبت:</span>
+                            <div class="fw-bold text-primary">{{ appointment_type_label }}</div>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small">وضعیت:</span>
+                            <div class="fw-bold">
+                                {% if appointment.status == 'scheduled' %}رزرو شده
+                                {% elif appointment.status == 'confirmed' %}تایید شده
+                                {% elif appointment.status == 'completed' %}انجام شده
+                                {% elif appointment.status == 'cancelled' %}لغو شده
+                                {% elif appointment.status == 'no_show' %}عدم حضور
+                                {% else %}{{ appointment.status }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <span class="text-muted small">تاریخ:</span>
+                        <div class="fw-bold text-dark fs-5">{{ appointment.date|jformat:"%A %d %B %Y" }}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <span class="text-muted small">ساعت شروع:</span>
+                            <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.start_time|time:"H:i" }}</div>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small">ساعت پایان:</span>
+                            <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.end_time|time:"H:i"|default:"---" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اطلاعات تکمیلی (extra_data) -->
+        {% if appointment.extra_data %}
+        <div class="col-12">
+            <div class="card border-0 bg-white shadow-sm rounded-4 border-start border-4 border-info">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-info">اطلاعات تکمیلی نوبت</h6>
+                    <div class="row g-3">
+                        {% for key, value in appointment.extra_data.items %}
+                            {% if value %}
+                            <div class="col-md-6">
+                                <!-- اینجا در صورت نیاز می‌توانید دیکشنری ترجمه کلیدها را بنویسید (مانند reason_for_visit) -->
+                                <span class="text-muted small">
+                                    {% if key == 'reason_for_visit' %}علت مراجعه
+                                    {% elif key == 'delivery_item' %}مورد تحویلی
+                                    {% else %}{{ key }}{% endif %}:
+                                </span>
+                                <div class="fw-bold">{{ value }}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<div class="modal-footer bg-light border-top-0 rounded-bottom-4">
+    <!-- می‌توانیم دکمه‌های عملیاتی را به اینجا هم منتقل کنیم -->
+    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">بستن</button>
+    <button type="button" class="btn btn-outline-primary rounded-pill px-4 btn-edit" data-url="{% url 'appointments:update' pk=appointment.pk %}" data-bs-dismiss="modal">
+        <i class="fa-solid fa-pen-to-square me-1"></i> ویرایش
+    </button>
+</div>

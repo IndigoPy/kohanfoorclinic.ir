@@ -1,0 +1,2939 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load jformat %}
+
+{% block title %}
+{% if is_edit %}ویرایش سفارش #{{ order.id }} - {{ patient.full_name }}{% else %}ثبت سفارش جدید از معاینه - {{ patient.full_name }}{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<!-- Persian Date Simple (dependency) -->
+<link href="{% static 'css/jalali-datepicker.css' %}" rel="stylesheet" />
+
+
+<style>
+    /* ============================================================
+   ROOT VARIABLES
+   ============================================================ */
+    :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --success: #4cc9f0;
+        --info: #4895ef;
+        --warning: #f72585;
+        --danger: #e63946;
+        --light-bg: #f0f4ff;
+        --dark-bg: #1a1a2e;
+        --card-light: #ffffff;
+        --card-dark: #252540;
+        --border-radius: 16px;
+        --shadow: 0 8px 32px rgba(67, 97, 238, 0.12);
+        --transition: all 0.3s ease;
+        --step-active: #4361ee;
+        --step-done: #4cc9f0;
+        --step-pending: #dee2e6;
+    }
+
+    body.dark {
+        --light-bg: #1a1a2e;
+        --card-light: #252540;
+        --step-pending: #3a3a5c;
+    }
+
+    /* ============================================================
+   WIZARD WRAPPER
+   ============================================================ */
+    .wizard-wrapper {
+        background: var(--light-bg);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .wizard-card {
+        background: var(--card-light);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    /* ============================================================
+   WIZARD HEADER (PATIENT INFO)
+   ============================================================ */
+    .wizard-patient-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .wizard-patient-header .patient-avatar {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .wizard-patient-header .patient-info h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .wizard-patient-header .patient-info p {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 0.88rem;
+    }
+
+    .wizard-patient-header .exam-badge {
+        margin-right: auto;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* ============================================================
+   STEP INDICATOR
+   ============================================================ */
+    .wizard-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem 1rem;
+        gap: 0;
+        overflow-x: auto;
+    }
+
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+        min-width: 80px;
+    }
+
+    .step-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 18px;
+        right: -50%;
+        width: 100%;
+        height: 3px;
+        background: var(--step-pending);
+        z-index: 0;
+        transition: var(--transition);
+    }
+
+    .step-item.done:not(:last-child)::after,
+    .step-item.active:not(:last-child)::after {
+        background: var(--step-done);
+    }
+
+    .step-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--step-pending);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #6c757d;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+        border: 3px solid transparent;
+    }
+
+    .step-item.active .step-circle {
+        background: var(--step-active);
+        color: white;
+        border-color: rgba(67, 97, 238, 0.3);
+        box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.15);
+    }
+
+    .step-item.done .step-circle {
+        background: var(--step-done);
+        color: white;
+        border-color: rgba(76, 201, 240, 0.3);
+    }
+
+    .step-item.done .step-circle::after {
+        content: '✓';
+        font-size: 1rem;
+    }
+
+    .step-item.done .step-circle span {
+        display: none;
+    }
+
+    .step-label {
+        font-size: 0.72rem;
+        color: #6c757d;
+        margin-top: 0.4rem;
+        text-align: center;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .step-item.active .step-label {
+        color: var(--step-active);
+        font-weight: 700;
+    }
+
+    .step-item.done .step-label {
+        color: var(--step-done);
+    }
+
+    /* ============================================================
+   STEP CONTENT
+   ============================================================ */
+    .wizard-body {
+        padding: 1.5rem 2rem 2rem;
+    }
+
+    .step-content {
+        display: none;
+        animation: fadeStep 0.3s ease;
+    }
+
+    .step-content.active {
+        display: block;
+    }
+
+    @keyframes fadeStep {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .step-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--light-bg);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* ============================================================
+   EXAM SUMMARY (STEP 1)
+   ============================================================ */
+    .exam-summary-box {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        border-right: 4px solid var(--primary);
+    }
+
+    .exam-summary-box .summary-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .exam-summary-box .summary-value {
+        font-size: 0.93rem;
+        color: inherit;
+        line-height: 1.6;
+    }
+
+    /* ============================================================
+   ORDER ITEMS (STEP 2)
+   ============================================================ */
+    .order-item-card {
+        border: 2px solid var(--light-bg);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .order-item-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 4px 16px rgba(67, 97, 238, 0.1);
+    }
+
+    .order-item-card .item-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .order-item-card .item-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .item-badge {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: 20px;
+        padding: 0.2rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .remove-item-btn {
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+
+    .remove-item-btn:hover {
+        background: rgba(230, 57, 70, 0.1);
+    }
+
+    /* ============================================================
+   DESIGNS TABLE
+   ============================================================ */
+    .designs-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+        font-size: 0.88rem;
+    }
+
+    .designs-table thead th {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 0.6rem 0.75rem;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .designs-table thead th:first-child {
+        border-radius: 8px 0 0 0;
+    }
+
+    .designs-table thead th:last-child {
+        border-radius: 0 8px 0 0;
+    }
+
+    .designs-table tbody tr:nth-child(even) {
+        background: var(--light-bg);
+    }
+
+    .designs-table tbody td {
+        padding: 0.5rem 0.5rem;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .designs-table input[type="number"],
+    .designs-table input[type="text"] {
+        border: 1.5px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+        width: 100%;
+        text-align: center;
+        font-size: 0.82rem;
+        background: transparent;
+        color: inherit;
+        transition: var(--transition);
+    }
+
+    .designs-table input:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    /* ============================================================
+   SIZES (STEP 3)
+   ============================================================ */
+    .size-group {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .size-group-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .size-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 0.75rem;
+        align-items: end;
+        margin-bottom: 0.75rem;
+    }
+
+    .size-row label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .remove-size-btn {
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+
+    .remove-size-btn:hover {
+        background: rgba(230, 57, 70, 0.1);
+    }
+
+    /* ============================================================
+   FINANCIAL (STEP 4)
+   ============================================================ */
+    .financial-item {
+        border: 2px solid var(--light-bg);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .financial-item-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .price-summary {
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.07), rgba(76, 201, 240, 0.07));
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .price-summary .total-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .price-summary .total-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    /* ============================================================
+   REVIEW (STEP 5)
+   ============================================================ */
+    .review-section {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .review-section-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .review-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        font-size: 0.88rem;
+        gap: 1rem;
+    }
+
+    .review-row:last-child {
+        border-bottom: none;
+    }
+
+    .review-row .label {
+        color: #6c757d;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .review-row .value {
+        font-weight: 600;
+        text-align: left;
+    }
+
+    /* ============================================================
+   WIZARD FOOTER (NAV BUTTONS)
+   ============================================================ */
+    .wizard-footer {
+        padding: 1.25rem 2rem;
+        background: var(--light-bg);
+        border-top: 2px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .wizard-footer .save-indicator {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .wizard-footer .save-indicator.saved {
+        color: #4cc9f0;
+    }
+
+    .btn-wizard {
+        padding: 0.65rem 2rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-wizard-next {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.35);
+    }
+
+    .btn-wizard-next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.45);
+    }
+
+    .btn-wizard-prev {
+        background: white;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-wizard-prev:hover {
+        background: var(--light-bg);
+    }
+
+    .btn-wizard-submit {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        color: white;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.35);
+    }
+
+    .btn-wizard-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(46, 204, 113, 0.45);
+    }
+
+    .btn-wizard-save {
+        background: rgba(76, 201, 240, 0.15);
+        color: #4cc9f0;
+        border: 1.5px solid rgba(76, 201, 240, 0.3);
+        border-radius: 50px;
+        padding: 0.5rem 1.25rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .btn-wizard-save:hover {
+        background: rgba(76, 201, 240, 0.25);
+    }
+
+    /* ============================================================
+   FORM CONTROLS
+   ============================================================ */
+    .form-control,
+    .form-select {
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        transition: var(--transition);
+        background: var(--card-light);
+        color: inherit;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        outline: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+        color: inherit;
+    }
+
+    /* dark mode form */
+    body.dark .form-control,
+    body.dark .form-select {
+        background: #2a2a4a;
+        border-color: #3a3a5c;
+        color: #e0e0e0;
+    }
+
+    body.dark .exam-summary-box,
+    body.dark .size-group,
+    body.dark .review-section,
+    body.dark .wizard-footer {
+        background: #1e1e3a;
+    }
+
+    body.dark .order-item-card {
+        border-color: #3a3a5c;
+    }
+
+    body.dark .financial-item {
+        border-color: #3a3a5c;
+    }
+
+    body.dark .designs-table tbody tr:nth-child(even) {
+        background: #2a2a4a;
+    }
+
+    /* ============================================================
+   RESPONSIVE
+   ============================================================ */
+    @media (max-width: 576px) {
+        .wizard-body {
+            padding: 1rem;
+        }
+
+        .wizard-footer {
+            padding: 1rem;
+        }
+
+        .step-label {
+            display: none;
+        }
+
+        .size-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* ============================================================
+   ADD BUTTONS
+   ============================================================ */
+    .btn-add {
+        background: none;
+        border: 2px dashed var(--primary);
+        color: var(--primary);
+        border-radius: 10px;
+        padding: 0.6rem 1.25rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .btn-add:hover {
+        background: rgba(67, 97, 238, 0.08);
+    }
+
+    /* status badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        background: rgba(247, 37, 133, 0.12);
+        color: #f72585;
+    }
+
+    .status-done {
+        background: rgba(76, 201, 240, 0.12);
+        color: #4cc9f0;
+    }
+
+    .status-partial {
+        background: rgba(243, 156, 18, 0.12);
+        color: #f39c12;
+    }
+    .review-section {
+    margin-top: 1rem;
+}
+
+.review-card,
+.review-summary-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.review-card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #eef1f4;
+    background: linear-gradient(135deg, #f8fafc, #ffffff);
+}
+
+.review-card-header h5 {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.review-table thead th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.review-table tbody td {
+    vertical-align: middle;
+    padding: 0.9rem 0.75rem;
+    border-color: #f1f5f9;
+    font-size: 0.92rem;
+}
+
+.review-table tbody tr:hover {
+    background-color: #fafcff;
+}
+
+.review-badge {
+    background: #eef6ff;
+    color: #0f4c81;
+    border: 1px solid #cfe4ff;
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.review-summary-card {
+    padding: 1rem 1.25rem;
+}
+
+.summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 0;
+    border-bottom: 1px dashed #e5e7eb;
+    font-size: 0.95rem;
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+.summary-row.final {
+    margin-top: 0.25rem;
+    padding-top: 1rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #198754;
+}
+
+.summary-row span {
+    color: #4b5563;
+}
+
+.summary-row strong {
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-row.final strong {
+    color: #198754;
+    font-size: 1.15rem;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+{# ── داده از Django ── #}
+{{ exam.prescription_services|json_script:"prescription-data" }}
+<script id="service-data" type="application/json">{{ services_data|safe }}</script>
+<script id="design-data" type="application/json">{{ designs_data|safe }}</script>
+<script type="application/json" id="existing-order-items-data">{{ existing_order_items|default:"[]"|safe }}</script>
+<script type="application/json" id="measurement-schema-data">
+    {{ measurement_schema|safe }}
+</script>
+
+{{ dynamic_fields_schema|json_script:"dynamic-fields-schema" }}
+
+
+<div class="wizard-wrapper">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-11">
+
+                <form method="post" id="order-form">
+                    {% csrf_token %}
+
+                    <!-- ╔══════════════════════════════════════════════╗ -->
+                    <!-- ║           PATIENT HEADER                    ║ -->
+                    <!-- ╚══════════════════════════════════════════════╝ -->
+                    <div class="wizard-card mb-3">
+                        <div class="wizard-patient-header">
+                            <div class="patient-avatar"><i class="fas fa-user"></i></div>
+                            <div class="patient-info">
+                                <h4>{{ patient.full_name }}</h4>
+                                <p>
+                                    <i class="fas fa-hashtag me-1"></i> شماره پرونده: {{ patient.case_number }}
+                                    {% if patient.stage %} &nbsp;|&nbsp; <i class="fas fa-layer-group me-1"></i> {{ patient.stage }}{% endif %}
+                                </p>
+                            </div>
+                            {% if exam %}
+                            <div class="exam-badge">
+                                <i class="fas fa-stethoscope me-1"></i> معاینه {{ exam.exam_date|jformat:"%Y/%m/%d" }}
+                            </div>
+                            {% else %}
+                            <div class="exam-badge">
+                                <i class="fas fa-file-invoice me-1"></i> سفارش مستقیم
+                            </div>
+                            {% endif %}
+                            {% if is_edit %}
+                            <div class="exam-badge" style="background: rgba(255,255,255,0.35);">
+                                <i class="fas fa-edit me-1"></i> ویرایش سفارش #{{ order.id }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ╔══════════════════════════════════════════════╗ -->
+                    <!-- ║           WIZARD CARD                       ║ -->
+                    <!-- ╚══════════════════════════════════════════════╝ -->
+                    <div class="wizard-card">
+                        {% if is_edit and total_paid > 0 %}
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mx-3 mt-3" role="alert">
+                            <i class="fas fa-exclamation-triangle fa-lg"></i>
+                            <div>
+                                این سفارش قبلاً <strong>{{ order.formatted_total_paid }} تومان</strong> پرداخت دریافت کرده است.
+                                در صورت تغییر مبلغ کل، مانده/بدهی بیمار به‌صورت خودکار به‌روزرسانی می‌شود؛ لطفاً با دقت ویرایش کنید.
+                            </div>
+                        </div>
+                        {% endif %}
+                                                <!-- STEP INDICATORS -->
+                        <div class="wizard-steps">
+                            <div class="step-item active" data-step="1">
+                                <div class="step-circle"><span>1</span></div>
+                                <div class="step-label">اطلاعات پایه</div>
+                            </div>
+                            <div class="step-item" data-step="2">
+                                <div class="step-circle"><span>2</span></div>
+                                <div class="step-label">اقلام سفارش</div>
+                            </div>
+                            <div class="step-item" data-step="3">
+                                <div class="step-circle"><span>3</span></div>
+                                <div class="step-label">اندازه‌گیری</div>
+                            </div>
+                            <div class="step-item" data-step="4">
+                                <div class="step-circle"><span>4</span></div>
+                                <div class="step-label">اطلاعات مالی</div>
+                            </div>
+                            <div class="step-item" data-step="5">
+                                <div class="step-circle"><span>5</span></div>
+                                <div class="step-label">تایید نهایی</div>
+                            </div>
+                        </div>
+
+                        <!-- ════════════════════════════════════════ -->
+                        <!-- STEP 1: اطلاعات پایه                   -->
+                        <!-- ════════════════════════════════════════ -->
+                        <div class="wizard-body">
+                            <div class="step-content active" id="step-1">
+                                <div class="step-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    اطلاعات پایه سفارش
+                                </div>
+                                {% if exam %}
+                                <!-- خلاصه معاینه -->
+                                <div class="exam-summary-box mb-4">
+                                    <div class="row g-3">
+                                        
+                                        <!-- ۱. شرح حال (Chief Complaint) -->
+                                        {% if exam.chief_complaint %}
+                                        <div class="col-12">
+                                            <div class="summary-label">شرح حال (Chief Complaint)</div>
+                                            <div class="summary-value text-dark">
+                                                {{ exam.chief_complaint|linebreaksbr }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- ۲. مشاهدات معاینه (اصلاح نام فیلدها طبق مدل) -->
+                                        <div class="col-12">
+                                            <div class="summary-label">مشاهدات معاینه</div>
+                                            <div>
+                                                {% if exam.is_separated_observations %}
+                                                    <!-- مشاهدات پای راست (سبز) -->
+                                                    {% if exam.observations_right.all %}
+                                                        <div class="mb-1">
+                                                            <span class="text-success fw-bold small me-1">پای راست:</span>
+                                                            {% for obs in exam.observations_right.all %}
+                                                                <span class="badge bg-success mb-1">{{ obs.name }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    <!-- مشاهدات پای چپ (آبی) -->
+                                                    {% if exam.observations_left.all %}
+                                                        <div class="mb-1">
+                                                            <span class="text-primary fw-bold small me-1">پای چپ:</span>
+                                                            {% for obs in exam.observations_left.all %}
+                                                                <span class="badge bg-primary mb-1">{{ obs.name }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if not exam.observations_right.all and not exam.observations_left.all %}
+                                                        <span class="text-muted">مشاهده‌ای ثبت نشده است</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <!-- مشاهدات حالت یکپارچه -->
+                                                    {% for obs in exam.observations.all %}
+                                                        <span class="badge bg-info text-dark mb-1">{{ obs.name }}</span>
+                                                    {% empty %}
+                                                        <span class="text-muted">مشاهده‌ای ثبت نشده است</span>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- ۳. تمرینات تجویزشده -->
+                                        {% if exam.exercises.all %}
+                                        <div class="col-12">
+                                            <div class="summary-label">تمرینات تجویزشده</div>
+                                            <div>
+                                                {% for ex in exam.exercises.all %}
+                                                    <span class="badge bg-secondary mb-1">{{ ex.name }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted">تمرینی ثبت نشده است</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- ۴. تجویزها (بر اساس JSONField یا Designs) -->
+                                        <div class="col-12">
+                                            <div class="summary-label">تجویزها (سرویس‌ها)</div>
+                                            <div>
+                                                {% if exam.prescription_services %}
+                                                    <!-- اگر سرویس‌ها در JSONField ذخیره می‌شوند -->
+                                                    {% for service in exam.prescription_services %}
+                                                        <span class="badge bg-warning text-dark mb-1">
+                                                            <i class="fas fa-cube me-1"></i>{{ service }}
+                                                        </span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-muted">تجویزی ثبت نشده است</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- ۵. یادداشت معاینه -->
+                                        {% if exam.notes %}
+                                        <div class="col-12">
+                                            <div class="summary-label">یادداشت معاینه</div>
+                                            <div class="summary-value text-dark"> 
+                                                {{ exam.notes|linebreaksbr }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+                                {% endif %}
+
+                                <div class="row g-4 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-calendar-alt me-1 text-primary"></i>
+                                            تاریخ ثبت سفارش
+                                        </label>
+
+                                        <input type="text"
+                                            name="order_date"
+                                            id="order-date"
+                                            class="form-control"
+                                            data-jdp
+                                            autocomplete="off"
+                                            placeholder="مثلاً 1405/04/30"
+                                            value="{{ persian_order_date|default:current_persian_order_date }}">
+                                    </div>
+                                </div>
+
+                                <div class="row g-4 " style = "margin-bottom: 10px;">
+                                    <div class="col-12">
+                                        <label class="form-label">
+                                            <i class="fas fa-sticky-note me-1 text-secondary"></i>
+                                            یادداشت کلی سفارش
+                                        </label>
+                                        <textarea name="general_notes" class="form-control" rows="3"
+                                            placeholder="یادداشت‌های کلی برای کارگاه یا تامین‌کننده..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ════════════════════════════════════════ -->
+                            <!-- STEP 2: اقلام سفارش                    -->
+                            <!-- ════════════════════════════════════════ -->
+                            <div class="step-content" id="step-2">
+                                <div class="step-title">
+                                    <i class="fas fa-list-ul"></i>
+                                    اقلام سفارش
+                                </div>
+
+                                {% if not exam.prescription_services %}
+                                <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
+                                    <i class="fas fa-info-circle fa-lg"></i>
+                                    <div>هیچ تجویزی در این معاینه ثبت نشده است. می‌توانید اقلام را به صورت دستی اضافه
+                                        کنید.</div>
+                                </div>
+                                {% endif %}
+
+                                <div id="order-items-container">
+                                    <!-- توسط JS پر می‌شود -->
+                                </div>
+
+                                <button type="button" class="btn-add" onclick="addNewItem()" style="margin-bottom: 10px;">
+                                    <i class="fas fa-plus-circle"></i>
+                                    اضافه کردن قلم جدید
+                                </button>
+                            </div>
+
+                            <!-- ════════════════════════════════════════ -->
+                            <!-- STEP 3: اندازه‌گیری                    -->
+                            <!-- ════════════════════════════════════════ -->
+                            <div class="step-content" id="step-3">
+                                <div class="step-title">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    اندازه‌گیری
+                                </div>
+
+                                <div id="sizes-container">
+                                    <!-- توسط JS از اقلام سفارش ساخته می‌شود -->
+                                </div>
+                            </div>
+
+                            <!-- ════════════════════════════════════════ -->
+                            <!-- STEP 4: اطلاعات مالی                   -->
+                            <!-- ════════════════════════════════════════ -->
+                            <div class="step-content" id="step-4">
+                                <div class="step-title">
+                                    <i class="fas fa-coins"></i>
+                                    اطلاعات مالی
+                                </div>
+
+                                <div id="financial-container">
+                                    <!-- توسط JS از اقلام سفارش ساخته می‌شود -->
+                                </div>
+
+                                <div class="review-section mt-3">
+                                    <div class="review-section-title">
+                                        <i class="fas fa-calculator"></i>
+                                        جمع کل
+                                    </div>
+                                    <div class="review-row">
+                                        <span class="label">مجموع قیمت‌ها:</span>
+                                        <span class="value" id="grand-total">۰ تومان</span>
+                                    </div>
+
+                                    <div class="review-row">
+                                        <span class="label">مجموع تخفیف‌ها:</span>
+                                        <span class="value text-danger" id="grand-discount">۰ تومان</span>
+                                    </div>
+
+                                    <div class="review-row">
+                                        <span class="label fw-bold">مبلغ نهایی:</span>
+                                        <span
+                                            class="value fw-bold text-primary"
+                                            id="grand-final"
+                                            style="font-size:1.1rem">
+                                            ۰ تومان
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ════════════════════════════════════════ -->
+                            <!-- STEP 5: تایید نهایی                    -->
+                            <!-- ════════════════════════════════════════ -->
+                            <div class="step-content" id="step-5">
+                                <div class="step-title">
+                                    <i class="fas fa-check-double"></i>
+                                    تایید و ارسال سفارش
+                                </div>
+
+                                <!-- خلاصه سفارش -->
+                                <div class="review-section">
+    <div class="review-card">
+        <div class="review-card-header">
+            <h5 class="mb-0">خلاصه سفارش</h5>
+            <small class="text-muted">مرور نهایی اقلام قبل از ثبت</small>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle review-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>خدمت / سرویس</th>
+                        <th class="text-center">تعداد</th>
+                        <th class="text-center">ارسال به</th>
+                        <th class="text-end">قیمت واحد</th>
+                        <th class="text-end">تخفیف</th>
+                        <th class="text-end">طراحی</th>
+                        <th class="text-end">جمع نهایی</th>
+                    </tr>
+                </thead>
+                <tbody id="review-items-list">
+                    <!-- rows injected by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="review-summary-card mt-3">
+        <div class="summary-row">
+            <span>جمع کل</span>
+            <strong id="review-total">0</strong>
+        </div>
+        <div class="summary-row">
+            <span>تخفیف کل</span>
+            <strong id="review-discount">0</strong>
+        </div>
+        <div class="summary-row final">
+            <span>مبلغ نهایی</span>
+            <strong id="review-final">0</strong>
+        </div>
+    </div>
+</div>
+
+
+                            </div><!-- /wizard-body -->
+
+                            <!-- WIZARD FOOTER -->
+                            <div class="wizard-footer">
+                                <div class="save-indicator" id="save-indicator">
+                                    <i class="fas fa-cloud"></i>
+                                    <span>پیش‌نویس ذخیره خواهد شد</span>
+                                </div>
+
+                                <div class="d-flex gap-2 flex-wrap justify-content-end">
+                                    <a href="{% url 'reception:patient-detail' patient.id %}" class="btn-wizard btn-wizard-prev" style="text-decoration:none">
+                                        <i class="fas fa-times"></i> انصراف
+                                    </a>
+
+                                    <button type="button" class="btn-wizard-save" id="save-draft-btn"
+                                        onclick="saveDraft()">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        ذخیره پیش‌نویس
+                                    </button>
+
+                                    <button type="button" class="btn-wizard btn-wizard-prev" id="prev-btn"
+                                        onclick="changeStep(-1)" style="display:none">
+                                        <i class="fas fa-arrow-right"></i>
+                                        مرحله قبل
+                                    </button>
+
+                                    <button type="button" class="btn-wizard btn-wizard-next" id="next-btn"
+                                        onclick="changeStep(1)">
+                                        مرحله بعد
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+
+                                    <button type="submit" class="btn-wizard btn-wizard-submit" id="submit-btn" style="display:none">
+                                        <i class="fas fa-paper-plane"></i>
+                                        {% if is_edit %}ذخیره تغییرات سفارش{% else %}ثبت نهایی سفارش{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /wizard-card -->
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/jquery-4.0.0.min.js' %}"></script>
+
+<script src="{% static 'js/persian-date-simple.js' %}"></script>
+<!-- Jalali Datepicker -->
+<script src="{% static 'js/jalali-datepicker.js' %}"></script>
+<script>
+    $(document).ready(function () {
+
+        /* ============================================================
+           HELPERS - فرمت قیمت به تومان
+           ============================================================ */
+        function formatNumber(n) {
+            if (isNaN(n)) return '۰';
+            return Math.round(n).toLocaleString('fa-IR');
+        }
+
+        function formatPrice(n) {
+            return formatNumber(n) + ' تومان';
+        }
+
+        // EDITS
+        let existingOrderItemsData = [];
+        try {
+            const eoElement = document.getElementById('existing-order-items-data');
+            if (eoElement) {
+                existingOrderItemsData = JSON.parse(eoElement.textContent);
+            }
+        } catch (e) { existingOrderItemsData = []; console.error("Error loading existing order items", e); }
+
+        const isEditMode = {{ is_edit|yesno:"true,false" }};
+
+        // ============================================================
+        // راه‌اندازی Datepicker تاریخ تحویل
+        // ============================================================
+        $("#delivered_at").persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: false,
+            persianDigit: true,
+            observer: true,
+            calendar: {
+                persian: {
+                    locale: 'fa',
+                    showHint: true,
+                    leapYearMode: 'astronomical'
+                }
+            },
+            navigator: { enabled: true },
+            toolbox: { enabled: true, calendarSwitch: { enabled: true } },
+            onSelect: function (unix) {
+                const selectedDate = $('#birth-date').val();
+                // دیباگ: جلوگیری از ReferenceError در صورتی که تابع وجود نداشته باشد
+                if (selectedDate && typeof calculateAgeFromJalali === 'function') {
+                    calculateAgeFromJalali(selectedDate);
+                }
+            }
+        });
+        
+        $('#delivered_at').on('focus click', function () {
+            $(this).persianDatepicker('show');
+        });
+
+        function clearDeliveryDate() {
+            $('#delivered_at').val('');
+        }
+
+        /* ============================================================
+           DATA FROM DJANGO
+           ============================================================ */
+        let prescriptionData = {};
+        let servicesData = {};
+        let designsData = {};
+        let dynamicFieldsSchema = {};
+        let measurementsSchema = {};
+
+        try {
+            prescriptionData = JSON.parse(document.getElementById('prescription-data').textContent);
+        } catch (e) { prescriptionData = {}; console.error("Error loading prescription data", e); }
+
+        try {
+            servicesData = JSON.parse(document.getElementById('service-data').textContent);
+        } catch (e) { servicesData = {}; console.error("Error loading services data", e); }
+
+        try {
+            designsData = JSON.parse(document.getElementById('design-data').textContent);
+        } catch (e) { designsData = {}; console.error("Error loading designs data", e); }
+        
+        try {
+            const dfElement = document.getElementById('dynamic-fields-schema');
+            if (dfElement) {
+                dynamicFieldsSchema = JSON.parse(dfElement.textContent);
+            }
+        } catch (e) { dynamicFieldsSchema = {}; console.error("Error loading dynamic fields schema", e); }
+        
+        try {
+            const msElement = document.getElementById('measurement-schema-data');
+            if (msElement) {
+                measurementsSchema = JSON.parse(msElement.textContent);
+            }
+        } catch (e) { measurementsSchema = {}; console.error("Error loading measurements schema", e); }
+
+
+        // توابع کمکی برای دریافت نام و قیمت بر اساس شناسه (ID)
+        function getServiceInfo(id) {
+            const cleanId = String(id).replace('srv_', '');
+            return servicesData[cleanId] || servicesData[id] || { name: id || 'نامشخص', price: '' };
+        }
+
+        function getDesignInfo(id) {
+            const cleanId = String(id).replace('des_', '');
+            return designsData[cleanId] || designsData[id] || { name: id || 'نامشخص', price: 0 };
+        }
+
+
+        /* ============================================================
+           WIZARD STATE
+           ============================================================ */
+        const TOTAL_STEPS = 5;
+        let currentStep = 1;
+        let itemCounter = 0;
+        let sizeCounter = 0;
+        let orderItems = [];
+
+        /* ============================================================
+           STEP NAVIGATION
+           ============================================================ */
+        window.changeStep = function (dir) {
+            if (dir === 1 && !validateStep(currentStep)) return;
+
+            if (dir === 1) {
+                syncBeforeNext(currentStep);
+            }
+
+            const newStep = currentStep + dir;
+            if (newStep < 1 || newStep > TOTAL_STEPS) return;
+
+            $('.step-item').each(function () {
+                const s = parseInt($(this).data('step'));
+                $(this).removeClass('active done');
+                if (s < newStep) $(this).addClass('done');
+                if (s === newStep) $(this).addClass('active');
+            });
+
+            $('.step-content').removeClass('active');
+            $(`#step-${newStep}`).addClass('active');
+
+            currentStep = newStep;
+            updateNavButtons();
+
+            if (currentStep === 3) buildSizesStep();
+            if (currentStep === 4) buildFinancialStep();
+            if (currentStep === 5) buildReviewStep();
+
+            $('html, body').animate({ scrollTop: $('.wizard-card').offset().top - 20 }, 300);
+        };
+
+        function updateNavButtons() {
+            $('#prev-btn').toggle(currentStep > 1);
+            $('#next-btn').toggle(currentStep < TOTAL_STEPS);
+            $('#submit-btn').toggle(currentStep === TOTAL_STEPS);
+            $('#save-draft-btn').toggle(currentStep < TOTAL_STEPS);
+        }
+
+        /* ============================================================
+           FINAL SUBMIT + VALIDATION
+           ============================================================ */
+        function validateStep(step) {
+            if (step === 2) {
+                if (orderItems.length === 0) {
+                    showToast('warning', 'حداقل یک قلم سفارش اضافه کنید.');
+                    return false;
+                }
+            }
+            if (step === 5) {
+                if (orderItems.length === 0) {
+                    showToast('warning', 'هیچ قلم سفارشی ثبت نشده است.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        $('#order-form').on('submit', function (e) {
+            e.preventDefault();
+            if (!validateStep(5)) return;
+
+            const orderData = collectOrderData();
+            const formData = new FormData(this);
+            formData.append('order_data', JSON.stringify(orderData));
+            formData.append('is_draft', '0');
+
+            const submitBtn = $('#submit-btn');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> در حال ثبت...');
+
+            fetch("{{ request.path }}", {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(isEditMode ? `✅ سفارش #${data.order_id} با موفقیت ویرایش شد.` : `✅ سفارش #${data.order_id} با موفقیت ثبت نهایی شد.`);
+                    window.location.href = "{% url 'reception:patient-detail' patient.id %}";
+                } else {
+                    alert('خطا: ' + (data.message || 'ثبت ناموفق'));
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            })
+            .catch(() => {
+                alert('خطا در ارتباط با سرور');
+                submitBtn.prop('disabled', false).html(originalText);
+            });
+        });
+
+        /* ============================================================
+           STEP 2: BUILD ORDER ITEMS FROM PRESCRIPTION
+           ============================================================ */
+        function buildPrescriptionItems() {
+            const container = $('#order-items-container');
+            container.empty();
+            orderItems = [];
+
+            if (!prescriptionData || typeof prescriptionData !== 'object') return;
+
+            let entries = [];
+
+            Object.entries(prescriptionData).forEach(([svcName, info]) => {
+                if (typeof info === 'object') {
+                    let mode = (info.designs_left || info.designs_right) ? 'split' : 'single';
+                    let serviceId = info.type_id || svcName; 
+                    entries.push({ service: serviceId, info: info, mode: mode });
+                }
+            });
+
+            entries.forEach(entry => {
+                addItemCard(entry.service, entry.info, entry.mode, false);
+            });
+        }
+
+        /* ============================================================
+           DYNAMIC FIELDS GENERATOR
+           ============================================================ */
+        function generateDynamicFieldsHTML(serviceId, safeId, savedDynamicData = {}) {
+            let html = '';
+            if (!serviceId) return html;
+
+            const cleanSvcId = String(serviceId).replace('srv_', '');
+            const fieldsForThisService = dynamicFieldsSchema[cleanSvcId] || [];
+
+            fieldsForThisService.forEach(field => {
+                let savedValue = savedDynamicData[field.name] !== undefined ? savedDynamicData[field.name] : '';
+                const cleanSaved = String(savedValue).trim();
+
+                const inputName = `dyn_${safeId}_${escHtml(field.name)}`;
+                const requiredAttr = field.is_required ? 'required' : '';
+                let fieldControlHTML = '';
+
+                if (field.field_type === 'select') {
+                    let optionsHTML = `<option value="">انتخاب کنید...</option>`;
+                    const choices = Array.isArray(field.choices) ? field.choices : [];
+                    choices.forEach(choice => {
+                        const cleanChoice = String(choice).trim();
+                        const isSelected = (cleanChoice === cleanSaved && cleanSaved !== '') ? 'selected' : '';
+                        optionsHTML += `<option value="${escHtml(cleanChoice)}" ${isSelected}>${escHtml(cleanChoice)}</option>`;
+                    });
+                    fieldControlHTML = `<select name="${inputName}" class="form-select" ${requiredAttr}>${optionsHTML}</select>`;
+                } else if (field.field_type === 'textarea') {
+                    fieldControlHTML = `<textarea name="${inputName}" class="form-control" rows="2" ${requiredAttr}>${escHtml(cleanSaved)}</textarea>`;
+                } else if (field.field_type === 'checkbox') {
+                    const isChecked = (cleanSaved === 'true' || cleanSaved === 'on' || cleanSaved === '1') ? 'checked' : '';
+                    fieldControlHTML = `
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="${inputName}" class="form-check-input" value="true" ${isChecked} ${requiredAttr}>
+                    </div>`;
+                } else {
+                    const inputType = field.field_type === 'number' ? 'number' : 'text';
+                    fieldControlHTML = `<input type="${inputType}" name="${inputName}" class="form-control" value="${escHtml(cleanSaved)}" ${requiredAttr}>`;
+                }
+                
+                html += `
+                <div class="col-md-3 mb-2 dynamic-field-item">
+                    <label class="form-label" style="font-size: 0.85rem;" title="${escHtml(field.name)}">
+                        <i class="fas fa-sliders-h text-muted"></i> ${escHtml(field.label)}
+                        ${field.is_required ? '<span class="text-danger">*</span>' : ''}
+                    </label>
+                    ${fieldControlHTML}
+                </div>`;
+            });
+
+            return html;
+        }
+
+        /* ============================================================
+           PREVENT DUPLICATE SERVICE SELECTION
+           ============================================================ */
+        $(document).on('mousedown focus', '.new-service-dropdown', function() {
+            const currentDropdown = $(this);
+            const currentCard = currentDropdown.closest('.item-card');
+            
+            let usedServiceIds = [];
+            $('.item-card').each(function() {
+                if (!$(this).is(currentCard)) {
+                    const id = $(this).attr('data-service-id');
+                    if (id) {
+                        usedServiceIds.push(String(id));
+                    }
+                }
+            });
+
+            currentDropdown.find('option').each(function() {
+                const optionValue = $(this).val();
+                if (optionValue && usedServiceIds.includes(String(optionValue))) {
+                    $(this).prop('disabled', true);
+                    let text = $(this).text().replace(' (انتخاب شده در این سفارش)', '');
+                    $(this).text(text + ' (انتخاب شده در این سفارش)');
+                } else {
+                    $(this).prop('disabled', false);
+                    $(this).text($(this).text().replace(' (انتخاب شده در این سفارش)', ''));
+                }
+            });
+        });
+
+        /* ============================================================
+           EVENT LISTENER FOR NEW ITEM SERVICE DROPDOWN
+           ============================================================ */
+        $(document).on('change', '.new-service-dropdown', function() {
+            const safeId = $(this).data('safeid');
+            const selectedServiceId = $(this).val();
+            const card = $(this).closest('.item-card');
+            const $select = $(this);
+            const selectedServiceName = $select.find('option:selected').text();
+    
+            const itemObj = orderItems.find(i => i.safeId === safeId);
+            if (itemObj) {
+                itemObj.service = selectedServiceId; 
+                itemObj.serviceName = selectedServiceName;
+                // دیباگ: قیمت پایه را نیز در آرایه آپدیت می‌کنیم
+                itemObj.suggestedPrice = selectedServiceId ? (servicesData[selectedServiceId]?.price || 0) : 0;
+            }
+
+            const titleSpan = card.find('.item-title-text');
+            if (selectedServiceId && servicesData[selectedServiceId]) {
+                titleSpan.text(servicesData[selectedServiceId].name);
+                card.attr('data-service-id', selectedServiceId);
+            } else {
+                titleSpan.text('قلم جدید');
+                card.attr('data-service-id', '');
+            }
+
+            const dynamicFieldsHTML = generateDynamicFieldsHTML(selectedServiceId, safeId, {});
+            $(`#dyn-container-${safeId}`).html(dynamicFieldsHTML);
+
+            const priceInput = $(`input[name="unit_price_${safeId}"]`);
+            if (priceInput.length && selectedServiceId && servicesData[selectedServiceId]) {
+                priceInput.val(servicesData[selectedServiceId].price);
+                calcItemTotal(safeId); 
+            }
+        });
+
+        /* ============================================================
+        DESIGN OPTIONS GENERATOR & EVENT LISTENER
+        ============================================================ */
+        function getDesignOptionsHTML(selectedId = null, selectedName = null) {
+            let options = '<option value="">-- انتخاب طراحی --</option>';
+            
+            Object.entries(designsData).forEach(([id, des]) => {
+                const isSelected = (String(id) === String(selectedId)) ? 'selected' : '';
+                options += `<option value="${id}" data-price="${des.price}" ${isSelected}>${escHtml(des.name)}</option>`;
+            });
+
+            if (selectedName && !Object.values(designsData).some(d => d.name === selectedName) && !designsData[selectedId]) {
+                options += `<option value="${escHtml(selectedName)}" selected>${escHtml(selectedName)} (ثبت شده)</option>`;
+            }
+
+            return options;
+        }
+
+        $(document).on('change', '.design-select', function () {
+    const $select = $(this);
+    const selectedOption = $select.find('option:selected');
+    const price = selectedOption.data('price') || 0;
+    const targetInputName = $select.data('target');
+
+    const $row = $select.closest('tr');
+
+    const $hiddenPriceInput = $row.find(
+        `input[type="hidden"][name="${targetInputName}"]`
+    );
+
+    const $visiblePriceInput = $hiddenPriceInput
+        .closest('.price-input-group')
+        .find('.price-format');
+
+    if (!$hiddenPriceInput.length) {
+        return;
+    }
+
+    const cleanPrice = $select.val() !== ''
+        ? normalizePrice(price)
+        : '';
+
+    $hiddenPriceInput.val(cleanPrice);
+    $visiblePriceInput.val(formatPrice(cleanPrice));
+
+    const designPriceMatch = String(targetInputName).match(
+        /^(?:right|left|common)_price_(\d+)_\d+$/
+    );
+
+    if (designPriceMatch) {
+        const safeId = parseInt(designPriceMatch[1], 10);
+        syncItemDesignTotal(safeId);
+    }
+});
+
+
+
+        /* ============================================================
+        PRICE FORMATTER: TOMAN + THOUSANDS SEPARATOR
+        ============================================================ */
+
+        function toEnglishDigits(str) {
+            if (str === null || str === undefined) return '';
+
+            const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+            const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+
+            return String(str)
+                .replace(/[۰-۹]/g, d => persianDigits.indexOf(d))
+                .replace(/[٠-٩]/g, d => arabicDigits.indexOf(d));
+        }
+
+        function normalizePrice(value) {
+            value = toEnglishDigits(value);
+            return String(value || '').replace(/[^\d]/g, '');
+        }
+
+        function formatPrice(value) {
+            const clean = normalizePrice(value);
+            if (!clean) return '';
+            return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function priceInputHTML(inputName, value = '') {
+            const cleanValue = normalizePrice(value);
+            const formattedValue = formatPrice(cleanValue);
+
+            return `
+                <div class="input-group price-input-group">
+                    <input type="text"
+                        class="form-control price-format"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        value="${escHtml(formattedValue)}"
+                        data-hidden-name="${escHtml(inputName)}">
+                    <span class="input-group-text">تومان</span>
+                    <input type="hidden"
+                        name="${escHtml(inputName)}"
+                        value="${escHtml(cleanValue)}">
+                </div>
+            `;
+        }
+
+        $(document).on('input', '.price-format', function () {
+            const $input = $(this);
+            const rawValue = normalizePrice($input.val());
+            const hiddenName = $input.data('hidden-name');
+
+            $input.val(formatPrice(rawValue));
+
+            const $hiddenInput = $input
+                .closest('.price-input-group')
+                .find(`input[type="hidden"][name="${hiddenName}"]`);
+
+            $hiddenInput.val(rawValue);
+
+            const designPriceMatch = String(hiddenName).match(
+                /^(?:right|left|common)_price_(\d+)_\d+$/
+            );
+
+            if (designPriceMatch) {
+                const safeId = parseInt(designPriceMatch[1], 10);
+                syncItemDesignTotal(safeId);
+            }
+        });
+
+
+        /* ============================================================
+           ADD ITEM CARD
+           ============================================================ */
+        function addItemCard(serviceId, info, mode, isNew) {
+            itemCounter++;
+            const itemId = `item-${itemCounter}`;
+            const safeId = itemCounter;
+            const safeSvc = serviceId ? serviceId.toString().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '') : `new_${safeId}`;
+
+            const serviceInfo = isNew ? { name: '', price: '' } : getServiceInfo(serviceId);
+            const serviceDisplay = isNew ? 'قلم جدید' : (info && info.type_name ? info.type_name : serviceInfo.name);
+            const suggestedPrice = isNew ? '' : serviceInfo.price;
+
+            const currentServiceId = isNew ? '' : serviceId; 
+
+            let leftDesigns = [], rightDesigns = [], commonDesigns = [];
+
+            if (!isNew && info) {
+                if (mode === 'split') {
+                    leftDesigns = parseDesigns(info.designs_left || [], info, info.design_prices_left);
+                    rightDesigns = parseDesigns(info.designs_right || [], info, info.design_prices_right);
+                } else {
+                    commonDesigns = parseDesigns(info.designs || [], info, info.design_prices);
+                }
+            }
+
+            const hasLeftRight = (leftDesigns.length > 0 || rightDesigns.length > 0);
+            const quantity = (info && (info.quantity || (info.left && info.left.quantity))) || 1;
+
+            let serviceSelectionHTML = '';
+            if (isNew) {
+                let optionsHtml = '<option value="">-- انتخاب سرویس از لیست --</option>';
+                Object.entries(servicesData).forEach(([id, srv]) => {
+                    optionsHtml += `<option value="${id}">${escHtml(srv.name)}</option>`;
+                });
+                
+                serviceSelectionHTML = `
+                <div class="col-12 mb-3 pb-2 border-bottom">
+                    <label class="form-label text-primary fw-bold"><i class="fas fa-search"></i> سرویس / محصول مورد نظر را انتخاب کنید <span class="text-danger">*</span></label>
+                    <select name="service_${safeId}" class="form-select new-service-dropdown" data-safeid="${safeId}" required>
+                        ${optionsHtml}
+                    </select>
+                </div>`;
+            } else {
+                serviceSelectionHTML = `<input type="hidden" name="service_${safeId}" value="${escHtml(serviceId || '')}">`;
+            }
+
+            let savedDynamicData = {};
+            if (!isNew && info && info.dynamic_fields) {
+                if (typeof info.dynamic_fields === 'string') {
+                    try { savedDynamicData = JSON.parse(info.dynamic_fields); } catch (e) {}
+                } else { savedDynamicData = info.dynamic_fields; }
+            }
+
+            let initialDynamicFieldsHTML = '';
+            if (!isNew && serviceId) {
+                initialDynamicFieldsHTML = generateDynamicFieldsHTML(serviceId, safeId, savedDynamicData);
+            }
+
+            const itemObj = {
+                id: itemId, safeId, service: serviceId, serviceName: serviceDisplay,
+                suggestedPrice: suggestedPrice, safeSvc, isNew, mode, leftDesigns, rightDesigns, commonDesigns,
+                send_to: 'workshop',
+                measurements: (!isNew && info && info.measurements) ? info.measurements : {},
+                savedDiscount: 0
+            };
+            orderItems.push(itemObj);
+
+            let tableHTML = '';
+            if (hasLeftRight) {
+                const rows = Math.max(leftDesigns.length, rightDesigns.length);
+                let rowsHTML = '';
+                for (let r = 0; r < rows; r++) {
+                    const ld = leftDesigns[r] || { id: '', name: '', price: '' };
+                    const rd = rightDesigns[r] || { id: '', name: '', price: '' };
+                    rowsHTML += `
+                    <tr>
+                        <td>${r + 1}</td>
+                        <td>
+                            <select name="right_param_${safeId}_${r + 1}" class="form-select design-select" data-target="right_price_${safeId}_${r + 1}">
+                                ${getDesignOptionsHTML(rd.id, rd.name)}
+                            </select>
+                        </td>
+<td>${priceInputHTML(`right_price_${safeId}_${r + 1}`, rd.price)}</td>
+                        <td>
+                            <select name="left_param_${safeId}_${r + 1}" class="form-select design-select" data-target="left_price_${safeId}_${r + 1}">
+                                ${getDesignOptionsHTML(ld.id, ld.name)}
+                            </select>
+                        </td>
+<td>${priceInputHTML(`left_price_${safeId}_${r + 1}`, ld.price)}</td>
+                        <td><button type="button" class="remove-size-btn" onclick="removeDesignRow(this)"><i class="fas fa-times"></i></button></td>
+                    </tr>`;
+                }
+                tableHTML = `<div class="mt-3"><label class="form-label">طراحی‌های پای چپ و راست</label><div class="table-responsive"><table class="designs-table" id="dt-${safeId}"><thead><tr><th>ردیف</th><th>پای راست</th><th>قیمت</th><th>پای چپ</th><th>قیمت</th><th></th></tr></thead><tbody>${rowsHTML}</tbody></table></div><button type="button" class="btn-add" onclick="addDesignRow(${safeId})"><i class="fas fa-plus"></i> ردیف طراحی</button></div>`;
+            } else {
+                const rows = Math.max(commonDesigns.length, 1);
+                let rowsHTML = '';
+                
+                for (let r = 0; r < rows; r++) {
+                    const d = commonDesigns[r] || { id: '', name: '', price: '' };
+                    rowsHTML += `
+                    <tr>
+                        <td>${r + 1}</td>
+                        <td>
+                            <select name="common_param_${safeId}_${r + 1}" class="form-select design-select" data-target="common_price_${safeId}_${r + 1}">
+                                ${getDesignOptionsHTML(d.id, d.name)}
+                            </select>
+                        </td>
+<td>${priceInputHTML(`common_price_${safeId}_${r + 1}`, d.price)}</td>
+                        <td><button type="button" class="remove-size-btn" onclick="removeDesignRow(this)"><i class="fas fa-times"></i></button></td>
+                    </tr>`;
+                }
+                tableHTML = `<div class="mt-3"><label class="form-label">طراحی‌ها / دیزاین‌ها</label><div class="table-responsive"><table class="designs-table" id="dt-${safeId}"><thead><tr><th>ردیف</th><th>پارامتر</th><th>قیمت واحد</th><th></th></tr></thead><tbody>${rowsHTML}</tbody></table></div><button type="button" class="btn-add" onclick="addDesignRowCommon(${safeId})"><i class="fas fa-plus"></i> ردیف طراحی</button></div>`;
+            }
+
+            const html = `
+            <div class="order-item-card item-card p-3 mb-4 border rounded bg-white shadow-sm" id="${itemId}" data-service-id="${currentServiceId}">
+                
+                <div class="item-header d-flex justify-content-between align-items-center w-100 border-bottom pb-2 mb-3">
+                    <div class="item-title d-flex align-items-center">
+                        <i class="fas fa-cube me-2 text-primary fs-5"></i>
+                        <span class="item-title-text fw-bold fs-6">${escHtml(serviceDisplay)}</span>
+                        ${isNew ? '<span class="badge bg-success ms-2" style="font-size:0.75rem;">قلم آزاد</span>' : `<span class="badge bg-primary ms-2" style="font-size:0.75rem;">از تجویز</span>`}
+                    </div>
+                    
+                    <div class="item-actions d-flex align-items-center gap-3">
+                        <button type="button" class="btn btn-sm d-flex align-items-center gap-1 text-primary p-0" onclick="duplicateItem(${safeId})" title="کپی از این قلم برای ثبت ویژگی‌های متفاوت" style="border:none; background:transparent; box-shadow:none;">
+                            <i class="fas fa-copy"></i> <span class="fw-bold">کپی قلم</span>
+                        </button>
+                        <button type="button" class="btn btn-sm text-danger p-0 ms-2" onclick="removeItem('${itemId}', ${safeId})" title="حذف قلم" style="border:none; background:transparent; box-shadow:none;">
+                            <i class="fas fa-times fs-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" name="item_mode_${safeId}" value="${mode || 'single'}">
+                
+                ${serviceSelectionHTML}
+
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label">تعداد</label>
+                        <input type="number" name="quantity_${safeId}" class="form-control" min="1" value="${quantity}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">نوع سفارش</label>
+                        <select name="send_to_${safeId}" class="form-select item-send-to">
+                            <option value="manufacturer">سفارش به تولیدکننده</option>
+                            <option value="workshop">موجودی / کارگاه کلینیک</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small">
+                            <i class="fas fa-flag me-1"></i>اولویت
+                        </label>
+                        <select name="priority_${safeId}" class="form-select item-priority">
+                            <option value="normal" selected>عادی</option>
+                            <option value="fast">فوری</option>
+                            <option value="urgent">اورژانسی</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small">
+                            <i class="fas fa-calendar-alt me-1"></i> زمان تحویل تقریبی
+                        </label>
+                        <input type="text"
+                            id="delivery_at_${safeId}"
+                            name="delivery_at_${safeId}"
+                            class="form-control item-delivery-date"
+                            placeholder="مثال: ۱۴۰۴/۰۳/۲۰"
+                            dir="ltr"
+                            autocomplete="off">
+                    </div>
+
+                </div>
+
+                <div class="row g-3">
+                    <div id="dyn-container-${safeId}" style="display: contents;">
+                        ${initialDynamicFieldsHTML}
+                    </div>
+                </div>
+
+                ${tableHTML}
+
+                <div class="mt-3">
+                    <label class="form-label">یادداشت این قلم</label>
+                    <textarea name="item_notes_${safeId}" class="form-control" rows="2" placeholder="یادداشت خاص این قلم برای کارگاه..."></textarea>
+                </div>
+
+                <input type="hidden" name="item_ids" value="${safeId}">
+            </div>`;
+
+            $('#order-items-container').append(html);
+
+            // راه‌اندازی تقویم برای فیلد داینامیک تاریخ تحویل پس از اضافه شدن به DOM
+            $(`#delivery_at_${safeId}`).persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                persianDigit: true,
+                observer: true,
+                calendar: {
+                    persian: {
+                        locale: 'fa',
+                        showHint: true,
+                        leapYearMode: 'astronomical'
+                    }
+                }
+            });
+
+            $(`#delivery_at_${safeId}`).on('focus click', function() {
+                $(this).persianDatepicker('show');
+            });
+
+        }
+        function buildExistingOrderItems() {
+    const container = $('#order-items-container');
+    container.empty();
+    orderItems = [];
+
+    if (!existingOrderItemsData || !Array.isArray(existingOrderItemsData) || existingOrderItemsData.length === 0) {
+        return;
+    }
+
+    existingOrderItemsData.forEach(function (item) {
+        const hasLeftRight = item.designs.some(d => d.side === 'left' || d.side === 'right');
+        const mode = hasLeftRight ? 'split' : 'single';
+
+        const leftIds = [], leftPrices = [];
+        const rightIds = [], rightPrices = [];
+        const commonIds = [], commonPrices = [];
+
+        item.designs.forEach(function (d) {
+            if (d.side === 'left') { leftIds.push(d.design_id); leftPrices.push(d.price); }
+            else if (d.side === 'right') { rightIds.push(d.design_id); rightPrices.push(d.price); }
+            else { commonIds.push(d.design_id); commonPrices.push(d.price); }
+        });
+
+        const info = {
+            type_id: item.service_id,
+            type_name: item.service_name,
+            quantity: item.quantity,
+            dynamic_fields: item.dynamic_fields || {},
+            measurements: item.measurements || {},
+            designs_left: leftIds, design_prices_left: leftPrices,
+            designs_right: rightIds, design_prices_right: rightPrices,
+            designs: commonIds, design_prices: commonPrices,
+        };
+
+        addItemCard(item.service_id, info, mode, false);
+
+        const safeId = itemCounter; // آخرین قلمی که همین الان اضافه شد
+        const newCard = $(`#item-${safeId}`);
+
+        newCard.find(`select[name="send_to_${safeId}"]`).val(item.send_to || 'manufacturer');
+        newCard.find(`select[name="priority_${safeId}"]`).val(item.priority || 'normal');
+        newCard.find(`#delivery_at_${safeId}`).val(item.delivery_date || '');
+        newCard.find(`textarea[name="item_notes_${safeId}"]`).val(item.notes || '');
+
+        const itemObj = orderItems.find(i => i.safeId === safeId);
+        if (itemObj) {
+            itemObj.suggestedPrice = item.unit_price;
+            itemObj.savedDiscount = item.discount;
+        }
+    });
+}
+        /* ============================================================
+           STEP 3: SIZES (MEASUREMENTS) - دارای تغییرات کلیدی (onchange)
+           ============================================================ */
+        function buildSizesStep() {
+            const container = $('#sizes-container');
+            container.empty();
+
+            if (orderItems.length === 0) {
+                container.html('<div class="alert alert-warning">ابتدا اقلام سفارش را در مرحله قبل وارد کنید.</div>');
+                return;
+            }
+
+            orderItems.forEach(item => {
+                const label = item.serviceName || `قلم ${item.safeId}`;
+                const cleanSvcId = String(item.service).replace('srv_', '');
+                const fieldsForThisService = measurementsSchema[cleanSvcId] || [];
+
+                if (fieldsForThisService.length === 0) {
+                    const html = `
+                    <div class="size-group mb-4 p-3 border rounded bg-light">
+                        <div class="size-group-title fw-bold text-secondary mb-2">
+                            <i class="fas fa-ruler me-2"></i>${escHtml(label)}
+                        </div>
+                        <div class="alert alert-info mb-0 py-2" style="font-size:0.85rem;">
+                            <i class="fas fa-info-circle"></i> پارامتر اندازه‌گیری برای این محصول تعریف نشده است.
+                        </div>
+                    </div>`;
+                    container.append(html);
+                    return; 
+                }
+
+                let inputsHTML = '';
+                fieldsForThisService.forEach(field => {
+                    const inputName = `meas_${item.safeId}_${escHtml(field.name)}`;
+                    const requiredAttr = field.required ? 'required' : '';
+                    const reqStar = field.required ? '<span class="text-danger">*</span>' : '';
+                    let fieldControlHTML = '';
+                    const savedVal = (item.measurements && item.measurements[field.name] !== undefined)
+                        ? item.measurements[field.name] : '';
+                    switch(field.type) {
+                        case 'select':
+                            let optionsHTML = '<option value="">انتخاب کنید...</option>';
+                            field.options.forEach(opt => {
+                                const isSel = (String(opt) === String(savedVal)) ? 'selected' : '';
+                                optionsHTML += `<option value="${escHtml(opt)}" ${isSel}>${escHtml(opt)}</option>`;
+                            });
+                            fieldControlHTML = `<select name="${inputName}" class="form-select" ${requiredAttr}>${optionsHTML}</select>`;
+                            break;
+                        case 'textarea':
+                            fieldControlHTML = `<textarea name="${inputName}" class="form-control" rows="2" ${requiredAttr}>${escHtml(savedVal)}</textarea>`;
+                            break;
+                        case 'checkbox':
+                            const isChk = (savedVal === true || savedVal === 'true') ? 'checked' : '';
+                            fieldControlHTML = `
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" name="${inputName}" class="form-check-input" value="true" ${isChk} ${requiredAttr}>
+                                    <label class="form-check-label text-muted" style="font-size:0.85rem;">دارد / بله</label>
+                                </div>`;
+                            break;
+                        case 'number':
+                        default:
+                            const isPriceField = (field.name === 'foot_length');
+                            const onChangeAttr = isPriceField
+                                ? `onchange="window.fetchPriceBySize('${cleanSvcId}', this.value, ${item.safeId})"`
+                                : '';
+                            fieldControlHTML = `<input type="number" name="${inputName}" class="form-control" step="0.1" value="${escHtml(savedVal)}" ${requiredAttr} ${onChangeAttr}>`;
+                            break;
+                    }
+
+                    inputsHTML += `
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" style="font-size: 0.9rem;">${escHtml(field.label)} ${reqStar}</label>
+                        ${fieldControlHTML}
+                    </div>`;
+                });
+
+                const html = `
+                <div class="size-group mb-4 p-3 border rounded bg-white shadow-sm">
+                    <div class="size-group-title border-bottom pb-2 mb-3">
+                        <span class="fw-bold text-primary"><i class="fas fa-ruler-combined me-2"></i>اندازه‌گیری‌های: ${escHtml(label)}</span>
+                    </div>
+                    <div class="row">
+                        ${inputsHTML}
+                    </div>
+                </div>`;
+                
+                container.append(html);
+            });
+        }
+        
+
+        /* ============================================================
+           STEP 4: FINANCIAL
+           ============================================================ */
+           /* ============================================================
+   CALCULATE AND SYNC DESIGN PRICES
+   ============================================================ */
+
+function getItemDesignTotal(safeId) {
+    let total = 0;
+
+    const pricePrefixes = [
+        `right_price_${safeId}_`,
+        `left_price_${safeId}_`,
+        `common_price_${safeId}_`
+    ];
+
+    pricePrefixes.forEach(prefix => {
+        $(`#item-${safeId} input[type="hidden"][name^="${prefix}"]`).each(function () {
+            total += parseFloat(normalizePrice($(this).val())) || 0;
+        });
+    });
+
+    return total;
+}
+
+function syncItemDesignTotal(safeId) {
+    const designTotal = getItemDesignTotal(safeId);
+
+    const $hiddenInput = $(
+        `#financial-container input[type="hidden"][name="design_price_${safeId}"]`
+    );
+
+    if (!$hiddenInput.length) {
+        return;
+    }
+
+    const $visibleInput = $hiddenInput
+        .closest('.financial-price-group')
+        .find('.financial-price-display');
+
+    $hiddenInput.val(designTotal);
+    $visibleInput.val(formatPrice(designTotal));
+
+    calcItemTotal(safeId);
+}
+
+function financialPriceInputHTML({
+    name,
+    value = 0,
+    inputClass = '',
+    safeId,
+    readonly = false
+}) {
+    const cleanValue = normalizePrice(value);
+    const formattedValue = formatPrice(cleanValue);
+
+    return `
+        <div class="input-group financial-price-group">
+            <input type="text"
+                   class="form-control financial-price-display ${inputClass}"
+                   inputmode="numeric"
+                   autocomplete="off"
+                   data-hidden-name="${escHtml(name)}"
+                   data-item="${safeId}"
+                   value="${escHtml(formattedValue)}"
+                   ${readonly ? 'readonly' : ''}>
+
+            <span class="input-group-text">تومان</span>
+
+            <input type="hidden"
+                   name="${escHtml(name)}"
+                   data-item="${safeId}"
+                   value="${escHtml(cleanValue)}">
+        </div>
+    `;
+}
+
+        /* ============================================================
+   STEP 4: FINANCIAL
+   ============================================================ */
+
+function buildFinancialStep() {
+    const container = $('#financial-container');
+    container.empty();
+
+    orderItems.forEach(item => {
+        const label = item.serviceName || `قلم ${item.safeId}`;
+        const suggestedPrice = normalizePrice(item.suggestedPrice || 0);
+        const savedDiscount = normalizePrice(item.savedDiscount || 0);
+
+        // مجموع قیمت طراحی‌های ثبت‌شده در Step 2
+        const designTotal = getItemDesignTotal(item.safeId);
+
+        const unitPriceHTML = financialPriceInputHTML({
+            name: `unit_price_${item.safeId}`,
+            value: suggestedPrice,
+            inputClass: 'fin-price',
+            safeId: item.safeId
+        });
+
+        const discountHTML = financialPriceInputHTML({
+            name: `discount_${item.safeId}`,
+            value: savedDiscount,
+            inputClass: 'fin-discount',
+            safeId: item.safeId
+        });
+
+        const designPriceHTML = financialPriceInputHTML({
+            name: `design_price_${item.safeId}`,
+            value: designTotal,
+            inputClass: 'fin-design',
+            safeId: item.safeId,
+            readonly: true
+        });
+
+        const html = `
+        <div class="financial-item">
+            <div class="financial-item-title">
+                <i class="fas fa-tag"></i>
+                ${escHtml(label)}
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">قیمت واحد</label>
+                    ${unitPriceHTML}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">تخفیف</label>
+                    ${discountHTML}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">مجموع قیمت طراحی‌ها</label>
+                    ${designPriceHTML}
+                </div>
+            </div>
+
+            <div class="price-summary mt-3" id="price-summary-${item.safeId}">
+                <div>
+                    <div class="total-label">جمع این قلم</div>
+                    <div class="total-value" id="item-total-${item.safeId}">
+                        ۰ تومان
+                    </div>
+                </div>
+
+                <div class="text-muted small">
+                    (قیمت واحد + طراحی − تخفیف) × تعداد
+                </div>
+            </div>
+        </div>`;
+
+        container.append(html);
+        calcItemTotal(item.safeId);
+    });
+
+    updateGrandTotal();
+}
+
+$(document).on('input', '.financial-price-display:not([readonly])', function () {
+    const $visibleInput = $(this);
+    const rawValue = normalizePrice($visibleInput.val());
+    const hiddenName = $visibleInput.data('hidden-name');
+
+    $visibleInput.val(formatPrice(rawValue));
+
+    const $hiddenInput = $visibleInput
+        .closest('.financial-price-group')
+        .find(`input[type="hidden"][name="${hiddenName}"]`);
+
+    $hiddenInput.val(rawValue);
+
+    const safeId = parseInt($visibleInput.data('item'), 10);
+
+    if (safeId) {
+        calcItemTotal(safeId);
+    }
+});
+
+
+        window.calcItemTotal = function (safeId) {
+    const qty =
+        parseInt(
+            normalizePrice($(`input[name="quantity_${safeId}"]`).val())
+        ) || 1;
+
+    const price =
+        parseFloat(
+            normalizePrice($(`input[name="unit_price_${safeId}"]`).val())
+        ) || 0;
+
+    const discount =
+        parseFloat(
+            normalizePrice($(`input[name="discount_${safeId}"]`).val())
+        ) || 0;
+
+    const design =
+        parseFloat(
+            normalizePrice($(`input[name="design_price_${safeId}"]`).val())
+        ) || 0;
+
+    const total = Math.max(0, (price + design - discount) * qty);
+
+    $(`#item-total-${safeId}`).text(`${formatPrice(total)} تومان`);
+
+    updateGrandTotal();
+};
+
+
+        function updateGrandTotal() {
+    let sumTotal = 0;
+    let sumDiscount = 0;
+
+    orderItems.forEach(item => {
+        const safeId = item.safeId;
+
+        const qty =
+            parseInt(
+                normalizePrice($(`input[name="quantity_${safeId}"]`).val())
+            ) || 1;
+
+        const price =
+            parseFloat(
+                normalizePrice($(`input[name="unit_price_${safeId}"]`).val())
+            ) || 0;
+
+        const discount =
+            parseFloat(
+                normalizePrice($(`input[name="discount_${safeId}"]`).val())
+            ) || 0;
+
+        const design =
+            parseFloat(
+                normalizePrice($(`input[name="design_price_${safeId}"]`).val())
+            ) || 0;
+
+        sumTotal += (price + design) * qty;
+        sumDiscount += discount * qty;
+    });
+
+    const sumFinal = Math.max(0, sumTotal - sumDiscount);
+
+    $('#grand-total').text(`${formatPrice(sumTotal)} تومان`);
+    $('#grand-discount').text(`${formatPrice(sumDiscount)} تومان`);
+    $('#grand-final').text(`${formatPrice(sumFinal)} تومان`);
+}
+
+
+        /* ============================================================
+           STEP 5: REVIEW
+           ============================================================ */
+        function buildReviewStep() {
+    const list = $('#review-items-list');
+    list.empty();
+
+    if (!orderItems.length) {
+        list.append(`
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">
+                    هیچ آیتمی برای نمایش وجود ندارد.
+                </td>
+            </tr>
+        `);
+    }
+
+    orderItems.forEach((item, index) => {
+        const label = item.serviceName || `قلم ${item.safeId}`;
+        const qty = parseInt($(`input[name="quantity_${item.safeId}"]`).val() || '0', 10);
+        const price = parseFloat($(`input[name="unit_price_${item.safeId}"]`).val() || '0');
+        const discount = parseFloat($(`input[name="discount_${item.safeId}"]`).val() || '0');
+        const design = parseFloat($(`input[name="design_price_${item.safeId}"]`).val() || '0');
+        const sendTo = $(`select[name="send_to_${item.safeId}"]`).val() || '-';
+
+        const sendLabel = {
+            workshop: '🏭 کارگاه',
+            exam_room: '🏥 اتاق معاینه',
+            supplier: '📦 تامین‌کننده',
+            manufacturer: '🏭 تولیدکننده'
+        }[sendTo] || sendTo;
+
+        const rowTotal = (qty * price) + design - discount;
+
+        list.append(`
+            <tr>
+                <td class="text-center fw-bold text-muted">${index + 1}</td>
+                <td>
+                    <div class="fw-semibold">${escHtml(label)}</div>
+                    ${item.notes ? `<small class="text-muted">${escHtml(item.notes)}</small>` : ''}
+                </td>
+                <td class="text-center">${qty || '-'}</td>
+                <td class="text-center">
+                    <span class="badge review-badge">${sendLabel}</span>
+                </td>
+                <td class="text-end">${formatPrice(price)} تومان</td>
+                <td class="text-end text-danger">${formatPrice(discount)} تومان</td>
+                <td class="text-end text-info">${formatPrice(design)} تومان</td>
+                <td class="text-end fw-bold text-success">${formatPrice(rowTotal)} تومان</td>
+            </tr>
+        `);
+    });
+
+    const gt = $('#grand-total').text();
+    const gd = $('#grand-discount').text();
+    const gf = $('#grand-final').text();
+
+    $('#review-total').text(gt + ' تومان');
+    $('#review-discount').text(gd + ' تومان');
+    $('#review-final').text(gf + ' تومان');
+}
+
+
+        function syncBeforeNext(step) {
+            if (step === 2) {
+                const existingIds = [];
+                $('#order-items-container .order-item-card').each(function () {
+                    existingIds.push($(this).attr('id'));
+                });
+                orderItems = orderItems.filter(i => existingIds.includes(i.id));
+            }
+        }
+
+        /* ============================================================
+   SAVE DRAFT
+   ============================================================ */
+const draftUrl = "{{ request.path }}";
+let draftOrderId = {{ order.id|default:"null" }};
+let isSavingDraft = false;
+let pendingDraftSave = false;
+
+window.saveDraft = function () {
+    // اگر یک ذخیره در حال انجام است، درخواست جدید نساز
+    // فقط علامت بزن که بعد از اتمام درخواست فعلی، یک بار دیگر ذخیره انجام شود
+    if (isSavingDraft) {
+        pendingDraftSave = true;
+        console.log('Draft save already in progress. Pending save marked.');
+        return;
+    }
+
+    isSavingDraft = true;
+
+    const orderData = collectOrderData();
+
+    // بسیار مهم: مطمئن شو آخرین draftOrderId داخل payload قرار می‌گیرد
+    orderData.order_id = draftOrderId || null;
+
+    const formData = new FormData();
+    formData.append('order_data', JSON.stringify(orderData));
+    formData.append('is_draft', '1');
+    formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());
+
+    $('#save-indicator')
+        .removeClass('saved')
+        .html('<i class="fas fa-spinner fa-spin"></i> در حال ذخیره پیش‌نویس...');
+
+    fetch(draftUrl, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'saved' || data.status === 'success') {
+            if (data.order_id) {
+                draftOrderId = data.order_id;
+            }
+
+            $('#save-indicator')
+                .addClass('saved')
+                .html('<i class="fas fa-check-circle"></i> ذخیره شد');
+
+            setTimeout(() => {
+                $('#save-indicator')
+                    .removeClass('saved')
+                    .html('<i class="fas fa-cloud"></i> پیش‌نویس ذخیره خواهد شد');
+            }, 3000);
+        } else {
+            console.error('Draft save failed:', data);
+            alert('خطا: ' + (data.message || 'ذخیره‌سازی ناموفق'));
+        }
+    })
+    .catch(err => {
+        console.error('خطای ذخیره:', err);
+        alert('خطا در ارتباط با سرور');
+    })
+    .finally(() => {
+        isSavingDraft = false;
+
+        // اگر حین ذخیره، درخواست جدیدی آمده بود، فقط یک بار دیگر ذخیره کن
+        if (pendingDraftSave) {
+            pendingDraftSave = false;
+
+            setTimeout(() => {
+                window.saveDraft();
+            }, 300);
+        }
+    });
+};
+
+
+                /* ============================================================
+           FINAL FORM SUBMIT (ثبت نهایی)
+           ============================================================ */
+        $('#order-form').on('submit', function (e) {
+            e.preventDefault();
+            
+            if (!validateStep(5)) return;
+
+            const orderData = collectOrderData();
+            console.log(orderData);
+            
+            const formData = new FormData(this);
+            formData.append('order_data', JSON.stringify(orderData));
+            formData.append('is_draft', '0'); // ثبت نهایی
+
+            // غیرفعال کردن دکمه برای جلوگیری از ارسال چندباره
+            const submitBtn = $('#submit-btn');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> در حال ثبت...');
+
+            fetch("{{ request.path }}", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData
+                
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('✅ سفارش #' + data.order_id + ' با موفقیت ثبت نهایی شد.');
+                    // window.location.href = " url 'reception:patient-detail' exam.patient.id %}";
+                } else {
+                    alert('خطا: ' + (data.message || 'ثبت ناموفق'));
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('خطا در ارتباط با سرور');
+                submitBtn.prop('disabled', false).html(originalText);
+            });
+        });
+        
+        /* ============================================================
+           REMOVE / ADD ITEMS => STEP 2
+           ============================================================ */
+        window.removeItem = function (itemId, safeId) {
+            $(`#${itemId}`).fadeOut(300, function () {
+                $(this).remove();
+                orderItems = orderItems.filter(i => i.id !== itemId);
+            });
+        };
+
+        window.addNewItem = function () {
+            addItemCard('', {}, 'single', true);
+        };
+
+        window.addDesignRow = function (safeId) {
+    const tbody = $(`#dt-${safeId} tbody`);
+    const rowNum = tbody.find('tr').length + 1;
+    const optionsHtml = getDesignOptionsHTML();
+
+    tbody.append(`
+    <tr>
+        <td>${rowNum}</td>
+        <td>
+            <select name="right_param_${safeId}_${rowNum}" class="form-select design-select" data-target="right_price_${safeId}_${rowNum}">
+                ${optionsHtml}
+            </select>
+        </td>
+        <td>${priceInputHTML(`right_price_${safeId}_${rowNum}`, '')}</td>
+        <td>
+            <select name="left_param_${safeId}_${rowNum}" class="form-select design-select" data-target="left_price_${safeId}_${rowNum}">
+                ${optionsHtml}
+            </select>
+        </td>
+        <td>${priceInputHTML(`left_price_${safeId}_${rowNum}`, '')}</td>
+        <td><button type="button" class="remove-size-btn" onclick="removeDesignRow(this)"><i class="fas fa-times"></i></button></td>
+    </tr>`);
+};
+
+window.addDesignRowCommon = function (safeId) {
+    const tbody = $(`#dt-${safeId} tbody`);
+    const rowNum = tbody.find('tr').length + 1;
+    const optionsHtml = getDesignOptionsHTML();
+
+    tbody.append(`
+    <tr>
+        <td>${rowNum}</td>
+        <td>
+            <select name="common_param_${safeId}_${rowNum}" class="form-select design-select" data-target="common_price_${safeId}_${rowNum}">
+                ${optionsHtml}
+            </select>
+        </td>
+        <td>${priceInputHTML(`common_price_${safeId}_${rowNum}`, '')}</td>
+        <td><button type="button" class="remove-size-btn" onclick="removeDesignRow(this)"><i class="fas fa-times"></i></button></td>
+    </tr>`);
+};
+
+window.removeDesignRow = function (btn) {
+    const $table = $(btn).closest('table');
+    const tableId = $table.attr('id') || '';
+
+    const safeIdMatch = tableId.match(/^dt-(\d+)$/);
+    const safeId = safeIdMatch
+        ? parseInt(safeIdMatch[1], 10)
+        : null;
+
+    $(btn).closest('tr').remove();
+
+    // شماره ردیف‌های باقی‌مانده را مرتب می‌کند.
+    $table.find('tbody tr').each(function (index) {
+        $(this).find('td:first').text(index + 1);
+    });
+
+    if (safeId) {
+        syncItemDesignTotal(safeId);
+    }
+};
+
+
+        window.updateItemSendTo = function (safeId, val) {
+            const item = orderItems.find(i => i.safeId === safeId);
+            if (item) item.send_to = val;
+        };
+
+        /* ============================================================
+           HELPERS
+           ============================================================ */
+        function parseDesigns(designIds, info = null, pricesArray = null) {
+            if (!designIds) return [];
+
+            let idsArray = [];
+            if (typeof designIds === 'string') {
+                try { idsArray = JSON.parse(designIds); } catch (e) { idsArray = [designIds]; }
+            } else if (Array.isArray(designIds)) {
+                idsArray = designIds;
+            } else {
+                idsArray = [designIds];
+            }
+
+            return idsArray.map((id, index) => {
+                const cleanId = String(id).replace('des_', '');
+                const designDictInfo = designsData[cleanId] || designsData[id];
+
+                let savedName = null;
+                if (info && info.design_names && Array.isArray(info.design_names) && info.design_names[index]) {
+                    savedName = info.design_names[index];
+                }
+
+                const explicitPrice = (pricesArray && pricesArray[index] !== undefined && pricesArray[index] !== null)
+                    ? pricesArray[index] : null;
+
+                if (designDictInfo) {
+                    return {
+                        id: cleanId,
+                        name: savedName || designDictInfo.name,
+                        price: explicitPrice !== null ? explicitPrice : designDictInfo.price
+                    };
+                } else {
+                    return {
+                        id: cleanId,
+                        name: savedName || ('دیزاین نامشخص (کد ' + cleanId + ')'),
+                        price: explicitPrice !== null ? explicitPrice : 0
+                    };
+                }
+            });
+        }
+
+        function escHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatNumber(n) {
+            if (isNaN(n)) return '0';
+            return Math.round(n).toLocaleString('fa-IR');
+        }
+
+        function showToast(type, msg) {
+            alert(msg);
+        }
+
+        /* ============================================================
+           DUPLICATE ITEM (تکثیر قلم سفارش)
+           ============================================================ */
+        window.duplicateItem = function(originalSafeId) {
+            const originalItem = orderItems.find(i => i.safeId === originalSafeId);
+            if (!originalItem) return;
+
+            const originalCard = $(`#item-${originalItem.safeId}`);
+            
+            let selectedServiceId = originalItem.service;
+            if (originalItem.isNew) {
+                selectedServiceId = originalCard.find('.new-service-dropdown').val();
+                if (!selectedServiceId) {
+                    showToast('warning', 'ابتدا یک سرویس برای این قلم انتخاب کنید تا بتوانید آن را کپی کنید.');
+                    return;
+                }
+            }
+
+            let dynamicFieldsData = {};
+            originalCard.find('[name^="dyn_' + originalSafeId + '_"]').each(function() {
+                const fieldName = $(this).attr('name').replace('dyn_' + originalSafeId + '_', '');
+                if ($(this).attr('type') === 'checkbox') {
+                    dynamicFieldsData[fieldName] = $(this).is(':checked') ? 'true' : 'false';
+                } else {
+                    dynamicFieldsData[fieldName] = $(this).val();
+                }
+            });
+
+            let leftDesigns = [], rightDesigns = [], commonDesigns = [];
+            if (originalItem.mode === 'split') {
+                originalCard.find('tbody tr').each(function(index) {
+                    leftDesigns.push({
+                        id: $(this).find(`select[name^="left_param_"]`).val(),
+                        price: $(this).find(`input[name^="left_price_"]`).val()
+                    });
+                    rightDesigns.push({
+                        id: $(this).find(`select[name^="right_param_"]`).val(),
+                        price: $(this).find(`input[name^="right_price_"]`).val()
+                    });
+                });
+            } else {
+                originalCard.find('tbody tr').each(function(index) {
+                    commonDesigns.push({
+                        id: $(this).find(`select[name^="common_param_"]`).val(),
+                        price: $(this).find(`input[name^="common_price_"]`).val()
+                    });
+                });
+            }
+
+            const mockInfo = {
+                type_id: selectedServiceId,
+                type_name: originalItem.serviceName,
+                quantity: 1, 
+                dynamic_fields: dynamicFieldsData,
+                designs_left: leftDesigns.map(d => d.id),
+                designs_right: rightDesigns.map(d => d.id),
+                designs: commonDesigns.map(d => d.id)
+            };
+
+            addItemCard(selectedServiceId, mockInfo, originalItem.mode, false);
+
+            const newSafeId = itemCounter; 
+            const newCard = $(`#item-${newSafeId}`);
+
+            if (originalItem.mode === 'split') {
+                leftDesigns.forEach((d, i) => {
+                    newCard.find(`input[name="left_price_${newSafeId}_${i+1}"]`).val(d.price);
+                });
+                rightDesigns.forEach((d, i) => {
+                    newCard.find(`input[name="right_price_${newSafeId}_${i+1}"]`).val(d.price);
+                });
+            } else {
+                commonDesigns.forEach((d, i) => {
+                    newCard.find(`input[name="common_price_${newSafeId}_${i+1}"]`).val(d.price);
+                });
+            }
+
+            newCard.find(`select[name="send_to_${newSafeId}"]`).val(originalCard.find(`select[name="send_to_${originalSafeId}"]`).val());
+            newCard.find(`select[name="status_${newSafeId}"]`).val(originalCard.find(`select[name="status_${originalSafeId}"]`).val());
+            newCard.find(`textarea[name="item_notes_${newSafeId}"]`).val(originalCard.find(`textarea[name="item_notes_${originalSafeId}"]`).val());
+
+            showToast('success', 'قلم با موفقیت کپی شد. اکنون می‌توانید تغییرات لازم را در قلم جدید اعمال کنید.');
+        };
+
+        /* ============================================================
+           FETCH PRICE BY SIZE (AJAX) - دیباگ و اصلاح شده
+           ============================================================ */
+        // دیباگ: تعریف سراسری برای شناسایی در HTML (onchange)
+        window.fetchPriceBySize = function(serviceId, sizeValue, safeId) {
+    if (!sizeValue || sizeValue.trim() === '') return;
+
+    const cleanSvcId = String(serviceId).replace('srv_', '');
+    const url = `/api/get-price-by-size/?service_id=${cleanSvcId}&size=${sizeValue}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.price !== undefined) {
+                const itemObj = orderItems.find(i => i.safeId === safeId);
+                if (itemObj) itemObj.suggestedPrice = data.price;
+
+                // اگر مرحله مالی از قبل ساخته شده، هم hidden و هم فیلد نمایشی را آپدیت کن
+                const hiddenInput = document.querySelector(`input[type="hidden"][name="unit_price_${safeId}"]`);
+                if (hiddenInput) {
+                    hiddenInput.value = normalizePrice(data.price);
+                    const visibleInput = hiddenInput.closest('.financial-price-group')?.querySelector('.financial-price-display');
+                    if (visibleInput) visibleInput.value = formatPrice(data.price);
+                    window.calcItemTotal(safeId);
+                }
+                showToast('success', `قیمت خودکار: ${formatPrice(data.price)} تومان`);
+            } else if (data.error) {
+                showToast('warning', data.error);
+            }
+        })
+        .catch(error => console.error('خطا در ارتباط با سرور:', error));
+};
+
+        /* ============================================================
+           INIT
+           ============================================================ */
+        if (isEditMode) {
+            buildExistingOrderItems();
+        } else {
+            buildPrescriptionItems();
+        }
+        // Auto Save هر ۴۵ ثانیه
+        setInterval(() => {
+            if (currentStep >= 2 && orderItems.length > 0) {
+                saveDraft();
+            }
+        }, 45000);
+        updateNavButtons();
+        /* ============================================================
+           COLLECT ALL ORDER DATA FOR BACKEND (اصلاح شده)
+           ============================================================ */
+        function collectOrderData() {
+            const items = [];
+
+            orderItems.forEach(item => {
+                const safeId = item.safeId;
+                const $item = $(`#item-${safeId}`);
+                // Measurements
+                const measurements = {};
+                $(`[name^="meas_${safeId}_"]`).each(function() {
+                    const name = $(this).attr('name').replace(`meas_${safeId}_`, '');
+                    measurements[name] = $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val();
+                });
+
+                // Dynamic Fields
+                const dynamicFields = {};
+                $(`[name^="dyn_${safeId}_"]`).each(function() {
+                    const name = $(this).attr('name').replace(`dyn_${safeId}_`, '');
+                    dynamicFields[name] = $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val();
+                });
+
+                // Designs
+                const designs = [];
+                $(`#dt-${safeId} tbody tr`).each(function() {
+                    const leftSelect = $(this).find('select[name^="left_param_"]');
+                    const rightSelect = $(this).find('select[name^="right_param_"]');
+                    const commonSelect = $(this).find('select[name^="common_param_"]');
+
+                    if (leftSelect.length && leftSelect.val()) {
+                        designs.push({
+                            design_id: leftSelect.val(),
+                            price: parseFloat($(this).find('input[name^="left_price_"]').val()) || 0,
+                            side: 'left'
+                        });
+                    }
+                    if (rightSelect.length && rightSelect.val()) {
+                        designs.push({
+                            design_id: rightSelect.val(),
+                            price: parseFloat($(this).find('input[name^="right_price_"]').val()) || 0,
+                            side: 'right'
+                        });
+                    }
+                    if (commonSelect.length && commonSelect.val()) {
+                        designs.push({
+                            design_id: commonSelect.val(),
+                            price: parseFloat($(this).find('input[name^="common_price_"]').val()) || 0
+                        });
+                    }
+                });
+                const itemData = {
+                    safeId: safeId,
+                    service_id: item.service || 
+                               $(`select[name="service_${safeId}"]`).val() || 
+                               $(`input[name="service_${safeId}"]`).val(),
+                    quantity: parseInt($(`input[name="quantity_${safeId}"]`).val()) || 1,
+                    unit_price: parseFloat($(`input[name="unit_price_${safeId}"]`).val()) || 0,
+                    discount: parseFloat($(`input[name="discount_${safeId}"]`).val()) || 0,
+                    design_price: parseFloat($(`input[name="design_price_${safeId}"]`).val()) || 0,
+
+                    send_to: $item.find('.item-send-to').val() || 'manufacturer',
+                    priority: $item.find('.item-priority').val() || 'normal',
+                    delivery_date: $item.find(`input[name="delivery_at_${safeId}"]`).val() || '',
+
+                    status: $(`select[name="status_${safeId}"]`).val() || 'pending',
+                    notes: $(`textarea[name="item_notes_${safeId}"]`).val() || '',
+                    measurements: measurements,
+                    dynamic_fields: dynamicFields,
+                    designs: designs,
+                    mode: item.mode || 'single',
+                    
+                };
+
+                
+                items.push(itemData);
+            });
+                
+            console.log(items[0]);
+            
+            return {
+                patient_id: {{ patient.id|default:0 }},
+                examination_id: {{ exam.id|default:0 }},
+                priority: $('select[name="priority"]').val() || 'normal',
+                delivery_date: $('#delivered_at').val(),
+                general_notes: $('textarea[name="general_notes"]').val() || '',
+                items: items,
+                order_id: draftOrderId || null ,  // قبلاً draft_order_id بود
+                order_date: $('#order-date').val(),
+            };
+
+        }
+    }); 
+
+    $('#order-date').persianDatepicker({
+    format: 'YYYY/MM/DD',
+    autoClose: true,
+    initialValue: false,
+    persianDigit: true,
+    observer: true,
+    inputDelay: 800,
+    calendar: {
+        persian: {
+            locale: 'fa',
+            showHint: true,
+            leapYearMode: 'astronomical'
+        }
+    },
+    navigator: {
+        enabled: true,
+        scroll: { enabled: false }
+    },
+    toolbox: {
+        enabled: true,
+        calendarSwitch: { enabled: true }
+    }
+});
+
+$('#order-date').on('focus click', function() {
+    $(this).persianDatepicker('show');
+});
+
+
+</script>
+{% endblock %}

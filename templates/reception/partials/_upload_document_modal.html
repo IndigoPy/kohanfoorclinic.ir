@@ -1,0 +1,58 @@
+<!-- Modal آپلود مدرک جدید -->
+<div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form method="post" action="{% url 'reception:upload-patient-document' patient.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadDocumentModalLabel">
+                        آپلود مدرک جدید
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="document_description" class="form-label">عنوان / توضیح مدرک</label>
+                        <input type="text"
+                               name="description"
+                               id="document_description"
+                               class="form-control"
+                               placeholder="مثلاً نسخه پزشک، عکس رادیولوژی، اسکن کف پا">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="documents" class="form-label">انتخاب فایل</label>
+                        <input type="file"
+                               name="documents"
+                               id="documents"
+                               class="form-control"
+                               multiple
+                               required>
+
+                        <div class="form-text">
+                            امکان انتخاب چند فایل به‌صورت همزمان وجود دارد.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        انصراف
+                    </button>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-upload me-1"></i>
+                        بارگذاری مدارک
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

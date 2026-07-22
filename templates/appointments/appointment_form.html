@@ -1,0 +1,215 @@
+{% load static %}
+
+<style>
+    /* Base Styles */
+    .datepicker-plot-area { font-family: 'vazir', sans-serif; z-index: 1056 !important; }
+    .form-control { border-radius: 0.5rem; border-color: #dee2e6; padding: 0.6rem 1rem; }
+    .input-group-text { border-radius: 0.5rem; background-color: #f8f9fa; color: #6c757d; }
+    .dynamic-section { background-color: #f8f9fc; border: 1px solid #e3e6f0; }
+
+    /* Select2 Professional & Bootstrap 5 Integration */
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        min-height: 44px;
+        background-color: #fff;
+        padding: 0.2rem 0.5rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    /* Focus State matching Bootstrap */
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--focus .select2-selection--multiple,
+    .select2-container--default.select2-container--open .select2-selection--single,
+    .select2-container--default.select2-container--open .select2-selection--multiple {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        outline: 0;
+    }
+
+    /* Single Select Adjustments */
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 35px;
+        color: #495057;
+        padding-right: 0.5rem;
+    }
+
+    /* RTL Arrow Position */
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 42px;
+        right: auto;
+        left: 10px;
+    }
+
+        /* Multiple Select Tags (Chips) Styling */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #f1f3f5;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 3px 8px;
+        margin-top: 5px;
+        margin-left: 5px; /* ایجاد فاصله بین تگ‌ها */
+        color: #495057;
+        display: inline-flex; /* قرارگیری تگ‌ها کنار یکدیگر */
+        flex-direction: row-reverse; /* قرارگیری دکمه ضربدر در سمت راست/چپ بر اساس RTL */
+        align-items: center;
+        gap: 6px;
+        width: auto; /* محدود کردن عرض به اندازه متن */
+        float: right; /* چینش راست‌چین برای زبان فارسی */
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #dc3545;
+        border: none;
+        background: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+        padding: 0;
+        margin: 0;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: transparent;
+        color: #a71d2a;
+    }
+
+    /* Dropdown Menu Styling */
+    .select2-dropdown {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1060; /* To appear above Bootstrap Modals */
+    }
+
+    .select2-results__option {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+    }
+
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 0.25rem;
+        margin: 0 4px;
+    }
+</style>
+
+<form method="post" 
+      action="{% if is_update %}{% url 'appointments:update' pk=form.instance.pk %}{% else %}{% url 'appointments:create' %}{% endif %}" 
+      id="appointmentForm"
+      data-is-update="{% if is_update %}true{% else %}false{% endif %}"
+      >
+    {% csrf_token %}
+
+    <div class="modal-header border-bottom pt-4 pb-3 px-4">
+        <h5 class="modal-title fw-bold text-primary">
+            {% if is_update %}
+                <i class="fa-solid fa-pen-to-square me-2"></i> ویرایش نوبت
+            {% else %}
+                <i class="fa-solid fa-calendar-plus me-2"></i> ثبت نوبت جدید
+            {% endif %}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+    </div>
+
+    <div class="modal-body p-4">
+        <p class="text-muted small mb-4">لطفاً اطلاعات نوبت بیمار را با دقت در فیلدهای زیر وارد نمایید.</p>
+
+        <h6 class="text-secondary fw-bold mb-4">
+            <i class="fa-solid fa-circle-info me-1"></i> اطلاعات اصلی نوبت
+        </h6>
+
+        <div class="row g-4">
+            <!-- نوع نوبت -->
+            <div class="col-md-12">
+                <label class="form-label fw-semibold" for="{{ form.appointment_type.id_for_label }}">
+                    {{ form.appointment_type.label }}
+                    {% if form.appointment_type.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-stethoscope"></i></span>
+                    {{ form.appointment_type }}
+                </div>
+                {{ form.appointment_type.errors }}
+            </div>
+
+            <!-- تاریخ نوبت -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="id_date_jalali">
+                    تاریخ نوبت
+                    {% if form.date.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
+                    <input type="text" id="id_date_jalali" class="form-control" 
+                        autocomplete="off" placeholder="انتخاب تاریخ..."
+                        value="{{ jalali_date_value|default:'' }}">
+                </div>
+                {{ form.date }}
+                {{ form.date.errors }}
+            </div>
+
+            <!-- ساعت شروع -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="{{ form.start_time.id_for_label }}">
+                    {{ form.start_time.label }}
+                    {% if form.start_time.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-clock"></i></span>
+                    {{ form.start_time }}
+                </div>
+                {{ form.start_time.errors }}
+            </div>
+        </div>
+
+        <!-- فیلدهای داینامیک -->
+        {% with dynamic_fields=form.dynamic_field_names %}
+        {% if dynamic_fields %}
+        <div class="mt-5 pt-2">
+            <h6 class="text-secondary fw-bold mb-3">
+                <i class="fa-solid fa-clipboard-list me-1"></i> اطلاعات تکمیلی
+            </h6>
+            <div class="dynamic-section rounded-4 p-4">
+                <div id="dynamic-fields-container" class="row g-4">
+                    {% for field in form %}
+                        {% if field.name in dynamic_fields %}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger mt-1 small">
+                                    <i class="fa-solid fa-circle-exclamation"></i> {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- پیام راهنما وقتی نوع انتخاب نشده -->
+        {% if not form.dynamic_field_names %}
+        <div class="mt-4 alert alert-info rounded-3 small">
+            <i class="fa-solid fa-circle-info me-1"></i>
+            پس از انتخاب نوع نوبت، فیلدهای تکمیلی نمایش داده می‌شوند.
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-footer bg-light d-flex justify-content-end gap-2 border-top">
+        <button type="button" class="btn btn-light border px-4 rounded-pill" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark me-1"></i> انصراف
+        </button>
+        <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm fw-bold">
+            <i class="fa-solid fa-check me-1"></i> ذخیره نوبت
+        </button>
+    </div>
+</form>

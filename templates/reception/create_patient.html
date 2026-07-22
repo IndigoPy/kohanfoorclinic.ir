@@ -1,0 +1,1017 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load jformat %}
+
+{% block title %}{% if patient %}ویرایش بیمار: {{ patient.first_name }} {{ patient.last_name }}{% else %}ثبت بیمار جدید{% endif %}{% endblock %}
+
+{% block extra_head %}
+
+<!-- integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" -->
+<!-- Select2 CSS -->
+<link href="{% static 'css/select2.min.css' %}" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'css/jalali-datepicker.css' %}">
+<!-- Select2 Bootstrap 4/5 Theme -->
+<!-- <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.1/dist/select2-bootstrap4.min.css" rel="stylesheet" /> -->
+
+<!-- Persian Datepicker CSS -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"> -->
+<style>
+
+    /* ===== استایل‌های کلی کارت ===== */
+    .create-patient-card {
+        background: var(--card-light, #ffffff);
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, var(--primary, #0d6efd), var(--secondary, #6c757d));
+        color: #ffffff; /* تغییر به سفید برای خوانایی بهتر روی گرادیان */
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .card-header-custom h2 {
+        font-weight: 300;
+        font-size: 2.3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .required-label::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    /* ===== استایل‌های پایه فرم (Input و Select) ===== */
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        font-size: 1.05rem;
+        min-height: 52px;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary, #86b7fe);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    /* ===== استایل‌های حرفه‌ای Select2 ===== */
+    /* Container اصلی */
+    .select2-container .select2-selection {
+        border-radius: 12px;
+        border: 1px solid #ced4da;
+        min-height: 52px;
+        background-color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    /* حالت فوکوس Select2 */
+    .select2-container--focus .select2-selection,
+    .select2-container--open .select2-selection {
+        border-color: var(--primary, #86b7fe);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    /* Select2 تک‌انتخابی (Single) */
+    .select2-container--default .select2-selection--single {
+        display: flex;
+        align-items: center;
+        padding: 0 0.75rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        padding-left: 0;
+        padding-right: 0;
+        color: #212529;
+        line-height: normal;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 50px;
+        right: 15px; /* تنظیم برای چینش راست‌چین (RTL) */
+    }
+
+    /* Select2 چندانتخابی (Multiple) */
+    .select2-container--default .select2-selection--multiple {
+        padding: 4px 8px;
+    }
+
+    /* فیلد جستجوی داخلی مولتی سلکت */
+    .select2-container--default .select2-search--inline .select2-search__field {
+        margin-top: 6px;
+        font-family: inherit;
+    }
+
+    /* تگ‌های (Pills) انتخاب شده در مولتی سلکت */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 5px 12px;
+        margin: 4px 4px 0 0;
+        font-size: 0.95rem;
+        color: #334155;
+        display: inline-flex;
+        flex-direction: row-reverse; /* قرارگیری صحیح ضربدر */
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* دکمه حذف (ضربدر) تگ‌ها */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #ef4444;
+        border: none;
+        background: transparent;
+        font-weight: bold;
+        font-size: 1.1rem;
+        padding: 0;
+        margin: 0;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #b91c1c;
+        background: transparent;
+    }
+
+    /* منوی کشویی (Dropdown) Select2 */
+    .select2-dropdown {
+        border-radius: 12px;
+        border: 1px solid #ced4da;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        z-index: 1055;
+        overflow: hidden;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 8px 12px;
+    }
+
+    .select2-results__option {
+        padding: 10px 16px;
+        font-size: 0.95rem;
+    }
+
+    /* ===== سایر استایل‌ها ===== */
+    .patient-photo-preview {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 20px;
+        border: 4px solid var(--primary, #0d6efd);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .upload-section {
+        background: #f8f9fa;
+        border: 2px dashed #ced4da;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .upload-section:hover {
+        border-color: var(--primary, #0d6efd);
+        background: #e8f4ff;
+    }
+
+    .uploaded-file {
+        background: white;
+        border-radius: 12px;
+        padding: 0.8rem 1.2rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .submit-btn {
+        border-radius: 14px;
+        padding: 1rem 1.8rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    #attached-patients + .select2-container .select2-selection--multiple {
+    min-height: 52px;
+    padding: 6px 8px;
+}
+
+#attached-patients + .select2-container .select2-selection__choice {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.8;
+}
+
+#attached-patients + .select2-container .select2-search__field {
+    min-width: 180px;
+}
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="create-patient-card">
+                <div class="card-header-custom">
+                    <h2><i class="fas {% if patient %}fa-user-edit{% else %}fa-user-plus{% endif %} me-3"></i> {% if patient %}ویرایش بیمار: {{ patient.first_name }} {{ patient.last_name }}{% else %}ثبت بیمار جدید{% endif %}</h2>
+                    <p class="mb-0 opacity-90">تمام فیلدهای ستاره‌دار اجباری هستند</p>
+                </div>
+
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show mb-4">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" id="patient-form">
+                        {% csrf_token %}
+
+                        <div class="text-center mb-5">
+                            <img src="{% if patient and patient.photo %}{{ patient.photo.url }}
+                            {% elif patient and patient.gender == 'male' %}{% static 'images/man.png' %}
+                            {% elif patient and patient.gender == 'female' %}{% static 'images/woman.png' %}
+                            {% else %}{% static 'images/avatar.png' %}
+                            {% endif %}" alt="عکس بیمار" class="patient-photo-preview" id="photo-preview">
+                            <div class="mt-3">
+                                <label class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-camera me-2"></i> انتخاب عکس بیمار
+                                    <input type="file" name="photo" accept="image/*" id="photo-input" style="display: none;">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-grid mb-4">
+                            <div>
+                                <label class="form-label fw-bold required-label">شماره پرونده</label>
+                                <input type="text" name="case_number" class="form-control form-control-lg" 
+                                value="{% if patient %}{{ patient.case_number }}{% else %}{{ suggested_case_number }}{% endif %}" required>
+
+                                <small class="text-muted">پیشنهادی سیستم. قابل ویرایش (باید منحصر به فرد باشد)</small>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold required-label">نام </label>
+                                <input type="text" name="first_name" class="form-control form-control-lg" 
+                                    value="{% if patient %}{{ patient.first_name }}{% else %}{{ prefill_data.first_name }}{% endif %}" required>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold required-label">نام خانوادگی</label>
+                                <input type="text" name="last_name" class="form-control form-control-lg" 
+                                    value="{% if patient %}{{ patient.last_name }}{% else %}{{ prefill_data.last_name }}{% endif %}" required>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold required-label">تلفن همراه اصلی</label>
+                                <input type="text" name="phone" class="form-control form-control-lg" dir="ltr" maxlength="11" 
+                                    value="{% if patient %}{{ patient.phone }}{% else %}{{ prefill_data.phone }}{% endif %}" required>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">تلفن همراه دوم</label>
+                                <input type="text" name="alternative_phone" class="form-control form-control-lg" dir="ltr" maxlength="11" value="{% if patient %}{{ patient.alternative_phone }}{% else %}{{ prefill_data.phone2 }}{% endif %}">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">کد ملی</label>
+                                <input type="text" name="national_id" class="form-control form-control-lg" dir="ltr" maxlength="10" value="{{ patient.national_id|default_if_none:'' }}">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold required-label">تاریخ تولد (شمسی)</label>
+                                <input type="text" name="birth_date" class="form-control form-control-lg" 
+                                     id="birth-date" placeholder="YYYY/MM/DD" value="{{ persian_birth_date|default_if_none:'' }}" required>
+                                <small class="text-muted">تقویم جلالی با اعداد فارسی</small>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">سن (سال)</label>
+                                <input type="number" name="age" class="form-control form-control-lg" 
+                                       id="age-output" readonly placeholder="محاسبه خودکار">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold required-label">جنسیت</label>
+                                <select name="gender" id="gender" class="form-select form-select-lg" required>
+                                    <option value="">انتخاب کنید</option>
+                                    <option value="male" {% if patient.gender == 'male' %}selected{% endif %}>مرد</option>
+                                    <option value="female" {% if patient.gender == 'female' %}selected{% endif %}>زن</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">سایز پا</label>
+                                <input type="text" name="foot_size" class="form-control form-control-lg" placeholder="مثال: 42" value="{{ patient.foot_size|default_if_none:'' }}" maxlength="2">
+                            </div>
+
+                             <div>
+                                <label class="form-label fw-bold">قد</label>
+                                <input type="text" name="height" class="form-control form-control-lg" placeholder="مثال: 185" value="{{ patient.height|default_if_none:'' }}" maxlength="3">
+                                
+                            </div>
+
+                             <div>
+                                <label class="form-label fw-bold">وزن</label>
+                                <input type="text" name="weight" class="form-control form-control-lg" placeholder="مثال: 85" value="{{ patient.weight|default_if_none:'' }}" maxlength="3">
+
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">معرف</label>
+                                <select name="referrer" class="form-select select2-allow-new">
+                                    <option value="">انتخاب یا وارد کنید</option>
+
+                                    {% for r in referrers %}
+                                        <option value="{{ r }}"
+                                                {% if patient and patient.referrer == r %}selected{% endif %}>
+                                            {{ r }}
+                                        </option>
+                                    {% endfor %}
+
+                                    {% if patient and patient.referrer and patient.referrer not in referrers %}
+                                        <option value="{{ patient.referrer }}" selected>
+                                            {{ patient.referrer }}
+                                        </option>
+                                    {% endif %}
+                                </select>
+                            </div>
+
+
+                            <div>
+                                <label class="form-label fw-bold">
+                                    پیوست به بیماران دیگر
+                                    <span class="text-muted small">(اختیاری)</span>
+                                </label>
+
+                                <select name="attached_patients"
+                                        class="form-select select2-ajax"
+                                        id="attached-patients"
+                                        multiple
+                                        data-placeholder="جستجو و انتخاب چند بیمار...">
+
+                                    {% for attached_patient in selected_attached_patients %}
+                                        <option value="{{ attached_patient.id }}" selected>
+                                            {{ attached_patient.first_name }} {{ attached_patient.last_name }}
+                                            {% if attached_patient.case_number %}
+                                                ({{ attached_patient.case_number }})
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+
+                                <small class="text-muted">
+                                    می‌توانید چند پرونده را جستجو و به این بیمار پیوست کنید.
+                                </small>
+                            </div>
+
+
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold required-label">علت مراجعه</label>
+                            <select name="visit_reason" id="visit_reason" class="form-select select2-tags" multiple="multiple" data-placeholder="انتخاب کنید یا بنویسید...">
+                                <option value="صافی کف پا" {% if 'صافی کف پا' in visit_reasons_list %}selected{% endif %}>صافی کف پا</option>
+                                <option value="درد زانو" {% if 'درد زانو' in visit_reasons_list %}selected{% endif %}>درد زانو</option>
+                                <option value="خار پاشنه" {% if 'خار پاشنه' in visit_reasons_list %}selected{% endif %}>خار پاشنه</option>
+                                <option value="پای دیابتی" {% if 'پای دیابتی' in visit_reasons_list %}selected{% endif %}>پای دیابتی</option>
+                                
+                                <!-- نمایش مقادیر دلخواهی که قبلا توسط کاربر تایپ و ذخیره شده‌اند -->
+                                {% for reason in visit_reasons_list %}
+                                    {% if reason not in 'صافی کف پا,درد زانو,خار پاشنه,پای دیابتی' %}
+                                        <option value="{{ reason }}" selected>{{ reason }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+
+                        </div>
+                        
+
+                        <!-- بیماری‌های زمینه‌ای -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">بیماری‌های زمینه‌ای</label>
+                            <select name="underlying_diseases" class="form-select select2-multi" multiple id="diseases">
+                                {% for d in all_diseases %}
+                                    <option value="{{ d.name }}" {% if d.name in diseases_list %}selected{% endif %}>
+                                        {{ d.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- سوابق ارتوتیک -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">سوابق استفاده از ارتوتیک</label>
+                            <select name="orthotic_history" class="form-select select2-multi" multiple id="orthotic_history">
+                                {% for o in all_orthotics %}
+                                    <option value="{{ o.name }}" {% if o.name in orthotic_list %}selected{% endif %}>
+                                        {{ o.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        <div class="form-grid mb-4">
+                            <div>
+                                <label class="form-label fw-bold">شهر</label>
+                                <input type="text" name="city" class="form-control form-control-lg" placeholder="مثال: تهران" value="{{ patient.city|default_if_none:'' }}" >
+                            </div>
+                            <div>
+                                <label class="form-label fw-bold">محله</label>
+                                <input type="text" name="neighborhood" class="form-control form-control-lg" placeholder="مثال: ونک" value="{{ patient.neighborhood|default_if_none:'' }}" >
+                            </div>
+                        </div>
+                        <div class="col-12 mt-4 mb-3">
+                            <h5 class="fw-bold text-primary border-bottom pb-2">
+                                <i class="fas fa-shield-alt me-2"></i> اطلاعات بیمه
+                            </h5>
+                            <small class="text-muted">
+                                تکمیل این بخش اختیاری است.
+                            </small>
+                        </div>
+
+                        <div class="form-grid mb-4">
+                            <div>
+                                <label class="form-label fw-bold">نوع بیمه پایه</label>
+                                <select name="primary_insurance_type" class="form-select form-select-lg">
+                                    <option value="">انتخاب کنید</option>
+                                    <option value="social_security" {% if insurance_info.primary_insurance_type == 'social_security' %}selected{% endif %}>تأمین اجتماعی</option>
+                                    <option value="health_insurance" {% if insurance_info.primary_insurance_type == 'health_insurance' %}selected{% endif %}>بیمه سلامت</option>
+                                    <option value="armed_forces" {% if insurance_info.primary_insurance_type == 'armed_forces' %}selected{% endif %}>نیروهای مسلح</option>
+                                    <option value="imam_khomeini" {% if insurance_info.primary_insurance_type == 'imam_khomeini' %}selected{% endif %}>کمیته امداد</option>
+                                    <option value="other" {% if insurance_info.primary_insurance_type == 'other' %}selected{% endif %}>سایر</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">نام بیمه پایه / سازمان بیمه‌گر</label>
+                                <input type="text"
+                                    name="primary_insurance_provider"
+                                    class="form-control form-control-lg"
+                                    value="{{ insurance_info.primary_insurance_provider|default_if_none:'' }}"
+                                    placeholder="مثال: تأمین اجتماعی، بیمه سلامت ایرانیان">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">شماره بیمه / شماره دفترچه</label>
+                                <input type="text"
+                                    name="insurance_number"
+                                    class="form-control form-control-lg"
+                                    dir="ltr"
+                                    value="{{ insurance_info.insurance_number|default_if_none:'' }}"
+                                    placeholder="شماره بیمه یا شماره دفترچه">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">کد رهگیری / کد اعتبارسنجی بیمه</label>
+                                <input type="text"
+                                    name="insurance_tracking_code"
+                                    class="form-control form-control-lg"
+                                    dir="ltr"
+                                    value="{{ insurance_info.insurance_tracking_code|default_if_none:'' }}"
+                                    placeholder="در صورت وجود">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">تاریخ اعتبار بیمه پایه</label>
+                                <input type="text"
+                                    name="primary_insurance_expiry_date"
+                                    class="form-control form-control-lg insurance-date"
+                                    placeholder="YYYY/MM/DD"
+                                    value="{{ persian_primary_insurance_expiry_date|default_if_none:'' }}">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">آیا بیمه تکمیلی دارد؟</label>
+                                <select name="has_supplementary_insurance" class="form-select form-select-lg">
+                                    <option value="">انتخاب کنید</option>
+                                    <option value="yes" {% if insurance_info.has_supplementary_insurance == 'yes' %}selected{% endif %}>بله</option>
+                                    <option value="no" {% if insurance_info.has_supplementary_insurance == 'no' %}selected{% endif %}>خیر</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">نام بیمه تکمیلی</label>
+                                <input type="text"
+                                    name="supplementary_insurance_provider"
+                                    class="form-control form-control-lg"
+                                    value="{{ insurance_info.supplementary_insurance_provider|default_if_none:'' }}"
+                                    placeholder="مثال: دانا، آسیا، البرز، ایران، سامان">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">شماره بیمه تکمیلی / شماره عضویت</label>
+                                <input type="text"
+                                    name="supplementary_insurance_number"
+                                    class="form-control form-control-lg"
+                                    dir="ltr"
+                                    value="{{ insurance_info.supplementary_insurance_number|default_if_none:'' }}"
+                                    placeholder="در صورت وجود">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">نام بیمه‌گذار اصلی</label>
+                                <input type="text"
+                                    name="policy_holder_name"
+                                    class="form-control form-control-lg"
+                                    value="{{ insurance_info.policy_holder_name|default_if_none:'' }}"
+                                    placeholder="نام فرد بیمه‌گذار اصلی">
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">نسبت بیمار با بیمه‌گذار</label>
+                                <select name="policy_holder_relation" class="form-select form-select-lg">
+                                    <option value="">انتخاب کنید</option>
+                                    <option value="self" {% if insurance_info.policy_holder_relation == 'self' %}selected{% endif %}>خود بیمار</option>
+                                    <option value="spouse" {% if insurance_info.policy_holder_relation == 'spouse' %}selected{% endif %}>همسر</option>
+                                    <option value="child" {% if insurance_info.policy_holder_relation == 'child' %}selected{% endif %}>فرزند</option>
+                                    <option value="parent" {% if insurance_info.policy_holder_relation == 'parent' %}selected{% endif %}>والدین</option>
+                                    <option value="other" {% if insurance_info.policy_holder_relation == 'other' %}selected{% endif %}>سایر</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">سقف پوشش بیمه تکمیلی</label>
+                                <input type="text"
+                                    name="supplementary_coverage_limit"
+                                    class="form-control form-control-lg"
+                                    dir="ltr"
+                                    value="{{ insurance_info.supplementary_coverage_limit|default_if_none:'' }}"
+                                    placeholder="مثال: 50,000,000">
+                                <small class="text-muted">مبلغ به تومان وارد شود.</small>
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold">درصد فرانشیز</label>
+                                <input type="number"
+                                    name="insurance_deductible_percent"
+                                    class="form-control form-control-lg"
+                                    min="0"
+                                    max="100"
+                                    value="{{ insurance_info.insurance_deductible_percent|default_if_none:'' }}"
+                                    placeholder="مثال: 10">
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">توضیحات بیمه</label>
+                            <textarea name="insurance_notes"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="توضیحات تکمیلی درباره شرایط بیمه، مدارک لازم، محدودیت پوشش یا نحوه تسویه">{{ insurance_info.insurance_notes|default_if_none:'' }}</textarea>
+                        </div>
+
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">یادداشت پذیرش</label>
+                            <textarea name="reception_notes" class="form-control" rows="3">{{ patient.reception_notes|default_if_none:'' }}</textarea>
+                        </div>
+                        {% if not patient %}
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">بارگذاری مدارک</label>
+                            <div class="upload-section">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">فایل‌ها را اینجا بکشید یا کلیک کنید</p>
+                                <input type="file" name="documents" multiple class="form-control" id="documents-input">
+                            </div>
+                            <div id="uploaded-files-list" class="mt-3"></div>
+                        </div>
+                        {% endif %}
+
+                        <!-- فیلدهای مخصوص حالت ویرایش -->
+                        {% if patient %}
+<div class="col-12 mt-4 mb-3">
+    <h5 class="fw-bold text-primary border-bottom pb-2">
+        <i class="fas fa-cogs me-2"></i> تنظیمات سیستمی و وضعیت پرونده
+    </h5>
+</div>
+<div class="form-grid mb-4" style="padding-bottom: 180px;">
+    <div>
+        <label class="form-label fw-bold">تاریخ پذیرش</label>
+        <input type="text"
+               name="admission_date"
+               id="admission-date"
+               class="form-control form-control-lg"
+               placeholder="YYYY/MM/DD"
+               value="{{ persian_admission_date|default_if_none:'' }}">
+        <small class="text-muted">در صورت نیاز می‌توانید تاریخ پذیرش مراجع را اصلاح کنید.</small>
+    </div>
+
+    <div>
+        <label class="form-label fw-bold">وضعیت فعلی پرونده</label>
+        <select name="stage" class="form-select form-select-lg select2-no-search">
+            <option value="waiting_exam" {% if patient.stage == 'waiting_exam' %}selected{% endif %}>در انتظار معاینه</option>
+            <option value="examined" {% if patient.stage == 'examined' %}selected{% endif %}>معاینه شده</option>
+            <option value="in_delivery" {% if patient.stage == 'in_delivery' %}selected{% endif %}>در حال تحویل</option>
+            <option value="waiting_qc" {% if patient.stage == 'waiting_qc' %}selected{% endif %}>در انتظار کنترل کیفی</option>
+            <option value="completed" {% if patient.stage == 'completed' %}selected{% endif %}>تکمیل شده</option>
+        </select>
+        <small class="text-muted">با تغییر این فیلد، بیمار در کارتابل‌ها جابجا می‌شود.</small>
+    </div>
+
+    <div>
+        <label class="form-label fw-bold">رده‌بندی مراجع (رفتاری)</label>
+        <select name="patient_class" id="patient-class-select" class="form-select form-select-lg">
+            <option value="good" data-color="#198754" {% if patient.patient_class == 'good' %}selected{% endif %}>خوش‌رفتار / عالی</option>
+            <option value="average" data-color="#ffc107" {% if patient.patient_class == 'average' %}selected{% endif %}>متوسط / نیاز به مدارا</option>
+            <option value="bad" data-color="#dc3545" {% if patient.patient_class == 'bad' %}selected{% endif %}>سخت‌گیر / بدقلق</option>
+        </select>
+    </div>
+</div>
+{% endif %}
+                        <div class="d-flex flex-wrap gap-3 justify-content-center no-print">
+                            <button type="submit" name="action" value="save_print" class="btn btn-info text-white submit-btn">
+                                <i class="fas fa-print me-2"></i> ذخیره و چاپ
+                            </button>
+                            <button type="submit" name="action" value="save_return" class="btn btn-success submit-btn">
+                                <i class="fas fa-save me-2"></i> ذخیره و بازگشت
+                            </button>
+                            <button type="reset" class="btn btn-outline-warning submit-btn">
+                                <i class="fas fa-undo me-2"></i> بازنشانی
+                            </button>
+                            {% if patient %}
+                            <a href="{% url 'reception:patient-detail' patient.id %}" class="btn btn-outline-secondary submit-btn">
+                                <i class="fas fa-arrow-left me-2"></i> بازگشت به پرونده
+                            </a>
+                            {% else %}
+                            <a href="{% url 'reception:dashboard' %}" class="btn btn-outline-secondary submit-btn">
+                                <i class="fas fa-arrow-left me-2"></i> انصراف
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Persian Datepicker JS -->
+<!-- <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script> -->
+<!-- <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script> -->
+
+<!-- jQuery -->
+<script src="{% static 'js/jquery-4.0.0.min.js' %}" ></script>
+<!-- Select2 JS -->
+<script src="{% static 'js/select2.min.js' %}"></script>
+<script src="{% static 'js/persian-date-simple.js' %}"></script>
+<script src="{% static 'js/jalali-datepicker.js' %}"></script>
+<script>
+$(document).ready(function() {
+
+    // پیش‌نمایش عکس بیمار
+    $('#photo-input').on('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#photo-preview').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    // تغییر آیکون پیش‌فرض بر اساس جنسیت
+    $('#gender').on('change', function() {
+        if ($('#photo-input')[0].files.length === 0) {
+            const gender = $(this).val();
+            if (gender === 'male') {
+                $('#photo-preview').attr('src', "{% static 'images/man.png' %}");
+            } else if (gender === 'female') {
+                $('#photo-preview').attr('src', "{% static 'images/woman.png' %}");
+            } else {
+                $('#photo-preview').attr('src', "{% static 'images/avatar.png' %}");
+            }
+        }
+    });
+
+    // نمایش لیست فایل‌های آپلود شده
+    $('#documents-input').on('change', function(e) {
+        $('#uploaded-files-list').empty();
+        for (let file of e.target.files) {
+            $('#uploaded-files-list').append(`
+                <div class="uploaded-file">
+                    <span><i class="fas fa-file me-2"></i>${file.name}</span>
+                    <small>${(file.size / 1024).toFixed(1)} KB</small>
+                </div>
+            `);
+        }
+    });
+
+    // لیست‌های داده برای select2
+    const underlyingConditions = [
+        {id: 'دیابت', text: 'دیابت'},
+        {id: 'فشار خون بالا', text: 'فشار خون بالا'},
+        // ... بقیه موارد رو خودت اضافه کن
+    ];
+
+    const orthoticHistory = [
+        {id: 'کفی طبی', text: 'کفی طبی'},
+        {id: 'ارتز سفارشی', text: 'ارتز سفارشی'},
+        // ... بقیه موارد
+    ];
+
+    // Initialize Select2 ها
+    $('#diseases').select2({
+        data: underlyingConditions,
+        tags: true,
+        placeholder: 'انتخاب یا تایپ کنید',
+        allowClear: true,
+    });
+
+    $('#orthotic_history').select2({
+        data: orthoticHistory,
+        tags: true,
+        placeholder: 'انتخاب یا تایپ کنید',
+        allowClear: true,
+    });
+
+    $('.select2-allow-new').select2({
+        tags: true,
+        placeholder: 'انتخاب یا وارد کنید',
+    });
+
+$('#attached-patients').select2({
+    width: '100%',
+    dir: 'rtl',
+    multiple: true,
+    placeholder: 'جستجو بر اساس نام، شماره پرونده یا تلفن...',
+    allowClear: true,
+    minimumInputLength: 1,
+
+    ajax: {
+        url: '{% url "reception:search-patients-ajax" %}',
+        dataType: 'json',
+        delay: 300,
+
+        data: function(params) {
+            return {
+                q: params.term || '',
+                source: 'select2',
+                exclude_patient_id: '{% if patient %}{{ patient.id }}{% endif %}'
+            };
+        },
+
+        processResults: function(data) {
+            return {
+                results: (data.results || []).map(function(p) {
+                    return {
+                        id: p.id,
+                        text: `${p.full_name} (${p.case_number || '-'})`
+                    };
+                })
+            };
+        },
+
+        cache: true
+    },
+
+    language: {
+        inputTooShort: function() {
+            return 'برای جستجو حداقل یک کاراکتر وارد کنید';
+        },
+        searching: function() {
+            return 'در حال جستجو...';
+        },
+        noResults: function() {
+            return 'بیماری یافت نشد';
+        },
+        loadingMore: function() {
+            return 'در حال بارگذاری موارد بیشتر...';
+        }
+    }
+});
+
+
+   // تابع محاسبه سن - مستقل از کتابخانه
+    function toEnglishDigits(str) {
+    if (!str) return '';
+    return str.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, c => c.charCodeAt(0) & 0x0F);
+}
+
+// تابع محاسبه سن
+function calculateAgeFromJalali(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string' || dateStr.trim() === '') {
+        $('#age-output').val('');
+        return;
+    }
+
+    // ۱. تبدیل اعداد فارسی به انگلیسی + تمیز کردن
+    dateStr = toEnglishDigits(dateStr.trim().replace(/\s+/g, ''));
+
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) {
+        $('#age-output').val('');
+        return;
+    }
+
+    const year  = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const day   = parseInt(parts[2], 10);
+
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        $('#age-output').val('');
+        return;
+    }
+
+    // تاریخ امروز شمسی
+    const today = new persianDate();
+
+    let age = today.year() - year;
+
+    // اگر تولد امسال نرسیده باشد
+    if (today.month() < month || (today.month() === month && today.date() < day)) {
+        age--;
+    }
+
+    $('#age-output').val(age >= 0 ? age : '');
+}
+// ابتدا تقویم قبلی را پاک کنید
+if ($("#birth-date").data('datepicker')) {
+    $("#birth-date").data('datepicker').destroy();
+}
+    // تنظیم persianDatepicker
+    $("#birth-date").persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false,
+        persianDigit: true,
+        observer: true,
+        inputDelay: 800,
+    // ۱. اگر پلاگین شما از نوع Kama یا فورک‌های مشابه است:
+    pastYearsCount: 105,  // نمایش تا ۱۰۵ سال قبل (از ۱۴۰۵ تا ۱۳۰۰)
+    futureYearsCount: 0,  // عدم نمایش سال‌های آینده
+        // تعیین کمترین تاریخ با استفاده از تایم‌استمپ (۱ فروردین ۱۳۰۰)
+        minDate: new Date("1921-03-21").getTime(),         
+        // (اختیاری) جلوگیری از انتخاب تاریخ‌های آینده برای تاریخ تولد
+        maxDate: new persianDate().valueOf(), 
+yearRange: "-105:+0", // یا استفاده از فرمت "1300:1405"
+        calendar: {
+            persian: {
+                locale: 'fa',
+                showHint: true,
+                leapYearMode: 'astronomical'
+            }
+        },
+        navigator: { 
+            enabled: true,
+            scroll: { enabled: true } // اطمینان از فعال بودن اسکرول در منوی انتخاب سال
+        },
+        toolbox: { enabled: true, calendarSwitch: { enabled: true } },
+
+        // مهم: بعد از هر انتخاب
+        onSelect: function(unix) {
+            // گرفتن مقدار فعلی input (بعد از انتخاب)
+            const selectedDate = $('#birth-date').val();
+            if (selectedDate) {
+                calculateAgeFromJalali(selectedDate);
+            }
+        }
+    });
+
+    // باز شدن تقویم با کلیک/فوکوس
+    $('#birth-date').on('focus click', function() {
+        $(this).persianDatepicker('show');
+    });
+
+    // برای تایپ دستی – هر تغییری که کاربر ایجاد کنه
+    $('#birth-date').on('input change blur paste', function() {
+        calculateAgeFromJalali($(this).val());
+    });
+
+    // برای اطمینان بیشتر: وقتی تقویم بسته می‌شه
+    $('#birth-date').on('hide.persianDatepicker', function(e, unix) {
+        calculateAgeFromJalali($('#birth-date').val());
+    });
+
+    $('.select2-tags').select2({
+        tags: true, // اجازه تایپ مقادیر جدید را می‌دهد
+        placeholder: "انتخاب کنید یا تایپ کنید...",
+        allowClear: true,
+        width: '100%',
+        dir: "rtl"
+    });
+
+    // تابع برای رندر کردن دایره رنگی در Select2 طبقه‌بندی بیمار
+    function formatPatientClass(state) {
+        if (!state.id) { return state.text; }
+        
+        // دریافت رنگ از ویژگی data-color در HTML
+        var color = $(state.element).data('color');
+        
+        // ساخت عنصر HTML برای نمایش (یک دایره رنگی + متن)
+        var $state = $(
+            '<span><span style="display:inline-block; width:14px; height:14px; border-radius:50%; background-color:' + color + '; margin-left:10px; vertical-align:middle; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></span>' + state.text + '</span>'
+        );
+        return $state;
+    };
+
+    // اعمال Select2 روی فیلد طبقه‌بندی با قالب‌بندی سفارشی
+    if ($('#patient-class-select').length) {
+        $('#patient-class-select').select2({
+            templateResult: formatPatientClass,
+            templateSelection: formatPatientClass,
+            minimumResultsForSearch: Infinity, // مخفی کردن باکس جستجو چون فقط 3 گزینه داریم
+            width: '100%',
+            dir: "rtl"
+        });
+    }
+
+    // اعمال Select2 روی فیلد تغییر وضعیت بدون باکس جستجو
+    $('.select2-no-search').select2({
+        minimumResultsForSearch: Infinity,
+        width: '100%',
+        dir: "rtl"
+    });
+
+    $('.insurance-date').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false,
+        persianDigit: true,
+        observer: true,
+        inputDelay: 800,
+        calendar: {
+            persian: {
+                locale: 'fa',
+                showHint: true,
+                leapYearMode: 'astronomical'
+            }
+        },
+        navigator: {
+            enabled: true,
+            scroll: { enabled: true }
+        },
+        toolbox: {
+            enabled: true,
+            calendarSwitch: { enabled: true }
+        }
+    });
+$('#admission-date').persianDatepicker({
+    format: 'YYYY/MM/DD',
+    autoClose: true,
+    initialValue: false,
+    persianDigit: true,
+    observer: true,
+    inputDelay: 800,
+    calendar: {
+        persian: {
+            locale: 'fa',
+            showHint: true,
+            leapYearMode: 'astronomical'
+        }
+    },
+    navigator: {
+        enabled: true,
+        scroll: { enabled: true }
+    },
+    toolbox: {
+        enabled: true,
+        calendarSwitch: { enabled: true }
+    }
+});
+
+$('#admission-date').on('focus click', function() {
+    $(this).persianDatepicker('show');
+});
+
+});
+</script>
+{% endblock %}

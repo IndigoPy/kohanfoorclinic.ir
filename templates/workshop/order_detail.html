@@ -1,0 +1,449 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4" dir="rtl">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">سفارش #{{ order.id }}</h3>
+            <span class="text-muted">
+                {{ patient.full_name }} - {{ patient.case_number }}
+            </span>
+        </div>
+
+        <a href="{% url 'workshop:order-list' %}"
+           class="btn btn-outline-secondary">
+            بازگشت به لیست
+        </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">اطلاعات بیمار</h5>
+                </div>
+
+                <div class="card-body">
+                    <p>
+                        <strong>نام:</strong>
+                        {{ patient.full_name }}
+                    </p>
+
+                    <p>
+                        <strong>پرونده:</strong>
+                        {{ patient.case_number }}
+                    </p>
+
+                    <p>
+                        <strong>تلفن:</strong>
+                        {{ patient.phone }}
+                    </p>
+
+                    <p>
+                        <strong>جنسیت:</strong>
+                        {{ patient.get_gender }}
+                    </p>
+
+                    <p>
+                        <strong>سایز پا:</strong>
+                        {{ patient.foot_size|default:"-" }}
+                    </p>
+
+                    <p>
+                        <strong>قد:</strong>
+                        {{ patient.height|default:"-" }}
+                    </p>
+
+                    <p class="mb-0">
+                        <strong>وزن:</strong>
+                        {{ patient.weight|default:"-" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">اطلاعات کلی سفارش</h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>
+                                <strong>وضعیت:</strong>
+                                {{ order.get_status_display }}
+                            </p>
+
+                            <p>
+                                <strong>اولویت:</strong>
+                                {{ order.get_priority_display }}
+                            </p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <p>
+                                <strong>تاریخ ثبت:</strong>
+                                {{ order.created_at|date:"Y/m/d H:i" }}
+                            </p>
+
+                            <p>
+                                <strong>ثبت‌کننده:</strong>
+                                {{ order.created_by.get_full_name|default:order.created_by.username|default:"-" }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if order.notes %}
+                    <div class="alert alert-light border">
+                        <strong>یادداشت سفارش:</strong>
+                        <div class="mt-2">
+                            {{ order.notes|linebreaksbr }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if order.general_notes %}
+                    <div class="alert alert-light border mb-0">
+                        <strong>یادداشت کلی:</strong>
+                        <div class="mt-2">
+                            {{ order.general_notes|linebreaksbr }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">محصولات ارسالی به کارگاه</h5>
+        </div>
+
+        <div class="card-body">
+            {% for item in workshop_items %}
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="mb-1">{{ item.service }}</h5>
+
+                        {% if item.variant %}
+                        <span class="text-muted">
+                            نوع: {{ item.variant }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <span class="badge bg-primary">
+                        {{ item.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong>تعداد:</strong>
+                        {{ item.quantity }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <strong>طول پا:</strong>
+                        {{ item.foot_length|default:"-" }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <strong>اولویت:</strong>
+                        {{ item.get_priority_display }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <strong>تحویل تقریبی:</strong>
+                        {{ item.delivery_date|default:"-" }}
+                    </div>
+                </div>
+
+                {% if item.designs.all %}
+                <div class="mb-3">
+                    <strong>طراحی‌ها:</strong>
+
+                    {% for design_item in item.designs.all %}
+                    <span class="badge bg-light text-dark border">
+                        {{ design_item.design }}
+                        {% if design_item.side %}
+                            - {{ design_item.get_side_display }}
+                        {% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if item.measurements %}
+                <div class="mb-3">
+                    <strong>اندازه‌گیری‌ها:</strong>
+
+                    <div class="table-responsive mt-2">
+                        <table class="table table-sm table-bordered mb-0">
+                            <tbody>
+                                {% for key, value in item.measurements.items %}
+                                <tr>
+                                    <th class="bg-light">{{ key }}</th>
+                                    <td>{{ value|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if item.dynamic_fields %}
+                <div class="mb-3">
+                    <strong>مشخصات محصول:</strong>
+
+                    <div class="table-responsive mt-2">
+                        <table class="table table-sm table-bordered mb-0">
+                            <tbody>
+                                {% for key, value in item.dynamic_fields.items %}
+                                <tr>
+                                    <th class="bg-light">{{ key }}</th>
+                                    <td>{{ value|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post"
+                      action="{% url 'workshop:update-item-status' item.id %}">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">وضعیت آیتم</label>
+
+                            <select name="status"
+                                    class="form-select"
+                                    required>
+                                {% for value, label in item_status_choices %}
+                                    {% if value != 'draft' %}
+                                    <option value="{{ value }}"
+                                            {% if item.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-7">
+                            <label class="form-label">
+                                توضیحات ساخت این محصول
+                            </label>
+
+                            <textarea name="notes"
+                                      class="form-control"
+                                      rows="2">{{ item.notes }}</textarea>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit"
+                                    class="btn btn-success w-100">
+                                ذخیره
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-5">
+                محصولی برای کارگاه ثبت نشده است.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">تغییر گروهی وضعیت</h5>
+                </div>
+
+                <div class="card-body">
+                    <form method="post"
+                          action="{% url 'workshop:update-all-items-status' order.id %}">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                وضعیت تمام محصولات کارگاه
+                            </label>
+
+                            <select name="status"
+                                    class="form-select"
+                                    required>
+                                {% for value, label in item_status_choices %}
+                                    {% if value != 'draft' %}
+                                    <option value="{{ value }}">
+                                        {{ label }}
+                                    </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-warning">
+                            اعمال روی همه محصولات
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">یادداشت کلی کارگاه</h5>
+                </div>
+
+                <div class="card-body">
+                    <form method="post"
+                          action="{% url 'workshop:update-workshop-notes' order.id %}">
+                        {% csrf_token %}
+
+                        <textarea name="workshop_notes"
+                                  class="form-control mb-3"
+                                  rows="4"
+                                  placeholder="توضیحات کلی کارگاه درباره سفارش">{{ order.workshop_notes }}</textarea>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            ذخیره یادداشت
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">سوابق کارگاه</h5>
+    </div>
+
+    <div class="card-body">
+        {% if workshop_logs %}
+            <div class="timeline">
+                {% for log in workshop_logs %}
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>{{ log.get_action_display }}</strong>
+
+                            {% if log.item %}
+                                <span class="text-muted">
+                                    - {{ log.item.service }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <small class="text-muted">
+                            {{ log.created_at|date:"Y/m/d H:i" }}
+                        </small>
+                    </div>
+
+                    {% if log.old_status or log.new_status %}
+                    <div class="mb-2">
+                        <span class="badge bg-light text-dark border">
+                            وضعیت قبلی:
+                            {{ log.old_status|default:"-" }}
+                        </span>
+
+                        <span class="mx-1">←</span>
+
+                        <span class="badge bg-primary">
+                            وضعیت جدید:
+                            {{ log.new_status|default:"-" }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {% if log.old_order_status or log.new_order_status %}
+                    <div class="mb-2">
+                        <span class="badge bg-light text-dark border">
+                            وضعیت قبلی سفارش:
+                            {{ log.old_order_status|default:"-" }}
+                        </span>
+
+                        <span class="mx-1">←</span>
+
+                        <span class="badge bg-success">
+                            وضعیت جدید سفارش:
+                            {{ log.new_order_status|default:"-" }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {% if log.description %}
+                    <div class="text-muted mb-2">
+                        {{ log.description }}
+                    </div>
+                    {% endif %}
+
+                    {% if log.old_notes or log.new_notes %}
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-6">
+                            <div class="bg-light rounded p-2 h-100">
+                                <small class="text-muted d-block mb-1">
+                                    یادداشت قبلی
+                                </small>
+                                {{ log.old_notes|default:"-"|linebreaksbr }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="bg-light rounded p-2 h-100">
+                                <small class="text-muted d-block mb-1">
+                                    یادداشت جدید
+                                </small>
+                                {{ log.new_notes|default:"-"|linebreaksbr }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            ثبت‌کننده:
+                            {% if log.created_by %}
+                                {{ log.created_by.get_full_name|default:log.created_by.username }}
+                            {% else %}
+                                سیستم
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-4">
+                هنوز سابقه‌ای برای این سفارش ثبت نشده است.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

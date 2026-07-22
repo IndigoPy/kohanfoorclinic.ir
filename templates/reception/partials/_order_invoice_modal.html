@@ -1,0 +1,38 @@
+<div class="modal fade" id="invoiceModal{{ order.id }}" tabindex="-1" aria-labelledby="invoiceModalLabel{{ order.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title" id="invoiceModalLabel{{ order.id }}">
+          <i class="fas fa-receipt me-2"></i>فاکتور سفارش #{{ order.id }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="بستن"></button>
+      </div>
+
+      <div class="modal-body bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="small text-muted">
+            قبل از چاپ، اطلاعات فاکتور را بررسی کنید.
+          </div>
+          <button type="button"
+                  class="btn btn-dark btn-sm print-invoice-btn"
+                  data-print-target="invoicePrintArea{{ order.id }}">
+            <i class="fas fa-print me-1"></i> چاپ
+          </button>
+        </div>
+
+        <div id="invoicePrintArea{{ order.id }}" class="invoice-print-area bg-white p-4 rounded-3 border">
+          {% include "reception/partials/_order_invoice_print.html" with order=order %}
+        </div>
+      </div>
+
+      <div class="modal-footer bg-white">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+        <button type="button"
+                class="btn btn-success print-invoice-btn"
+                data-print-target="invoicePrintArea{{ order.id }}">
+          <i class="fas fa-print me-1"></i> چاپ فاکتور
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
