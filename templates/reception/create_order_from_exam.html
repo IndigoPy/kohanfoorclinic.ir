@@ -1999,94 +1999,179 @@
     });
 }
         /* ============================================================
-           STEP 3: SIZES (MEASUREMENTS) - دارای تغییرات کلیدی (onchange)
-           ============================================================ */
-        function buildSizesStep() {
-            const container = $('#sizes-container');
-            container.empty();
+   STEP 3: SIZES (MEASUREMENTS) - با پشتیبانی از اندازه متفاوت چپ/راست
+   ============================================================ */
+function buildSizesStep() {
+    const container = $('#sizes-container');
+    container.empty();
 
-            if (orderItems.length === 0) {
-                container.html('<div class="alert alert-warning">ابتدا اقلام سفارش را در مرحله قبل وارد کنید.</div>');
-                return;
-            }
+    if (orderItems.length === 0) {
+        container.html('<div class="alert alert-warning">ابتدا اقلام سفارش را در مرحله قبل وارد کنید.</div>');
+        return;
+    }
 
-            orderItems.forEach(item => {
-                const label = item.serviceName || `قلم ${item.safeId}`;
-                const cleanSvcId = String(item.service).replace('srv_', '');
-                const fieldsForThisService = measurementsSchema[cleanSvcId] || [];
+    orderItems.forEach(item => {
+        const label = item.serviceName || `قلم ${item.safeId}`;
+        const cleanSvcId = String(item.service).replace('srv_', '');
+        const fieldsForThisService = measurementsSchema[cleanSvcId] || [];
 
-                if (fieldsForThisService.length === 0) {
-                    const html = `
-                    <div class="size-group mb-4 p-3 border rounded bg-light">
-                        <div class="size-group-title fw-bold text-secondary mb-2">
-                            <i class="fas fa-ruler me-2"></i>${escHtml(label)}
-                        </div>
-                        <div class="alert alert-info mb-0 py-2" style="font-size:0.85rem;">
-                            <i class="fas fa-info-circle"></i> پارامتر اندازه‌گیری برای این محصول تعریف نشده است.
-                        </div>
-                    </div>`;
-                    container.append(html);
-                    return; 
-                }
-
-                let inputsHTML = '';
-                fieldsForThisService.forEach(field => {
-                    const inputName = `meas_${item.safeId}_${escHtml(field.name)}`;
-                    const requiredAttr = field.required ? 'required' : '';
-                    const reqStar = field.required ? '<span class="text-danger">*</span>' : '';
-                    let fieldControlHTML = '';
-                    const savedVal = (item.measurements && item.measurements[field.name] !== undefined)
-                        ? item.measurements[field.name] : '';
-                    switch(field.type) {
-                        case 'select':
-                            let optionsHTML = '<option value="">انتخاب کنید...</option>';
-                            field.options.forEach(opt => {
-                                const isSel = (String(opt) === String(savedVal)) ? 'selected' : '';
-                                optionsHTML += `<option value="${escHtml(opt)}" ${isSel}>${escHtml(opt)}</option>`;
-                            });
-                            fieldControlHTML = `<select name="${inputName}" class="form-select" ${requiredAttr}>${optionsHTML}</select>`;
-                            break;
-                        case 'textarea':
-                            fieldControlHTML = `<textarea name="${inputName}" class="form-control" rows="2" ${requiredAttr}>${escHtml(savedVal)}</textarea>`;
-                            break;
-                        case 'checkbox':
-                            const isChk = (savedVal === true || savedVal === 'true') ? 'checked' : '';
-                            fieldControlHTML = `
-                                <div class="form-check mt-2">
-                                    <input type="checkbox" name="${inputName}" class="form-check-input" value="true" ${isChk} ${requiredAttr}>
-                                    <label class="form-check-label text-muted" style="font-size:0.85rem;">دارد / بله</label>
-                                </div>`;
-                            break;
-                        case 'number':
-                        default:
-                            const isPriceField = (field.name === 'foot_length');
-                            const onChangeAttr = isPriceField
-                                ? `onchange="window.fetchPriceBySize('${cleanSvcId}', this.value, ${item.safeId})"`
-                                : '';
-                            fieldControlHTML = `<input type="number" name="${inputName}" class="form-control" step="0.1" value="${escHtml(savedVal)}" ${requiredAttr} ${onChangeAttr}>`;
-                            break;
-                    }
-
-                    inputsHTML += `
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label" style="font-size: 0.9rem;">${escHtml(field.label)} ${reqStar}</label>
-                        ${fieldControlHTML}
-                    </div>`;
-                });
-
-                const html = `
-                <div class="size-group mb-4 p-3 border rounded bg-white shadow-sm">
-                    <div class="size-group-title border-bottom pb-2 mb-3">
-                        <span class="fw-bold text-primary"><i class="fas fa-ruler-combined me-2"></i>اندازه‌گیری‌های: ${escHtml(label)}</span>
-                    </div>
-                    <div class="row">
-                        ${inputsHTML}
-                    </div>
-                </div>`;
-                
-                container.append(html);
-            });
+        // تعیین حالت اولیه (اگر از قبل داده متفاوت چپ/راست ذخیره شده بود)
+        const savedMeasurements = item.measurements || {};
+        if (item.sizeMode === undefined) {
+            item.sizeMode = savedMeasurements.different_sizes ? 'different' : 'same';
         }
+
+        if (fieldsForThisService.length === 0) {
+            const html = `
+            <div class="size-group mb-4 p-3 border rounded bg-light" data-safeid="${item.safeId}">
+                <div class="size-group-title fw-bold text-secondary mb-2">
+                    <i class="fas fa-ruler me-2"></i>${escHtml(label)}
+                </div>
+                <div class="alert alert-info mb-0 py-2" style="font-size:0.85rem;">
+                    <i class="fas fa-info-circle"></i> پارامتر اندازه‌گیری برای این محصول تعریف نشده است.
+                </div>
+            </div>`;
+            container.append(html);
+            return;
+        }
+
+        const html = `
+        <div class="size-group mb-4 p-3 border rounded bg-white shadow-sm" data-safeid="${item.safeId}">
+            <div class="size-group-title border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="fw-bold text-primary"><i class="fas fa-ruler-combined me-2"></i>اندازه‌گیری‌های: ${escHtml(label)}</span>
+
+                <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+                    <input class="form-check-input size-mode-toggle" type="checkbox"
+                           role="switch"
+                           id="size-toggle-${item.safeId}"
+                           data-safeid="${item.safeId}"
+                           ${item.sizeMode === 'different' ? 'checked' : ''}
+                           style="cursor:pointer; width:2.5em; height:1.3em;">
+                    <label class="form-check-label small text-muted mb-0" for="size-toggle-${item.safeId}" style="cursor:pointer;">
+                        <i class="fas fa-shoe-prints me-1"></i>اندازه پای راست و چپ متفاوت است
+                    </label>
+                </div>
+            </div>
+
+            <input type="hidden" name="size_mode_${item.safeId}" class="size-mode-input" value="${item.sizeMode}">
+
+            <div class="size-fields-wrapper" id="size-fields-${item.safeId}">
+                ${renderSizeFields(item, fieldsForThisService, cleanSvcId)}
+            </div>
+        </div>`;
+
+        container.append(html);
+    });
+}
+
+/* ============================================================
+   ساخت HTML فیلدهای اندازه‌گیری بر اساس حالت (یکسان / متفاوت)
+   ============================================================ */
+function renderSizeFields(item, fieldsForThisService, cleanSvcId) {
+    const safeId = item.safeId;
+    const saved = item.measurements || {};
+
+    if (item.sizeMode === 'different') {
+        const rightVals = saved.right || {};
+        const leftVals = saved.left || {};
+
+        return `
+        <div class="row">
+            <div class="col-md-6 border-end">
+                <div class="fw-bold text-success mb-2">
+                    <i class="fas fa-shoe-prints me-1"></i>پای راست
+                </div>
+                <div class="row">
+                    ${buildMeasFieldsHTML(fieldsForThisService, safeId, 'right', rightVals, cleanSvcId)}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="fw-bold text-primary mb-2">
+                    <i class="fas fa-shoe-prints me-1"></i>پای چپ
+                </div>
+                <div class="row">
+                    ${buildMeasFieldsHTML(fieldsForThisService, safeId, 'left', leftVals, cleanSvcId)}
+                </div>
+            </div>
+        </div>`;
+    } else {
+        // اگر قبلاً حالت متفاوت بود و الان به یکسان برگشتیم، فیلدها خالی شروع می‌شوند
+        const flatVals = saved.different_sizes ? {} : saved;
+        return `<div class="row">${buildMeasFieldsHTML(fieldsForThisService, safeId, null, flatVals, cleanSvcId)}</div>`;
+    }
+}
+
+function buildMeasFieldsHTML(fields, safeId, side, savedVals, cleanSvcId) {
+    let html = '';
+
+    fields.forEach(field => {
+        const namePrefix = side ? `meas_${safeId}_${side}_` : `meas_${safeId}_`;
+        const inputName = `${namePrefix}${escHtml(field.name)}`;
+        const requiredAttr = field.required ? 'required' : '';
+        const reqStar = field.required ? '<span class="text-danger">*</span>' : '';
+        const savedVal = (savedVals && savedVals[field.name] !== undefined) ? savedVals[field.name] : '';
+        let fieldControlHTML = '';
+
+        switch (field.type) {
+            case 'select':
+                let optionsHTML = '<option value="">انتخاب کنید...</option>';
+                field.options.forEach(opt => {
+                    const isSel = (String(opt) === String(savedVal)) ? 'selected' : '';
+                    optionsHTML += `<option value="${escHtml(opt)}" ${isSel}>${escHtml(opt)}</option>`;
+                });
+                fieldControlHTML = `<select name="${inputName}" class="form-select" ${requiredAttr}>${optionsHTML}</select>`;
+                break;
+
+            case 'textarea':
+                fieldControlHTML = `<textarea name="${inputName}" class="form-control" rows="2" ${requiredAttr}>${escHtml(savedVal)}</textarea>`;
+                break;
+
+            case 'checkbox':
+                const isChk = (savedVal === true || savedVal === 'true') ? 'checked' : '';
+                fieldControlHTML = `
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="${inputName}" class="form-check-input" value="true" ${isChk} ${requiredAttr}>
+                        <label class="form-check-label text-muted" style="font-size:0.85rem;">دارد / بله</label>
+                    </div>`;
+                break;
+
+            case 'number':
+            default:
+                const isPriceField = (field.name === 'foot_length');
+                const onChangeAttr = isPriceField
+                    ? `onchange="window.fetchPriceBySize('${cleanSvcId}', this.value, ${safeId})"`
+                    : '';
+                fieldControlHTML = `<input type="number" name="${inputName}" class="form-control" step="0.1" value="${escHtml(savedVal)}" ${requiredAttr} ${onChangeAttr}>`;
+                break;
+        }
+
+        html += `
+        <div class="col-md-6 mb-3">
+            <label class="form-label" style="font-size: 0.9rem;">${escHtml(field.label)} ${reqStar}</label>
+            ${fieldControlHTML}
+        </div>`;
+    });
+
+    return html;
+}
+
+/* ============================================================
+   رویداد تغییر toggle اندازه چپ/راست
+   ============================================================ */
+$(document).on('change', '.size-mode-toggle', function () {
+    const safeId = parseInt($(this).data('safeid'), 10);
+    const isChecked = $(this).is(':checked');
+    const item = orderItems.find(i => i.safeId === safeId);
+    if (!item) return;
+
+    item.sizeMode = isChecked ? 'different' : 'same';
+    $(`.size-mode-input[name="size_mode_${safeId}"]`).val(item.sizeMode);
+
+    const cleanSvcId = String(item.service).replace('srv_', '');
+    const fieldsForThisService = measurementsSchema[cleanSvcId] || [];
+
+    $(`#size-fields-${safeId}`).html(renderSizeFields(item, fieldsForThisService, cleanSvcId));
+});
         
 
         /* ============================================================
@@ -2822,11 +2907,33 @@ window.removeDesignRow = function (btn) {
                 const safeId = item.safeId;
                 const $item = $(`#item-${safeId}`);
                 // Measurements
-                const measurements = {};
-                $(`[name^="meas_${safeId}_"]`).each(function() {
-                    const name = $(this).attr('name').replace(`meas_${safeId}_`, '');
-                    measurements[name] = $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val();
-                });
+                const sizeMode = $(`input.size-mode-input[name="size_mode_${safeId}"]`).val() || 'same';
+                const measurements = { different_sizes: sizeMode === 'different' };
+
+                if (sizeMode === 'different') {
+                    measurements.right = {};
+                    measurements.left = {};
+
+                    $(`[name^="meas_${safeId}_right_"]`).each(function() {
+                        const name = $(this).attr('name').replace(`meas_${safeId}_right_`, '');
+                        measurements.right[name] = $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val();
+                    });
+
+                    $(`[name^="meas_${safeId}_left_"]`).each(function() {
+                        const name = $(this).attr('name').replace(`meas_${safeId}_left_`, '');
+                        measurements.left[name] = $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val();
+                    });
+                } else {
+                    $(`[name^="meas_${safeId}_"]`).each(function() {
+                        const fullName = $(this).attr('name');
+                        // فیلدهای احتمالی حالت متفاوت که در DOM نیستند را نادیده بگیر
+                        if (fullName.indexOf(`meas_${safeId}_right_`) === 0 || fullName.indexOf(`meas_${safeId}_left_`) === 0) {
+                            return;
+                        }
+                        const name = fullName.replace(`meas_${safeId}_`, '');
+                        measurements[name] = $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val();
+                    });
+                }
 
                 // Dynamic Fields
                 const dynamicFields = {};

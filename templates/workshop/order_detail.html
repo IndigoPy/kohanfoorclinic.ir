@@ -1,448 +1,2072 @@
 {% extends 'base.html' %}
+{% load jformat %}
+
 
 {% block content %}
-<div class="container-fluid py-4" dir="rtl">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">سفارش #{{ order.id }}</h3>
-            <span class="text-muted">
-                {{ patient.full_name }} - {{ patient.case_number }}
-            </span>
-        </div>
+<style>
+    /* =========================================================
+       Workshop Order Detail
+    ========================================================= */
 
-        <a href="{% url 'workshop:order-list' %}"
-           class="btn btn-outline-secondary">
-            بازگشت به لیست
-        </a>
-    </div>
+    .workshop-order-page {
+        --ws-primary: #2563eb;
+        --ws-primary-soft: #eff6ff;
+        --ws-success: #059669;
+        --ws-success-soft: #ecfdf5;
+        --ws-warning: #d97706;
+        --ws-warning-soft: #fffbeb;
+        --ws-danger: #dc2626;
+        --ws-danger-soft: #fef2f2;
+        --ws-dark: #0f172a;
+        --ws-text: #334155;
+        --ws-muted: #64748b;
+        --ws-border: #e2e8f0;
+        --ws-bg: #f5f7fb;
 
-    <div class="row g-4 mb-4">
+        background: var(--ws-bg);
+        min-height: calc(100vh - 70px);
+        color: var(--ws-text);
+    }
 
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">اطلاعات بیمار</h5>
-                </div>
+    /* Hero Header */
 
-                <div class="card-body">
-                    <p>
-                        <strong>نام:</strong>
-                        {{ patient.full_name }}
-                    </p>
+    .order-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 27px;
+        color: #fff;
+        border-radius: 22px;
+        background:
+            linear-gradient(
+                135deg,
+                #0f172a 0%,
+                #334155 48%,
+                #0f766e 100%
+            );
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    }
 
-                    <p>
-                        <strong>پرونده:</strong>
-                        {{ patient.case_number }}
-                    </p>
+    .order-hero::before {
+        content: "";
+        position: absolute;
+        top: -110px;
+        left: -75px;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+    }
 
-                    <p>
-                        <strong>تلفن:</strong>
-                        {{ patient.phone }}
-                    </p>
+    .order-hero::after {
+        content: "";
+        position: absolute;
+        right: 38%;
+        bottom: -115px;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+    }
 
-                    <p>
-                        <strong>جنسیت:</strong>
-                        {{ patient.get_gender }}
-                    </p>
+    .order-hero-content {
+        position: relative;
+        z-index: 2;
+    }
 
-                    <p>
-                        <strong>سایز پا:</strong>
-                        {{ patient.foot_size|default:"-" }}
-                    </p>
+    .hero-order-icon {
+        width: 60px;
+        height: 60px;
+        min-width: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 19px;
+        color: #fff;
+        font-size: 1.55rem;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.17);
+        backdrop-filter: blur(10px);
+    }
 
-                    <p>
-                        <strong>قد:</strong>
-                        {{ patient.height|default:"-" }}
-                    </p>
+    .hero-order-title {
+        margin-bottom: 6px;
+        font-size: 1.55rem;
+        font-weight: 900;
+        letter-spacing: -0.4px;
+    }
 
-                    <p class="mb-0">
-                        <strong>وزن:</strong>
-                        {{ patient.weight|default:"-" }}
-                    </p>
-                </div>
-            </div>
-        </div>
+    .hero-patient-info {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.9rem;
+    }
 
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">اطلاعات کلی سفارش</h5>
-                </div>
+    .hero-patient-info .separator {
+        opacity: 0.5;
+    }
 
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p>
-                                <strong>وضعیت:</strong>
-                                {{ order.get_status_display }}
-                            </p>
+    .hero-statuses {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 13px;
+    }
 
-                            <p>
-                                <strong>اولویت:</strong>
-                                {{ order.get_priority_display }}
-                            </p>
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 800;
+        backdrop-filter: blur(8px);
+    }
+
+    .hero-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 17px;
+        border: 0;
+        border-radius: 14px;
+        background: #fff;
+        color: #0f172a;
+        font-weight: 800;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+        transition: all 0.22s ease;
+    }
+
+    .hero-back-btn:hover {
+        color: #0f172a;
+        background: #f8fafc;
+        transform: translateY(-2px);
+    }
+
+    /* General Cards */
+
+    .ws-card {
+        overflow: hidden;
+        height: 100%;
+        background: #fff;
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+    }
+
+    .ws-card-header {
+        padding: 18px 21px;
+        background: #fff;
+        border-bottom: 1px solid #edf1f6;
+    }
+
+    .ws-card-header-icon {
+        width: 39px;
+        height: 39px;
+        min-width: 39px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: var(--ws-primary-soft);
+        color: var(--ws-primary);
+        font-size: 1rem;
+    }
+
+    .ws-card-title {
+        margin-bottom: 2px;
+        color: var(--ws-dark);
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .ws-card-subtitle {
+        color: var(--ws-muted);
+        font-size: 0.78rem;
+    }
+
+    .ws-card-body {
+        padding: 21px;
+    }
+
+    /* Information Lists */
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 47px;
+        padding: 10px 2px;
+        border-bottom: 1px dashed #e7ebf0;
+    }
+
+    .info-row:last-child {
+        border-bottom: 0;
+    }
+
+    .info-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--ws-muted);
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .info-label i {
+        width: 18px;
+        color: #94a3b8;
+        text-align: center;
+    }
+
+    .info-value {
+        color: var(--ws-dark);
+        font-size: 0.88rem;
+        font-weight: 850;
+        text-align: left;
+    }
+
+    .patient-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        padding: 13px;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f8fafc, #f0fdfa);
+    }
+
+    .patient-avatar-large {
+        width: 49px;
+        height: 49px;
+        min-width: 49px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #dbeafe, #ccfbf1);
+        color: #0369a1;
+        font-size: 1.15rem;
+        font-weight: 900;
+    }
+
+    .patient-profile-name {
+        color: var(--ws-dark);
+        font-size: 0.96rem;
+        font-weight: 900;
+    }
+
+    .patient-profile-case {
+        margin-top: 3px;
+        color: var(--ws-muted);
+        font-size: 0.78rem;
+    }
+
+    /* Status badges */
+
+    .ws-status,
+    .ws-priority {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        white-space: nowrap;
+        font-size: 0.78rem;
+        font-weight: 850;
+    }
+
+    .ws-status-ready {
+        color: #047857;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+    }
+
+    .ws-status-manufacturing {
+        color: #b45309;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+    }
+
+    .ws-status-confirmed {
+        color: #1d4ed8;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+    }
+
+    .ws-status-delivered {
+        color: #047857;
+        background: #d1fae5;
+        border: 1px solid #6ee7b7;
+    }
+
+    .ws-status-cancelled {
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+    }
+
+    .ws-status-default {
+        color: #475569;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+    }
+
+    .ws-priority-urgent {
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+    }
+
+    .ws-priority-fast {
+        color: #b45309;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+    }
+
+    .ws-priority-normal {
+        color: #475569;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Notes */
+
+    .order-note {
+        position: relative;
+        margin-top: 14px;
+        padding: 14px 16px;
+        border: 1px solid #e2e8f0;
+        border-right: 4px solid #3b82f6;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .order-note.general-note {
+        border-right-color: #0f766e;
+        background: #f0fdfa;
+    }
+
+    .order-note-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 7px;
+        color: var(--ws-dark);
+        font-size: 0.84rem;
+        font-weight: 900;
+    }
+
+    .order-note-text {
+        color: #475569;
+        font-size: 0.86rem;
+        line-height: 1.9;
+    }
+
+    /* Section heading */
+
+    .section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .section-heading-main {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .section-heading-icon {
+        width: 43px;
+        height: 43px;
+        min-width: 43px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .section-heading-title {
+        margin-bottom: 3px;
+        color: var(--ws-dark);
+        font-size: 1.08rem;
+        font-weight: 900;
+    }
+
+    .section-heading-subtitle {
+        color: var(--ws-muted);
+        font-size: 0.8rem;
+    }
+
+    .section-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        height: 34px;
+        padding: 0 11px;
+        border-radius: 11px;
+        background: #0f172a;
+        color: #fff;
+        font-size: 0.83rem;
+        font-weight: 900;
+    }
+
+    /* Product cards */
+
+    .products-container {
+        padding: 21px;
+    }
+
+    .product-card {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 18px;
+        border: 1px solid #e2e8f0;
+        border-radius: 19px;
+        background: #fff;
+        transition: box-shadow 0.22s ease, transform 0.22s ease;
+    }
+
+    .product-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 13px 32px rgba(15, 23, 42, 0.09);
+    }
+
+    .product-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 5px;
+        background: linear-gradient(180deg, #2563eb, #0f766e);
+    }
+
+    .product-header {
+        padding: 17px 20px;
+        background: linear-gradient(135deg, #f8fafc, #fff);
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .product-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #e0f2fe;
+        color: #0369a1;
+        font-size: 1.05rem;
+    }
+
+    .product-title {
+        margin-bottom: 4px;
+        color: var(--ws-dark);
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .product-variant {
+        color: var(--ws-muted);
+        font-size: 0.8rem;
+    }
+
+    .product-body {
+        padding: 20px;
+    }
+
+    .product-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 11px;
+        margin-bottom: 18px;
+    }
+
+    .product-summary-box {
+        min-height: 77px;
+        padding: 12px 13px;
+        border: 1px solid #e7ebf0;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .product-summary-label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--ws-muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .product-summary-value {
+        color: var(--ws-dark);
+        font-size: 0.88rem;
+        font-weight: 900;
+        overflow-wrap: anywhere;
+    }
+
+    /* Product details */
+
+    .detail-block {
+        margin-bottom: 16px;
+        padding: 15px;
+        border: 1px solid #e7ebf0;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .detail-block:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-block-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        color: var(--ws-dark);
+        font-size: 0.86rem;
+        font-weight: 900;
+    }
+
+    .detail-block-title i {
+        color: var(--ws-primary);
+    }
+
+    .design-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 3px;
+        padding: 7px 11px;
+        border: 1px solid #bae6fd;
+        border-radius: 999px;
+        background: #f0f9ff;
+        color: #075985;
+        font-size: 0.79rem;
+        font-weight: 800;
+    }
+
+    .side-badge {
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: #e0f2fe;
+        font-size: 0.68rem;
+    }
+
+    .details-table-wrapper {
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 13px;
+    }
+
+    .details-table {
+        margin-bottom: 0;
+    }
+
+    .details-table th,
+    .details-table td {
+        padding: 10px 13px;
+        border-color: #edf1f5;
+        font-size: 0.82rem;
+    }
+
+    .details-table th {
+        width: 35%;
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 800;
+    }
+
+    .details-table td {
+        color: #1e293b;
+        font-weight: 700;
+    }
+
+    /* Forms */
+
+    .product-update-form {
+        margin-top: 18px;
+        padding: 17px;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        background: #f8fbff;
+    }
+
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+        color: #1e3a8a;
+        font-size: 0.86rem;
+        font-weight: 900;
+    }
+
+    .workshop-order-page .form-label {
+        margin-bottom: 7px;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+
+    .workshop-order-page .form-control,
+    .workshop-order-page .form-select {
+        min-height: 43px;
+        border-color: #dbe2ea;
+        border-radius: 12px;
+        color: #1e293b;
+        font-size: 0.86rem;
+        box-shadow: none;
+    }
+
+    .workshop-order-page textarea.form-control {
+        min-height: auto;
+        line-height: 1.8;
+        resize: vertical;
+    }
+
+    .workshop-order-page .form-control:focus,
+    .workshop-order-page .form-select:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.12);
+    }
+
+    .save-item-btn {
+        min-height: 43px;
+        border: 0;
+        border-radius: 12px;
+        background: #059669;
+        font-size: 0.83rem;
+        font-weight: 900;
+        box-shadow: 0 8px 17px rgba(5, 150, 105, 0.18);
+        transition: all 0.2s ease;
+    }
+
+    .save-item-btn:hover {
+        background: #047857;
+        transform: translateY(-1px);
+    }
+
+    /* Bulk update and workshop note */
+
+    .action-card-warning .ws-card-header-icon {
+        color: #b45309;
+        background: #fffbeb;
+    }
+
+    .action-card-note .ws-card-header-icon {
+        color: #0f766e;
+        background: #f0fdfa;
+    }
+
+    .bulk-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        margin-bottom: 15px;
+        padding: 12px;
+        border: 1px solid #fde68a;
+        border-radius: 13px;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 0.79rem;
+        line-height: 1.8;
+    }
+
+    .bulk-update-btn {
+        border: 0;
+        border-radius: 12px;
+        background: #d97706;
+        font-size: 0.84rem;
+        font-weight: 900;
+        box-shadow: 0 8px 18px rgba(217, 119, 6, 0.18);
+    }
+
+    .bulk-update-btn:hover {
+        background: #b45309;
+    }
+
+    .save-note-btn {
+        border: 0;
+        border-radius: 12px;
+        background: #2563eb;
+        font-size: 0.84rem;
+        font-weight: 900;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+    }
+
+    .save-note-btn:hover {
+        background: #1d4ed8;
+    }
+
+    /* Timeline */
+
+    .timeline-wrapper {
+        position: relative;
+        padding: 5px 8px 5px 0;
+    }
+
+    .timeline-wrapper::before {
+        content: "";
+        position: absolute;
+        top: 16px;
+        right: 22px;
+        bottom: 20px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+
+    .timeline-entry {
+        position: relative;
+        padding: 0 55px 20px 0;
+    }
+
+    .timeline-entry:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        top: 3px;
+        right: 7px;
+        z-index: 2;
+        width: 31px;
+        height: 31px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 5px solid #fff;
+        border-radius: 50%;
+        background: #2563eb;
+        color: #fff;
+        font-size: 0.62rem;
+        box-shadow: 0 0 0 2px #bfdbfe;
+    }
+
+    .timeline-content {
+        padding: 15px 17px;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    .timeline-content:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 23px rgba(15, 23, 42, 0.06);
+    }
+
+    .timeline-title {
+        color: var(--ws-dark);
+        font-size: 0.9rem;
+        font-weight: 900;
+    }
+
+    .timeline-item-name {
+        margin-right: 6px;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .timeline-date {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #94a3b8;
+        font-size: 0.74rem;
+        white-space: nowrap;
+    }
+
+    .status-change-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 12px;
+    }
+
+    .history-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 9px;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.73rem;
+        font-weight: 750;
+    }
+
+    .history-badge.new-item-status {
+        color: #1d4ed8;
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    .history-badge.new-order-status {
+        color: #047857;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+    }
+
+    .status-arrow {
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .timeline-description {
+        margin-top: 11px;
+        padding: 10px 12px;
+        border-radius: 11px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.81rem;
+        line-height: 1.8;
+    }
+
+    .notes-comparison {
+        margin-top: 12px;
+    }
+
+    .history-note-box {
+        height: 100%;
+        padding: 12px;
+        border: 1px solid #e7ebf0;
+        border-radius: 12px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.8rem;
+        line-height: 1.8;
+    }
+
+    .history-note-box.new-note {
+        border-color: #d1fae5;
+        background: #f0fdf4;
+    }
+
+    .history-note-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 850;
+    }
+
+    .timeline-user {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 11px;
+        color: #94a3b8;
+        font-size: 0.73rem;
+    }
+
+    /* Empty state */
+
+    .ws-empty-state {
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .ws-empty-icon {
+        width: 69px;
+        height: 69px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+        border-radius: 22px;
+        background: #f1f5f9;
+        color: #94a3b8;
+        font-size: 1.75rem;
+    }
+
+    .ws-empty-title {
+        margin-bottom: 5px;
+        color: #334155;
+        font-size: 0.95rem;
+        font-weight: 900;
+    }
+
+    .ws-empty-description {
+        color: #94a3b8;
+        font-size: 0.82rem;
+    }
+    /* actions css */
+    .item-action-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    }
+
+    .item-action-grid form {
+        margin: 0;
+    }
+
+    .item-action-btn {
+        min-height: 38px;
+        white-space: nowrap;
+    }
+
+    .no-action-state {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        background: #f8f9fa;
+        border: 1px dashed #ced4da;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .item-note-form textarea {
+        resize: vertical;
+    }
+
+
+    /* Responsive */
+
+    @media (max-width: 991.98px) {
+        .product-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .order-hero {
+            padding: 21px;
+            border-radius: 18px;
+        }
+
+        .hero-order-icon {
+            width: 51px;
+            height: 51px;
+            min-width: 51px;
+            border-radius: 16px;
+        }
+
+        .hero-order-title {
+            font-size: 1.25rem;
+        }
+
+        .hero-actions {
+            width: 100%;
+        }
+
+        .hero-back-btn {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .ws-card {
+            border-radius: 17px;
+        }
+
+        .ws-card-header,
+        .ws-card-body,
+        .products-container {
+            padding: 16px;
+        }
+
+        .product-header,
+        .product-body {
+            padding: 16px;
+        }
+
+        .product-summary-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .timeline-content-header {
+            align-items: flex-start !important;
+            flex-direction: column;
+            gap: 7px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .product-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-row {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-value {
+            padding-right: 26px;
+            text-align: right;
+        }
+
+        .product-header-content {
+            align-items: flex-start !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .product-status-wrapper {
+            align-self: flex-start;
+        }
+
+        .timeline-entry {
+            padding-right: 44px;
+        }
+
+        .timeline-wrapper::before {
+            right: 17px;
+        }
+
+        .timeline-marker {
+            right: 2px;
+        }
+    }
+</style>
+
+
+<div class="workshop-order-page py-4" dir="rtl">
+    <div class="container-fluid">
+
+        <!-- =====================================================
+             Hero
+        ====================================================== -->
+
+        <div class="order-hero mb-4">
+            <div class="order-hero-content">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="hero-order-icon">
+                            <i class="fas fa-box"></i>
                         </div>
 
-                        <div class="col-md-6">
-                            <p>
-                                <strong>تاریخ ثبت:</strong>
-                                {{ order.created_at|date:"Y/m/d H:i" }}
-                            </p>
-
-                            <p>
-                                <strong>ثبت‌کننده:</strong>
-                                {{ order.created_by.get_full_name|default:order.created_by.username|default:"-" }}
-                            </p>
-                        </div>
-                    </div>
-
-                    {% if order.notes %}
-                    <div class="alert alert-light border">
-                        <strong>یادداشت سفارش:</strong>
-                        <div class="mt-2">
-                            {{ order.notes|linebreaksbr }}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if order.general_notes %}
-                    <div class="alert alert-light border mb-0">
-                        <strong>یادداشت کلی:</strong>
-                        <div class="mt-2">
-                            {{ order.general_notes|linebreaksbr }}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">محصولات ارسالی به کارگاه</h5>
-        </div>
-
-        <div class="card-body">
-            {% for item in workshop_items %}
-            <div class="border rounded p-3 mb-3">
-
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h5 class="mb-1">{{ item.service }}</h5>
-
-                        {% if item.variant %}
-                        <span class="text-muted">
-                            نوع: {{ item.variant }}
-                        </span>
-                        {% endif %}
-                    </div>
-
-                    <span class="badge bg-primary">
-                        {{ item.get_status_display }}
-                    </span>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <strong>تعداد:</strong>
-                        {{ item.quantity }}
-                    </div>
-
-                    <div class="col-md-3">
-                        <strong>طول پا:</strong>
-                        {{ item.foot_length|default:"-" }}
-                    </div>
-
-                    <div class="col-md-3">
-                        <strong>اولویت:</strong>
-                        {{ item.get_priority_display }}
-                    </div>
-
-                    <div class="col-md-3">
-                        <strong>تحویل تقریبی:</strong>
-                        {{ item.delivery_date|default:"-" }}
-                    </div>
-                </div>
-
-                {% if item.designs.all %}
-                <div class="mb-3">
-                    <strong>طراحی‌ها:</strong>
-
-                    {% for design_item in item.designs.all %}
-                    <span class="badge bg-light text-dark border">
-                        {{ design_item.design }}
-                        {% if design_item.side %}
-                            - {{ design_item.get_side_display }}
-                        {% endif %}
-                    </span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if item.measurements %}
-                <div class="mb-3">
-                    <strong>اندازه‌گیری‌ها:</strong>
-
-                    <div class="table-responsive mt-2">
-                        <table class="table table-sm table-bordered mb-0">
-                            <tbody>
-                                {% for key, value in item.measurements.items %}
-                                <tr>
-                                    <th class="bg-light">{{ key }}</th>
-                                    <td>{{ value|default:"-" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if item.dynamic_fields %}
-                <div class="mb-3">
-                    <strong>مشخصات محصول:</strong>
-
-                    <div class="table-responsive mt-2">
-                        <table class="table table-sm table-bordered mb-0">
-                            <tbody>
-                                {% for key, value in item.dynamic_fields.items %}
-                                <tr>
-                                    <th class="bg-light">{{ key }}</th>
-                                    <td>{{ value|default:"-" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {% endif %}
-
-                <form method="post"
-                      action="{% url 'workshop:update-item-status' item.id %}">
-                    {% csrf_token %}
-
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">وضعیت آیتم</label>
-
-                            <select name="status"
-                                    class="form-select"
-                                    required>
-                                {% for value, label in item_status_choices %}
-                                    {% if value != 'draft' %}
-                                    <option value="{{ value }}"
-                                            {% if item.status == value %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="col-md-7">
-                            <label class="form-label">
-                                توضیحات ساخت این محصول
-                            </label>
-
-                            <textarea name="notes"
-                                      class="form-control"
-                                      rows="2">{{ item.notes }}</textarea>
-                        </div>
-
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit"
-                                    class="btn btn-success w-100">
-                                ذخیره
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-            </div>
-            {% empty %}
-            <div class="text-center text-muted py-5">
-                محصولی برای کارگاه ثبت نشده است.
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div class="row g-4">
-
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">تغییر گروهی وضعیت</h5>
-                </div>
-
-                <div class="card-body">
-                    <form method="post"
-                          action="{% url 'workshop:update-all-items-status' order.id %}">
-                        {% csrf_token %}
-
-                        <div class="mb-3">
-                            <label class="form-label">
-                                وضعیت تمام محصولات کارگاه
-                            </label>
-
-                            <select name="status"
-                                    class="form-select"
-                                    required>
-                                {% for value, label in item_status_choices %}
-                                    {% if value != 'draft' %}
-                                    <option value="{{ value }}">
-                                        {{ label }}
-                                    </option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <button type="submit"
-                                class="btn btn-warning">
-                            اعمال روی همه محصولات
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">یادداشت کلی کارگاه</h5>
-                </div>
-
-                <div class="card-body">
-                    <form method="post"
-                          action="{% url 'workshop:update-workshop-notes' order.id %}">
-                        {% csrf_token %}
-
-                        <textarea name="workshop_notes"
-                                  class="form-control mb-3"
-                                  rows="4"
-                                  placeholder="توضیحات کلی کارگاه درباره سفارش">{{ order.workshop_notes }}</textarea>
-
-                        <button type="submit"
-                                class="btn btn-primary">
-                            ذخیره یادداشت
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-<div class="card border-0 shadow-sm mt-4">
-    <div class="card-header bg-white">
-        <h5 class="mb-0">سوابق کارگاه</h5>
-    </div>
-
-    <div class="card-body">
-        {% if workshop_logs %}
-            <div class="timeline">
-                {% for log in workshop_logs %}
-                <div class="border rounded p-3 mb-3">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <strong>{{ log.get_action_display }}</strong>
+                            <h3 class="hero-order-title">
+                                سفارش شماره {{ order.id }}
+                            </h3>
 
-                            {% if log.item %}
-                                <span class="text-muted">
-                                    - {{ log.item.service }}
+                            <div class="hero-patient-info">
+                                <span>
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ patient.full_name }}
                                 </span>
-                            {% endif %}
-                        </div>
 
-                        <small class="text-muted">
-                            {{ log.created_at|date:"Y/m/d H:i" }}
-                        </small>
-                    </div>
+                                <span class="separator">•</span>
 
-                    {% if log.old_status or log.new_status %}
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark border">
-                            وضعیت قبلی:
-                            {{ log.old_status|default:"-" }}
-                        </span>
-
-                        <span class="mx-1">←</span>
-
-                        <span class="badge bg-primary">
-                            وضعیت جدید:
-                            {{ log.new_status|default:"-" }}
-                        </span>
-                    </div>
-                    {% endif %}
-
-                    {% if log.old_order_status or log.new_order_status %}
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark border">
-                            وضعیت قبلی سفارش:
-                            {{ log.old_order_status|default:"-" }}
-                        </span>
-
-                        <span class="mx-1">←</span>
-
-                        <span class="badge bg-success">
-                            وضعیت جدید سفارش:
-                            {{ log.new_order_status|default:"-" }}
-                        </span>
-                    </div>
-                    {% endif %}
-
-                    {% if log.description %}
-                    <div class="text-muted mb-2">
-                        {{ log.description }}
-                    </div>
-                    {% endif %}
-
-                    {% if log.old_notes or log.new_notes %}
-                    <div class="row g-2 mt-2">
-                        <div class="col-md-6">
-                            <div class="bg-light rounded p-2 h-100">
-                                <small class="text-muted d-block mb-1">
-                                    یادداشت قبلی
-                                </small>
-                                {{ log.old_notes|default:"-"|linebreaksbr }}
+                                <span>
+                                    <i class="fas fa-folder-open me-1"></i>
+                                    پرونده:
+                                    {{ patient.case_number|default:"-" }}
+                                </span>
                             </div>
-                        </div>
 
-                        <div class="col-md-6">
-                            <div class="bg-light rounded p-2 h-100">
-                                <small class="text-muted d-block mb-1">
-                                    یادداشت جدید
-                                </small>
-                                {{ log.new_notes|default:"-"|linebreaksbr }}
+                            <div class="hero-statuses">
+                                <span class="hero-badge">
+                                    <i class="fas fa-tasks"></i>
+                                    {{ order.get_status_display }}
+                                </span>
+
+                                <span class="hero-badge">
+                                    {% if order.priority == 'urgent' %}
+                                        <i class="fas fa-bolt"></i>
+                                    {% elif order.priority == 'fast' %}
+                                        <i class="fas fa-forward"></i>
+                                    {% else %}
+                                        <i class="fas fa-circle"></i>
+                                    {% endif %}
+
+                                    اولویت:
+                                    {{ order.get_priority_display }}
+                                </span>
+
+                                <span class="hero-badge">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ order.created_at|jformat:"%Y/%m/%d - %H:%M" }}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
 
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            ثبت‌کننده:
-                            {% if log.created_by %}
-                                {{ log.created_by.get_full_name|default:log.created_by.username }}
-                            {% else %}
-                                سیستم
-                            {% endif %}
-                        </small>
+                    <div class="hero-actions">
+                        <a href="{% url 'workshop:order-list' %}"
+                           class="btn hero-back-btn">
+                            <i class="fas fa-arrow-right"></i>
+                            بازگشت به فهرست سفارش‌ها
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =====================================================
+             Patient and order information
+        ====================================================== -->
+
+        <div class="row g-4 mb-4">
+
+            <!-- Patient -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="ws-card">
+
+                    <div class="ws-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="ws-card-header-icon">
+                                <i class="fas fa-user-injured"></i>
+                            </div>
+
+                            <div>
+                                <h5 class="ws-card-title">اطلاعات بیمار</h5>
+                                <div class="ws-card-subtitle">
+                                    مشخصات پایه و اطلاعات جسمانی بیمار
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ws-card-body">
+
+                        <div class="patient-profile">
+                            <div class="patient-avatar-large">
+                                {{ patient.full_name|default:"ب"|slice:":1" }}
+                            </div>
+
+                            <div>
+                                <div class="patient-profile-name">
+                                    {{ patient.full_name|default:"نام ثبت نشده" }}
+                                </div>
+
+                                <div class="patient-profile-case">
+                                    شماره پرونده:
+                                    {{ patient.case_number|default:"-" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-list">
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-phone"></i>
+                                    شماره تلفن
+                                </span>
+
+                                <span class="info-value" dir="ltr">
+                                    {{ patient.phone|default:"-" }}
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-venus-mars"></i>
+                                    جنسیت
+                                </span>
+
+                                <span class="info-value">
+                                    {{ patient.get_gender|default:"-" }}
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-shoe-prints"></i>
+                                    سایز پا
+                                </span>
+
+                                <span class="info-value">
+                                    {{ patient.foot_size|default:"-" }}
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-ruler-vertical"></i>
+                                    قد
+                                </span>
+
+                                <span class="info-value">
+                                    {{ patient.height|default:"-" }}
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-weight"></i>
+                                    وزن
+                                </span>
+
+                                <span class="info-value">
+                                    {{ patient.weight|default:"-" }}
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- Order -->
+            <div class="col-xl-8 col-lg-7">
+                <div class="ws-card">
+
+                    <div class="ws-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="ws-card-header-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+
+                            <div>
+                                <h5 class="ws-card-title">اطلاعات کلی سفارش</h5>
+                                <div class="ws-card-subtitle">
+                                    وضعیت تولید، اولویت و اطلاعات ثبت سفارش
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ws-card-body">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <span class="info-label">
+                                        <i class="fas fa-tasks"></i>
+                                        وضعیت سفارش
+                                    </span>
+
+                                    {% if order.status == 'ready' %}
+                                        <span class="ws-status ws-status-ready">
+                                            <i class="fas fa-check-circle"></i>
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'manufacturing' %}
+                                        <span class="ws-status ws-status-manufacturing">
+                                            <i class="fas fa-tools"></i>
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'confirmed' %}
+                                        <span class="ws-status ws-status-confirmed">
+                                            <i class="fas fa-clipboard-check"></i>
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'delivered' %}
+                                        <span class="ws-status ws-status-delivered">
+                                            <i class="fas fa-box-open"></i>
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'cancelled' %}
+                                        <span class="ws-status ws-status-cancelled">
+                                            <i class="fas fa-times-circle"></i>
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="ws-status ws-status-default">
+                                            <i class="fas fa-info-circle"></i>
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <span class="info-label">
+                                        <i class="fas fa-bolt"></i>
+                                        اولویت
+                                    </span>
+
+                                    {% if order.priority == 'urgent' %}
+                                        <span class="ws-priority ws-priority-urgent">
+                                            <i class="fas fa-bolt"></i>
+                                            {{ order.get_priority_display }}
+                                        </span>
+                                    {% elif order.priority == 'fast' %}
+                                        <span class="ws-priority ws-priority-fast">
+                                            <i class="fas fa-forward"></i>
+                                            {{ order.get_priority_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="ws-priority ws-priority-normal">
+                                            <i class="fas fa-circle"></i>
+                                            {{ order.get_priority_display }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <span class="info-label">
+                                        <i class="fas fa-calendar-plus"></i>
+                                        تاریخ ثبت
+                                    </span>
+
+                                    <span class="info-value">
+                                        {{ order.created_at|jformat:"%Y/%m/%d - %H:%M" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="info-row">
+                                    <span class="info-label">
+                                        <i class="fas fa-user-edit"></i>
+                                        ثبت‌کننده
+                                    </span>
+
+                                    <span class="info-value">
+                                        {{ order.created_by.get_full_name|default:order.created_by.username|default:"-" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {% if order.notes %}
+                            <div class="order-note">
+                                <div class="order-note-title">
+                                    <i class="fas fa-sticky-note text-primary"></i>
+                                    یادداشت سفارش
+                                </div>
+
+                                <div class="order-note-text">
+                                    {{ order.notes|linebreaksbr }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if order.general_notes %}
+                            <div class="order-note general-note">
+                                <div class="order-note-title">
+                                    <i class="fas fa-comment-alt text-success"></i>
+                                    یادداشت کلی
+                                </div>
+
+                                <div class="order-note-text">
+                                    {{ order.general_notes|linebreaksbr }}
+                                </div>
+                            </div>
+                        {% endif %}
+
                     </div>
                 </div>
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             Workshop products
+        ====================================================== -->
+
+        <div class="ws-card mb-4">
+
+            <div class="ws-card-header">
+                <div class="section-heading mb-0">
+                    <div class="section-heading-main">
+                        <div class="section-heading-icon">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="section-heading-title">
+                                محصولات ارسالی به کارگاه
+                            </h5>
+
+                            <div class="section-heading-subtitle">
+                                مشاهده مشخصات تولید و ثبت وضعیت هر محصول
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="section-count">
+                        {{ workshop_items|length }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="products-container">
+
+                {% for item in workshop_items %}
+
+                    <div class="product-card">
+
+                        <!-- Product header -->
+                        <div class="product-header">
+                            <div class="product-header-content d-flex justify-content-between align-items-center gap-3">
+
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="product-icon">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+
+                                    <div>
+                                        <h5 class="product-title">
+                                            {{ item.service }}
+                                        </h5>
+
+                                        {% if item.variant %}
+                                            <div class="product-variant">
+                                                <i class="fas fa-layer-group me-1"></i>
+                                                نوع محصول:
+                                                {{ item.variant }}
+                                            </div>
+                                        {% else %}
+                                            <div class="product-variant">
+                                                شناسه آیتم:
+                                                #{{ item.id }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="product-status-wrapper">
+                                    {% if item.status == 'ready' %}
+                                        <span class="ws-status ws-status-ready">
+                                            <i class="fas fa-check-circle"></i>
+                                            {{ item.get_status_display }}
+                                        </span>
+                                    {% elif item.status == 'manufacturing' %}
+                                        <span class="ws-status ws-status-manufacturing">
+                                            <i class="fas fa-tools"></i>
+                                            {{ item.get_status_display }}
+                                        </span>
+                                    {% elif item.status == 'confirmed' %}
+                                        <span class="ws-status ws-status-confirmed">
+                                            <i class="fas fa-clipboard-check"></i>
+                                            {{ item.get_status_display }}
+                                        </span>
+                                    {% elif item.status == 'cancelled' %}
+                                        <span class="ws-status ws-status-cancelled">
+                                            <i class="fas fa-times-circle"></i>
+                                            {{ item.get_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="ws-status ws-status-default">
+                                            <i class="fas fa-info-circle"></i>
+                                            {{ item.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <!-- Product body -->
+                        <div class="product-body">
+
+                            <div class="product-summary-grid">
+
+                                <div class="product-summary-box">
+                                    <span class="product-summary-label">
+                                        <i class="fas fa-sort-numeric-up me-1"></i>
+                                        تعداد
+                                    </span>
+
+                                    <div class="product-summary-value">
+                                        {{ item.quantity|default:"-" }}
+                                    </div>
+                                </div>
+
+                                <div class="product-summary-box">
+                                    <span class="product-summary-label">
+                                        <i class="fas fa-ruler-horizontal me-1"></i>
+                                        طول پا
+                                    </span>
+
+                                    <div class="product-summary-value">
+                                        {{ item.foot_length|default:"-" }}
+                                    </div>
+                                </div>
+
+                                <div class="product-summary-box">
+                                    <span class="product-summary-label">
+                                        <i class="fas fa-bolt me-1"></i>
+                                        اولویت ساخت
+                                    </span>
+
+                                    <div class="product-summary-value">
+                                        {{ item.get_priority_display|default:"-" }}
+                                    </div>
+                                </div>
+
+                                <div class="product-summary-box">
+                                    <span class="product-summary-label">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        تحویل تقریبی
+                                    </span>
+
+                                    <div class="product-summary-value">
+                                        {% if item.expected_delivery_date %}
+                                            {{ item.expected_delivery_date|jformat:"%Y/%m/%d" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                    <span class="product-summary-label">
+                                        <i class="fas fa-user-check me-1"></i>
+                                        تحویل‌دهنده
+                                    </span>
+    
+                                    <div class="product-summary-value">
+                                        {% if item.delivered_by %}
+                                            {{ item.delivered_by.get_full_name|default:item.delivered_by.username }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <!-- Designs -->
+                            {% if item.designs.all %}
+                                <div class="detail-block">
+                                    <div class="detail-block-title">
+                                        <i class="fas fa-drafting-compass"></i>
+                                        طراحی‌های انتخاب‌شده
+                                    </div>
+
+                                    <div>
+                                        {% for design_item in item.designs.all %}
+                                            <span class="design-badge">
+                                                <i class="fas fa-ruler-combined"></i>
+
+                                                {{ design_item.design }}
+
+                                                {% if design_item.side %}
+                                                    <span class="side-badge">
+                                                        {{ design_item.get_side_display }}
+                                                    </span>
+                                                {% endif %}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+
+                            <div class="row g-3">
+
+                                <!-- Measurements -->
+                                {% if item.measurements %}
+                                    <div class="col-xl-6">
+                                        <div class="detail-block h-100">
+                                            <div class="detail-block-title">
+                                                <i class="fas fa-ruler"></i>
+                                                اندازه‌گیری‌ها
+                                            </div>
+
+                                            <div class="table-responsive details-table-wrapper">
+                                                <table class="table table-sm details-table">
+                                                    <tbody>
+                                                        {% for key, value in item.measurements.items %}
+                                                            <tr>
+                                                                <th>{{ key }}</th>
+                                                                <td>{{ value|default:"-" }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+
+                                <!-- Dynamic fields -->
+                                {% if item.dynamic_fields %}
+                                    <div class="col-xl-6">
+                                        <div class="detail-block h-100">
+                                            <div class="detail-block-title">
+                                                <i class="fas fa-sliders-h"></i>
+                                                مشخصات محصول
+                                            </div>
+
+                                            <div class="table-responsive details-table-wrapper">
+                                                <table class="table table-sm details-table">
+                                                    <tbody>
+                                                        {% for key, value in item.dynamic_fields.items %}
+                                                            <tr>
+                                                                <th>{{ key }}</th>
+                                                                <td>{{ value|default:"-" }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- Item update form -->
+                            <div class="product-update-form">
+
+                                <div class="form-section-title">
+                                    <i class="fas fa-bolt"></i>
+                                    عملیات قابل انجام برای این محصول
+                                </div>
+
+                                {% if item.available_actions %}
+                                    <div class="item-action-grid">
+
+                                        {% for action in item.available_actions %}
+                                            <form method="post"
+                                                action="{{ action.url }}"
+                                                {% if action.confirm %}
+                                                    onsubmit="return confirm('{{ action.confirm }}');"
+                                                {% endif %}>
+
+                                                {% csrf_token %}
+
+                                                <input type="hidden"
+                                                    name="next"
+                                                    value="{{ request.get_full_path }}">
+
+                                                <input type="hidden"
+                                                    name="description"
+                                                    value="{{ action.label }}">
+
+                                                <button type="submit"
+                                                        class="btn {{ action.class }} item-action-btn">
+                                                    <i class="{{ action.icon }} me-1"></i>
+                                                    {{ action.label }}
+                                                </button>
+                                            </form>
+                                        {% endfor %}
+
+                                    </div>
+                                {% else %}
+                                    <div class="no-action-state">
+                                        <i class="fas fa-lock"></i>
+                                        در وضعیت فعلی، عملیات قابل انجامی برای این محصول وجود ندارد.
+                                    </div>
+                                {% endif %}
+
+                                <form method="post"
+                                    class="item-note-form mt-3"
+                                    action="{% url 'workshop:update_item_notes' item.id %}">
+
+                                    {% csrf_token %}
+
+                                    <input type="hidden"
+                                        name="next"
+                                        value="{{ request.get_full_path }}">
+
+                                    <label class="form-label" for="item-notes-{{ item.id }}">
+                                        توضیحات ساخت این محصول
+                                    </label>
+
+                                    <div class="row g-2">
+                                        <div class="col-lg-10">
+                                            <textarea name="notes"
+                                                    id="item-notes-{{ item.id }}"
+                                                    class="form-control"
+                                                    rows="2"
+                                                    placeholder="توضیحات مربوط به ساخت، اصلاح یا آماده‌سازی محصول...">{{ item.notes|default:"" }}</textarea>
+                                        </div>
+
+                                        <div class="col-lg-2 d-flex align-items-end">
+                                            <button type="submit"
+                                                    class="btn btn-outline-primary save-item-btn w-100">
+                                                <i class="fas fa-save me-1"></i>
+                                                ذخیره توضیح
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                {% empty %}
+
+                    <div class="ws-empty-state">
+                        <div class="ws-empty-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+
+                        <div class="ws-empty-title">
+                            محصولی برای کارگاه ثبت نشده است
+                        </div>
+
+                        <div class="ws-empty-description">
+                            محصولات ارسال‌شده برای ساخت، در این بخش نمایش داده می‌شوند.
+                        </div>
+                    </div>
+
                 {% endfor %}
+
             </div>
-        {% else %}
-            <div class="text-center text-muted py-4">
-                هنوز سابقه‌ای برای این سفارش ثبت نشده است.
+        </div>
+
+
+        <!-- =====================================================
+             Bulk update and workshop note
+        ====================================================== -->
+
+        <div class="row g-4 mb-4">
+
+            <!-- Bulk status -->
+            <div class="col-xl-5 col-lg-5">
+                <div class="ws-card action-card-warning">
+
+                    <div class="ws-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="ws-card-header-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+
+                            <div>
+                                <h5 class="ws-card-title">تغییر گروهی وضعیت</h5>
+                                <div class="ws-card-subtitle">
+                                    اعمال یک وضعیت روی تمام محصولات کارگاه
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ws-card-body">
+
+                        <div class="bulk-warning">
+                            <i class="fas fa-exclamation-triangle mt-1"></i>
+
+                            <div>
+                                این عملیات، وضعیت تمام محصولات مربوط به این سفارش را
+                                به‌صورت هم‌زمان تغییر می‌دهد.
+                            </div>
+                        </div>
+
+                        <form method="post"
+                              action=" url 'workshop:update-all-items-status' order.id "
+                              onsubmit="return confirm('آیا از تغییر وضعیت تمام محصولات این سفارش اطمینان دارید؟');">
+
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label" for="all-items-status">
+                                    وضعیت جدید تمام محصولات
+                                </label>
+
+                                <div class="bulk-warning">
+                                    <i class="fas fa-exclamation-triangle mt-1"></i>
+
+                                    <div>
+                                        عملیات گروهی فقط برای اکشن‌های مشخص و کنترل‌شده مجاز است.
+                                        تغییر مستقیم وضعیت همه محصولات از این بخش حذف شده است.
+                                    </div>
+                                </div>
+
+                                <form method="post"
+                                    action="url 'workshop:bulk_send_to_qc' order.id"
+                                    onsubmit="return confirm('آیا از ارسال همه محصولات قابل انجام به کنترل کیفیت اطمینان دارید؟');">
+
+                                    {% csrf_token %}
+
+                                    <input type="hidden"
+                                        name="next"
+                                        value="{{ request.get_full_path }}">
+
+                                    <button type="submit"
+                                            class="btn btn-warning bulk-update-btn w-100 py-2">
+                                        <i class="fas fa-clipboard-check me-1"></i>
+                                        ارسال گروهی آیتم‌های مجاز به کنترل کیفیت
+                                    </button>
+                                </form>
+
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-warning bulk-update-btn w-100 py-2">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                اعمال وضعیت روی همه محصولات
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
             </div>
-        {% endif %}
+
+
+            <!-- Workshop notes -->
+            <div class="col-xl-7 col-lg-7">
+                <div class="ws-card action-card-note">
+
+                    <div class="ws-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="ws-card-header-icon">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+
+                            <div>
+                                <h5 class="ws-card-title">یادداشت کلی کارگاه</h5>
+                                <div class="ws-card-subtitle">
+                                    ثبت توضیحات عمومی درباره ساخت و آماده‌سازی سفارش
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ws-card-body">
+                        <form method="post"
+                              action="{% url 'workshop:update-workshop-notes' order.id %}">
+
+                            {% csrf_token %}
+
+                            <label class="form-label" for="workshop-notes">
+                                توضیحات کارگاه
+                            </label>
+
+                            <textarea name="workshop_notes"
+                                      id="workshop-notes"
+                                      class="form-control mb-3"
+                                      rows="5"
+                                      placeholder="توضیحات کلی کارگاه درباره سفارش، روند ساخت یا نکات موردنیاز را وارد کنید...">{{ order.workshop_notes|default:"" }}</textarea>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit"
+                                        class="btn btn-primary save-note-btn px-4 py-2">
+                                    <i class="fas fa-save me-1"></i>
+                                    ذخیره یادداشت کارگاه
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             Workshop history
+        ====================================================== -->
+
+        <div class="ws-card">
+
+            <div class="ws-card-header">
+                <div class="section-heading mb-0">
+                    <div class="section-heading-main">
+                        <div class="section-heading-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="section-heading-title">
+                                سوابق کارگاه
+                            </h5>
+
+                            <div class="section-heading-subtitle">
+                                تاریخچه تغییر وضعیت‌ها، یادداشت‌ها و عملیات انجام‌شده
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="section-count">
+                        {{ workshop_logs|length }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="ws-card-body">
+
+                {% if workshop_logs %}
+                    <div class="timeline-wrapper">
+
+                        {% for log in workshop_logs %}
+                            <div class="timeline-entry">
+
+                                <div class="timeline-marker">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+
+                                <div class="timeline-content">
+
+                                    <div class="timeline-content-header d-flex justify-content-between align-items-start gap-3">
+
+                                        <div>
+                                            <span class="timeline-title">
+                                                {{ log.get_action_display }}
+                                            </span>
+
+                                            {% if log.item %}
+                                                <span class="timeline-item-name">
+                                                    <i class="fas fa-cube me-1"></i>
+                                                    {{ log.item.service }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <span class="timeline-date">
+                                            <i class="fas fa-clock"></i>
+                                            {{ log.created_at|jformat:"%Y/%m/%d - %H:%M" }}
+                                        </span>
+
+                                    </div>
+
+
+                                    <!-- Item status change -->
+                                    {% if log.old_status or log.new_status %}
+                                        <div class="status-change-row">
+                                            <span class="history-badge">
+                                                وضعیت قبلی:
+                                                {{ log.old_status|default:"-" }}
+                                            </span>
+
+                                            <i class="fas fa-arrow-left status-arrow"></i>
+
+                                            <span class="history-badge new-item-status">
+                                                وضعیت جدید:
+                                                {{ log.new_status|default:"-" }}
+                                            </span>
+                                        </div>
+                                    {% endif %}
+
+
+                                    <!-- Order status change -->
+                                    {% if log.old_order_status or log.new_order_status %}
+                                        <div class="status-change-row">
+                                            <span class="history-badge">
+                                                وضعیت قبلی سفارش:
+                                                {{ log.old_order_status|default:"-" }}
+                                            </span>
+
+                                            <i class="fas fa-arrow-left status-arrow"></i>
+
+                                            <span class="history-badge new-order-status">
+                                                وضعیت جدید سفارش:
+                                                {{ log.new_order_status|default:"-" }}
+                                            </span>
+                                        </div>
+                                    {% endif %}
+
+
+                                    <!-- Description -->
+                                    {% if log.description %}
+                                        <div class="timeline-description">
+                                            <i class="fas fa-info-circle text-primary me-1"></i>
+                                            {{ log.description }}
+                                        </div>
+                                    {% endif %}
+
+
+                                    <!-- Note comparison -->
+                                    {% if log.old_notes or log.new_notes %}
+                                        <div class="notes-comparison">
+                                            <div class="row g-2">
+
+                                                <div class="col-md-6">
+                                                    <div class="history-note-box">
+                                                        <div class="history-note-label">
+                                                            <i class="fas fa-history"></i>
+                                                            یادداشت قبلی
+                                                        </div>
+
+                                                        {{ log.old_notes|default:"-"|linebreaksbr }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="history-note-box new-note">
+                                                        <div class="history-note-label">
+                                                            <i class="fas fa-pen"></i>
+                                                            یادداشت جدید
+                                                        </div>
+
+                                                        {{ log.new_notes|default:"-"|linebreaksbr }}
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+
+                                    <div class="timeline-user">
+                                        <span>
+                                            <i class="fas fa-user-edit me-1"></i>
+                                            ثبت‌کننده:
+
+                                            {% if log.created_by %}
+                                                {{ log.created_by.get_full_name|default:log.created_by.username }}
+                                            {% else %}
+                                                سیستم
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                {% else %}
+
+                    <div class="ws-empty-state">
+                        <div class="ws-empty-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+
+                        <div class="ws-empty-title">
+                            هنوز سابقه‌ای ثبت نشده است
+                        </div>
+
+                        <div class="ws-empty-description">
+                            تغییر وضعیت محصولات و یادداشت‌های کارگاه در این قسمت ثبت می‌شوند.
+                        </div>
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+
     </div>
 </div>
 

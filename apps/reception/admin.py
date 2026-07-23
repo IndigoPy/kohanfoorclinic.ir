@@ -188,7 +188,7 @@ class ObservationAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-admin.site.register(Exercises)
+@admin.register(Exercises)
 
 
 class ExercisesAdmin(admin.ModelAdmin):
@@ -204,7 +204,7 @@ class ExercisesAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-admin.site.register(Examination)
+@admin.register(Examination)
 
 
 class ExaminationAdmin(admin.ModelAdmin):
@@ -228,7 +228,8 @@ class ExaminationAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Measurement)
+
+@admin.register(Measurement)
 
 
 class MeasurementAdmin(admin.ModelAdmin):
@@ -254,7 +255,7 @@ class OrderItemInline(admin.TabularInline):
 
     model = OrderItem
     extra = 1
-    autocomplete_fields = ("service", "variant")
+    # autocomplete_fields = ("service", "variant")
 
 
 class OrderItemDesignInline(admin.TabularInline):
@@ -290,11 +291,11 @@ class OrderAdmin(admin.ModelAdmin):
         "status",
         "created_at",
     )
-
-    autocomplete_fields = (
-        "patient",
-        "examination",
-    )
+    
+    # autocomplete_fields = (
+    #     "patient",
+    #     "examination",
+    # )
 
     inlines = (
         OrderItemInline,
@@ -306,7 +307,7 @@ class OrderAdmin(admin.ModelAdmin):
 # Manufacturing
 # =============================
 
-admin.site.register(Technician)
+@admin.register(Technician)
 
 
 class TechnicianAdmin(admin.ModelAdmin):
@@ -321,7 +322,7 @@ class TechnicianAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-admin.site.register(PatientScan)
+@admin.register(PatientScan)
 
 
 class PatientScanAdmin(admin.ModelAdmin):
@@ -342,7 +343,7 @@ class PatientScanAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(ManufacturingStage)
+@admin.register(ManufacturingStage)
 
 
 class ManufacturingStageAdmin(admin.ModelAdmin):
@@ -356,9 +357,7 @@ class ManufacturingStageAdmin(admin.ModelAdmin):
     ordering = ("order",)
 
 
-admin.site.register(ProductionTracking)
-
-
+@admin.register(ProductionTracking)
 class ProductionTrackingAdmin(admin.ModelAdmin):
 
     list_display = (
@@ -375,14 +374,14 @@ class ProductionTrackingAdmin(admin.ModelAdmin):
         "stage",
     )
 
-    autocomplete_fields = (
-        "order",
-        "stage",
-        "technician",
-    )
+    # autocomplete_fields = (
+    #     "order",
+    #     "stage",
+    #     "technician",
+    # )
 
 
-admin.site.register(Delivery)
+@admin.register(Delivery)
 
 
 class DeliveryAdmin(admin.ModelAdmin):

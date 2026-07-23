@@ -1,165 +1,746 @@
 {% extends 'base.html' %}
+{% load jformat %}
 
 {% block content %}
-<div class="container-fluid py-4" dir="rtl">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">
-                <i class="fas fa-industry me-2"></i>
-                داشبورد کارگاه
-            </h3>
-            <p class="text-muted mb-0">
-                مدیریت سفارش‌های ارسال‌شده برای ساخت
-            </p>
+<style>
+    .workshop-dashboard {
+        background: #f5f7fb;
+        min-height: calc(100vh - 80px);
+    }
+
+    .dashboard-hero {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 45%, #0f766e 100%);
+        border-radius: 22px;
+        padding: 28px;
+        color: #fff;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-hero::before {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        top: -90px;
+        left: -70px;
+    }
+
+    .dashboard-hero::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        bottom: -80px;
+        right: 15%;
+    }
+
+    .dashboard-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+        font-size: 1.65rem;
+        margin-left: 14px;
+    }
+
+    .hero-title {
+        font-weight: 800;
+        letter-spacing: -0.4px;
+    }
+
+    .hero-subtitle {
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.95rem;
+    }
+
+    .hero-action-btn {
+        border-radius: 14px;
+        padding: 10px 18px;
+        font-weight: 700;
+        background: #fff;
+        color: #0f172a;
+        border: none;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+        transition: all 0.25s ease;
+    }
+
+    .hero-action-btn:hover {
+        transform: translateY(-2px);
+        color: #0f172a;
+        background: #f8fafc;
+    }
+
+    .stat-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .stat-card {
+        border: 0;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+        transition: all 0.25s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+    }
+
+    .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 5px;
+    }
+
+    .stat-card.primary::before {
+        background: #2563eb;
+    }
+
+    .stat-card.warning::before {
+        background: #f59e0b;
+    }
+
+    .stat-card.success::before {
+        background: #10b981;
+    }
+
+    .stat-card.danger::before {
+        background: #ef4444;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .stat-icon.primary {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .stat-icon.warning {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .stat-icon.success {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .stat-icon.danger {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #0f172a;
+        line-height: 1;
+    }
+
+    .stat-hint {
+        color: #94a3b8;
+        font-size: 0.78rem;
+    }
+
+    .orders-card {
+        border: 0;
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .orders-card-header {
+        padding: 20px 24px;
+        background: #fff;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .orders-card-title {
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .orders-card-subtitle {
+        color: #64748b;
+        font-size: 0.88rem;
+    }
+
+    .modern-table {
+        margin-bottom: 0;
+    }
+
+    .modern-table thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.82rem;
+        font-weight: 800;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 15px 16px;
+        white-space: nowrap;
+    }
+
+    .modern-table tbody td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .modern-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .modern-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .order-id-badge {
+        background: #0f172a;
+        color: #fff;
+        border-radius: 12px;
+        padding: 7px 11px;
+        font-weight: 800;
+        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .patient-avatar {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #e0f2fe, #ccfbf1);
+        color: #0369a1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+    }
+
+    .patient-name {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 0.92rem;
+    }
+
+    .case-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 7px 10px;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.82rem;
+    }
+
+    .product-badge {
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 2px;
+    }
+
+    .product-badge i {
+        color: #0f766e;
+        font-size: 0.75rem;
+    }
+
+    .priority-badge,
+    .status-badge {
+        border-radius: 999px;
+        padding: 7px 11px;
+        font-weight: 800;
+        font-size: 0.78rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .priority-urgent {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .priority-fast {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .priority-normal {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .status-ready {
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+    }
+
+    .status-manufacturing {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .status-confirmed {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+    }
+
+    .status-default {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .view-btn {
+        border-radius: 12px;
+        font-weight: 800;
+        padding: 7px 12px;
+        transition: all 0.2s ease;
+    }
+
+    .view-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        padding: 52px 20px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 24px;
+        background: #f1f5f9;
+        color: #94a3b8;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    .empty-title {
+        font-weight: 800;
+        color: #334155;
+        margin-bottom: 5px;
+    }
+
+    .empty-text {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-hero {
+            padding: 22px;
+        }
+
+        .hero-actions {
+            margin-top: 18px;
+        }
+
+        .modern-table thead {
+            display: none;
+        }
+
+        .modern-table,
+        .modern-table tbody,
+        .modern-table tr,
+        .modern-table td {
+            display: block;
+            width: 100%;
+        }
+
+        .modern-table tbody tr {
+            margin: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .modern-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .modern-table tbody td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            color: #64748b;
+            font-size: 0.82rem;
+        }
+
+        .modern-table tbody td:last-child {
+            border-bottom: 0;
+        }
+
+        .patient-info {
+            justify-content: flex-end;
+        }
+    }
+</style>
+
+<div class="workshop-dashboard py-4" dir="rtl">
+    <div class="container-fluid">
+
+        <!-- Header -->
+        <div class="dashboard-hero mb-4">
+            <div class="dashboard-hero-content">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <div class="d-flex align-items-center">
+                        <div class="hero-icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        <div>
+                            <h3 class="hero-title mb-1">
+                                داشبورد کارگاه
+                            </h3>
+                            <div class="hero-subtitle">
+                                مدیریت سفارش‌های ارسال‌شده برای ساخت، کنترل وضعیت تولید و پیگیری سفارش‌های فوری
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hero-actions">
+                        <a href="{% url 'workshop:order-list' %}" class="btn hero-action-btn">
+                            <i class="fas fa-list me-1"></i>
+                            مشاهده همه سفارش‌ها
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <a href="{% url 'workshop:order-list' %}" class="btn btn-primary">
-            <i class="fas fa-list me-1"></i>
-            مشاهده همه سفارش‌ها
-        </a>
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-xl-3 col-md-6">
+                <a href="{% url 'workshop:order-list' %}?status=confirmed"
+                   class="stat-card-link">
+                    <div class="stat-card primary h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="stat-label mb-2">در انتظار ساخت</div>
+                                    <div class="stat-value text-primary">
+                                        {{ stats.confirmed }}
+                                    </div>
+                                    <div class="stat-hint mt-2">
+                                        سفارش‌های تأیید شده برای شروع تولید
+                                    </div>
+                                </div>
+
+                                <div class="stat-icon primary">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <a href="{% url 'workshop:order-list' %}?status=manufacturing"
+                   class="stat-card-link">
+                    <div class="stat-card warning h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="stat-label mb-2">در حال ساخت</div>
+                                    <div class="stat-value text-warning">
+                                        {{ stats.manufacturing }}
+                                    </div>
+                                    <div class="stat-hint mt-2">
+                                        سفارش‌های فعال در فرآیند تولید
+                                    </div>
+                                </div>
+
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <a href="{% url 'workshop:order-list' %}?status=ready"
+                   class="stat-card-link">
+                    <div class="stat-card success h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="stat-label mb-2">آماده تحویل</div>
+                                    <div class="stat-value text-success">
+                                        {{ stats.ready }}
+                                    </div>
+                                    <div class="stat-hint mt-2">
+                                        سفارش‌های تکمیل‌شده و آماده تحویل
+                                    </div>
+                                </div>
+
+                                <div class="stat-icon success">
+                                    <i class="fas fa-box-open"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <a href="{% url 'workshop:order-list' %}?priority=urgent"
+                   class="stat-card-link">
+                    <div class="stat-card danger h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="stat-label mb-2">سفارش اورژانسی</div>
+                                    <div class="stat-value text-danger">
+                                        {{ stats.urgent }}
+                                    </div>
+                                    <div class="stat-hint mt-2">
+                                        سفارش‌هایی با اولویت بسیار بالا
+                                    </div>
+                                </div>
+
+                                <div class="stat-icon danger">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Latest Orders -->
+        <div class="orders-card">
+            <div class="orders-card-header">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <div>
+                        <h5 class="orders-card-title">
+                            <i class="fas fa-clock-rotate-left me-2 text-primary"></i>
+                            آخرین سفارش‌های کارگاه
+                        </h5>
+                        <div class="orders-card-subtitle">
+                            مرور سریع سفارش‌های اخیر، محصولات کارگاهی، اولویت و وضعیت تولید
+                        </div>
+                    </div>
+
+                    <a href="{% url 'workshop:order-list' %}" class="btn btn-sm btn-outline-primary view-btn">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        لیست کامل
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table modern-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>سفارش</th>
+                            <th>بیمار</th>
+                            <th>شماره پرونده</th>
+                            <th>محصولات کارگاه</th>
+                            <th>اولویت</th>
+                            <th>وضعیت</th>
+                            <th class="text-center">عملیات</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for order in latest_orders %}
+                        <tr>
+                            <td data-label="سفارش">
+                                <span class="order-id-badge">
+                                    <i class="fas fa-hashtag"></i>
+                                    {{ order.id }}
+                                </span>
+                            </td>
+
+                            <td data-label="بیمار">
+                                <div class="patient-info">
+                                    <div class="patient-avatar">
+                                        {{ order.patient.full_name|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <div class="patient-name">
+                                            {{ order.patient.full_name }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td data-label="شماره پرونده">
+                                <span class="case-number">
+                                    <i class="fas fa-folder-open"></i>
+                                    {{ order.patient.case_number|default:"-" }}
+                                </span>
+                            </td>
+
+                            <td data-label="محصولات کارگاه">
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for item in order.workshop_items %}
+                                        <span class="product-badge">
+                                            <i class="fas fa-cube"></i>
+                                            {{ item.service }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="text-muted small">
+                                            محصولی ثبت نشده
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+
+                            <td data-label="اولویت">
+                                {% if order.priority == 'urgent' %}
+                                    <span class="priority-badge priority-urgent">
+                                        <i class="fas fa-bolt"></i>
+                                        اورژانسی
+                                    </span>
+                                {% elif order.priority == 'fast' %}
+                                    <span class="priority-badge priority-fast">
+                                        <i class="fas fa-forward"></i>
+                                        فوری
+                                    </span>
+                                {% else %}
+                                    <span class="priority-badge priority-normal">
+                                        <i class="fas fa-circle"></i>
+                                        عادی
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td data-label="وضعیت">
+                                {% if order.status == 'ready' %}
+                                    <span class="status-badge status-ready">
+                                        <i class="fas fa-check-circle"></i>
+                                        {{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'manufacturing' %}
+                                    <span class="status-badge status-manufacturing">
+                                        <i class="fas fa-tools"></i>
+                                        {{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'confirmed' %}
+                                    <span class="status-badge status-confirmed">
+                                        <i class="fas fa-clipboard-check"></i>
+                                        {{ order.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-default">
+                                        <i class="fas fa-info-circle"></i>
+                                        {{ order.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td data-label="عملیات" class="text-center">
+                                <a href="{% url 'workshop:order-detail' order.id %}"
+                                   class="btn btn-sm btn-outline-primary view-btn">
+                                    <i class="fas fa-eye me-1"></i>
+                                    مشاهده
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-inbox"></i>
+                                    </div>
+                                    <div class="empty-title">
+                                        سفارشی برای کارگاه وجود ندارد
+                                    </div>
+                                    <div class="empty-text">
+                                        پس از ارسال سفارش‌ها به کارگاه، در این بخش نمایش داده می‌شوند.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-
-    <div class="row g-3 mb-4">
-
-        <div class="col-xl-3 col-md-6">
-            <a href="{% url 'workshop:order-list' %}?status=confirmed"
-               class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <span class="text-muted">در انتظار ساخت</span>
-                        <h2 class="text-primary mt-2 mb-0">
-                            {{ stats.confirmed }}
-                        </h2>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <a href="{% url 'workshop:order-list' %}?status=manufacturing"
-               class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <span class="text-muted">در حال ساخت</span>
-                        <h2 class="text-warning mt-2 mb-0">
-                            {{ stats.manufacturing }}
-                        </h2>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <a href="{% url 'workshop:order-list' %}?status=ready"
-               class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <span class="text-muted">آماده تحویل</span>
-                        <h2 class="text-success mt-2 mb-0">
-                            {{ stats.ready }}
-                        </h2>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <a href="{% url 'workshop:order-list' %}?priority=urgent"
-               class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <span class="text-muted">سفارش اورژانسی</span>
-                        <h2 class="text-danger mt-2 mb-0">
-                            {{ stats.urgent }}
-                        </h2>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-    </div>
-
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0">آخرین سفارش‌های کارگاه</h5>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>سفارش</th>
-                        <th>بیمار</th>
-                        <th>شماره پرونده</th>
-                        <th>محصولات کارگاه</th>
-                        <th>اولویت</th>
-                        <th>وضعیت</th>
-                        <th>عملیات</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for order in latest_orders %}
-                    <tr>
-                        <td>#{{ order.id }}</td>
-
-                        <td>{{ order.patient.full_name }}</td>
-
-                        <td>{{ order.patient.case_number }}</td>
-
-                        <td>
-                            {% for item in order.workshop_items %}
-                                <span class="badge bg-light text-dark border mb-1">
-                                    {{ item.service }}
-                                </span>
-                            {% endfor %}
-                        </td>
-
-                        <td>
-                            {% if order.priority == 'urgent' %}
-                                <span class="badge bg-danger">اورژانسی</span>
-                            {% elif order.priority == 'fast' %}
-                                <span class="badge bg-warning text-dark">فوری</span>
-                            {% else %}
-                                <span class="badge bg-secondary">عادی</span>
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            {% if order.status == 'ready' %}
-                                <span class="badge bg-success">
-                                    {{ order.get_status_display }}
-                                </span>
-                            {% elif order.status == 'manufacturing' %}
-                                <span class="badge bg-warning text-dark">
-                                    {{ order.get_status_display }}
-                                </span>
-                            {% else %}
-                                <span class="badge bg-primary">
-                                    {{ order.get_status_display }}
-                                </span>
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            <a href="{% url 'workshop:order-detail' order.id %}"
-                               class="btn btn-sm btn-outline-primary">
-                                مشاهده
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            سفارشی برای کارگاه وجود ندارد.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
 </div>
+
 {% endblock %}

@@ -157,8 +157,23 @@ class OrderItem(TimeStampedModel):
     ITEM_STATUS_CHOICES = (
         ("draft", "پیش‌نویس"),
         ("pending", "در انتظار"),
+
+        ("workshop_queue", "در صف کارگاه"),
         ("manufacturing", "در حال ساخت"),
-        ("ready", "آماده"),
+
+        ("pending_supplier_registration", "در انتظار ثبت برای تولیدکننده"),
+        ("awaiting_supplier", "در انتظار دریافت از تولیدکننده"),
+        ("received_from_supplier", "دریافت‌شده از تولیدکننده"),
+
+        ("ready_for_fitting", "آماده پرو"),
+        ("fitting_completed", "پرو انجام شد"),
+
+        ("qc_pending", "در انتظار کنترل کیفیت"),
+        ("needs_revision", "نیازمند اصلاح"),
+        ("qc_approved", "تأیید کنترل کیفیت"),
+
+        ("ready", "آماده تحویل"),
+        ("delivered", "تحویل داده شده"),
         ("cancelled", "لغو شده"),
     )
 
@@ -170,7 +185,7 @@ class OrderItem(TimeStampedModel):
 
     SEND_TO_CHOICES = (
         ('manufacturer', 'سفارش به تولیدکننده'),
-        ('workshop', 'موجود'),
+        ('workshop', 'تولید یا تکمیل در کارگاه'),
     )
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
@@ -196,7 +211,28 @@ class OrderItem(TimeStampedModel):
         blank=True,
         verbose_name="تاریخ تقریبی تحویل"
     )
+    
+    expected_delivery_date = models.DateField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="تاریخ تقریبی آماده‌سازی"
+    )
 
+    delivered_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ تحویل واقعی آیتم"
+    )
+
+    delivered_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="delivered_order_items",
+        verbose_name="تحویل‌دهنده آیتم"
+    )
     # delivered_at = models.DateField(
     #     null=True,
     #     blank=True,
@@ -214,7 +250,7 @@ class OrderItem(TimeStampedModel):
         verbose_name='نوع سفارش'
     )
 
-    status = models.CharField(max_length=20, choices=ITEM_STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=40, choices=ITEM_STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True)
 
     def calculate_price(self):
@@ -386,8 +422,12 @@ class OrderService:
             service = get_object_or_404(Services, id=item['service_id'])
             measurements = item.get('measurements', {}) or {}
 
-            # استخراج foot_length از اندازه‌گیری‌های ثبت‌شده (در صورت وجود)
-            foot_length_val = measurements.get('foot_length')
+            # استخراج foot_length: در صورت متفاوت بودن اندازه چپ/راست، پای راست به عنوان مرجع قیمت‌گذاری استفاده می‌شود
+            if measurements.get('different_sizes'):
+                foot_length_val = (measurements.get('right') or {}).get('foot_length')
+            else:
+                foot_length_val = measurements.get('foot_length')
+
             try:
                 foot_length = Decimal(str(foot_length_val)) if foot_length_val not in (None, '') else None
             except (InvalidOperation, ValueError, TypeError):
