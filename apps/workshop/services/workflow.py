@@ -162,6 +162,13 @@ class WorkshopWorkflowService:
             description=description,
         )
 
+    def resume_manufacturing(self, item, description=""):
+        return self.transition_item(
+            item=item,
+            new_status=ITEM_STATUS_MANUFACTURING,
+            description=description,
+        )
+    
     def _lock_item(self, item):
         return (
             OrderItem.objects.select_for_update()
@@ -189,10 +196,9 @@ class WorkshopWorkflowService:
             ITEM_STATUS_AWAITING_SUPPLIER,
             ITEM_STATUS_RECEIVED_FROM_SUPPLIER,
         }
-
+        
         workshop_only_statuses = {
             ITEM_STATUS_WORKSHOP_QUEUE,
-            ITEM_STATUS_MANUFACTURING,
         }
 
         if new_status in supplier_statuses and item.send_to != SEND_TO_MANUFACTURER:

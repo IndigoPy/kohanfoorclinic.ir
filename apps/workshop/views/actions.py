@@ -138,6 +138,15 @@ def mark_ready_for_fitting(request, item_id):
         default_description="آماده‌سازی آیتم برای پرو",
     )
 
+@login_required
+def resume_manufacturing(request, item_id):
+    return _handle_workflow_action(
+        request=request,
+        item_id=item_id,
+        service_method_name="resume_manufacturing",
+        success_message="کار روی محصول دریافتی از تولیدکننده در کارگاه شروع شد.",
+        default_description="ادامه تکمیل محصول دریافتی از تولیدکننده در کارگاه",
+    )
 
 @login_required
 def send_to_qc(request, item_id):

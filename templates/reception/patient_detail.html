@@ -1882,11 +1882,13 @@
     </a>
 
     <!-- دکمه جدید برای حذف بیمار -->
-    <a href="{% url 'reception:delete-patient' patient.id %}" class="btn text-white action-btn"
-        style="background: #dc3545;" 
-        onclick="return confirm('آیا از حذف کامل این بیمار و تمام اطلاعات وابسته به او (معاینات، سفارشات و مدارک) کاملاً مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');">
-        <i class="fas fa-trash-alt me-2"></i> حذف بیمار
-    </a>
+    <form action="{% url 'reception:delete-patient' patient.id %}" method="POST" class="d-inline"
+          onsubmit="return confirm('آیا از حذف کامل این بیمار و تمام اطلاعات وابسته به او (معاینات، سفارشات و مدارک) کاملاً مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');">
+        {% csrf_token %}
+        <button type="submit" class="btn text-white action-btn" style="background: #dc3545;">
+            <i class="fas fa-trash-alt me-2"></i> حذف بیمار
+        </button>
+    </form>
     
     <a href="{% url 'reception:dashboard' %}" class="btn btn-outline-secondary action-btn">
         <i class="fas fa-arrow-left me-2"></i> بازگشت به لیست

@@ -16,7 +16,7 @@ from django.db import models
 from ..models.orders import PaymentMethod,PaymentAccount,Payment
 from decimal import Decimal
 from ..models.patient import PatientAttachment, PatientInsuranceInfo,UnderlyingDisease,OrthoticHistoryType
-
+from django.views.decorators.http import require_POST
 
 def is_manager(user):
     """فقط سوپریوزر یا عضو گروه Manager اجازه ویرایش/حذف تراکنش دارد"""
@@ -408,7 +408,7 @@ def edit_patient(request, patient_id):
     return render(request, 'reception/create_patient.html', context)
 
 
-
+@login_required
 def print_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     context = {
@@ -516,7 +516,9 @@ def patient_detail(request, patient_id):
         context,
     )
 
-
+@login_required
+@group_required('Reception')
+@require_POST   
 def delete_patient(request, patient_id):
     # دریافت بیمار با استفاده از شناسه یا بازگرداندن خطای 404 در صورت عدم وجود
     patient = get_object_or_404(Patient, id=patient_id)

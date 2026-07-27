@@ -445,7 +445,7 @@ class OrderService:
                 send_to=item.get('send_to', 'manufacturer'),
                 priority=item.get('priority', 'normal'),
                 delivery_date=item.get('delivery_date') or None,
-                status=item.get('status', 'awaiting'),
+                status=item.get('status', 'pending'),
                 notes=item.get('notes', '')
             )
 

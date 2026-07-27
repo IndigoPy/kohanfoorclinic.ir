@@ -276,7 +276,8 @@ def create_order():
 
 
 
-
+@login_required
+@group_required('Reception')
 @require_POST
 def delete_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -637,8 +638,14 @@ def edit_order(request, order_id):
         id=order_id
     )
 
-    if order.status in ['delivered', 'cancelled']:
-        messages.error(request, 'سفارش‌های تحویل‌داده‌شده یا لغو‌شده قابل ویرایش نیستند.')
+    LOCKED_FOR_FULL_EDIT = ['delivered', 'cancelled', 'manufacturing', 'ready']
+
+    if order.status in LOCKED_FOR_FULL_EDIT:
+        messages.error(
+            request,
+            'این سفارش وارد مرحله ساخت یا تحویل شده و دیگر قابل ویرایش کامل نیست. '
+            'فقط سفارش‌های پیش‌نویس یا تأیید‌نشده قابل ویرایش هستند.'
+        )
         return redirect('reception:patient-detail', patient_id=order.patient.id)
 
     exam = order.examination  # ممکن است None باشد (سفارش مستقیم)

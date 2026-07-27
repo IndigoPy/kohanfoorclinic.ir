@@ -85,6 +85,11 @@ urlpatterns = [
         actions.deliver_item,
         name="deliver_item",
     ),
+        path(
+        "items/<int:item_id>/resume-manufacturing/",
+        actions.resume_manufacturing,
+        name="resume_manufacturing",
+    ),
     
     # actions
     path(

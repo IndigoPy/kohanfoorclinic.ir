@@ -161,6 +161,7 @@ def create_order_sync_log(order, updated_by, old_order_status, new_order_status)
 
     log_data = {
         "order": order,
+        "patient": order.patient,
         "action": action,
         "created_by": updated_by,
         "old_order_status": old_order_status,

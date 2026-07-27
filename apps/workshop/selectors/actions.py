@@ -87,6 +87,13 @@ WORKSHOP_ITEM_ACTIONS = {
     ],
     ITEM_STATUS_RECEIVED_FROM_SUPPLIER: [
         {
+            "name": "resume_manufacturing",
+            "label": "شروع تکمیل در کارگاه",
+            "icon": "fas fa-tools",
+            "class": "btn-primary",
+            "route": SEND_TO_MANUFACTURER,
+        },
+        {
             "name": "mark_ready_for_fitting",
             "label": "آماده پرو",
             "icon": "fas fa-shoe-prints",
