@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from apps.core.decorators import group_required
 from apps.reception.models import Order, OrderItem
 from apps.workshop.selectors.orders import workshop_orders_queryset
-
+from apps.workshop.selectors.actions import get_available_item_actions
 
 @login_required
 @group_required('workshop')
@@ -101,6 +101,9 @@ def workshop_order_detail(request, order_id):
         'item__service',
     ).order_by('-created_at')[:50]
 
+    for item in order.workshop_items:
+            item.available_actions = get_available_item_actions(item)
+            
     context = {
         'order': order,
         'patient': order.patient,

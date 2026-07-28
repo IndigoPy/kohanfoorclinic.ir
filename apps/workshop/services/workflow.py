@@ -24,6 +24,7 @@ from apps.workshop.exceptions import (
     InvalidItemTransitionError,
     InvalidWorkshopActionError,
     LockedOrderError,
+    WorkshopWorkflowError,
 )
 from apps.workshop.services.order_sync import sync_order_status
 
@@ -211,7 +212,13 @@ class WorkshopWorkflowService:
                 "این وضعیت فقط برای آیتم‌های کارگاهی مجاز است."
             )
 
-    def _create_item_status_log(self, item, old_status, new_status, description):
+    def _create_item_status_log(
+        self,
+        item,
+        old_status,
+        new_status,
+        description,
+    ):
         """
         Adapter for current WorkshopStatusLog.
 
@@ -224,36 +231,24 @@ class WorkshopWorkflowService:
         except ImportError:
             return None
 
-        action = getattr(
-            WorkshopStatusLog,
-            "ACTION_ITEM_STATUS_CHANGED",
-            "item_status_changed",
-        )
+        order = item.order
+        patient = getattr(order, "patient", None)
+
+        if patient is None:
+            raise WorkshopWorkflowError(
+                f"بیمار مرتبط با سفارش #{order.pk} پیدا نشد و ثبت لاگ امکان‌پذیر نیست."
+            )
 
         log_data = {
-            "order": item.order,
-            "order_item": item,
+            "patient": patient,
+            "order": order,
             "item": item,
-            "action": action,
+            "action": WorkshopStatusLog.ACTION_STATUS_CHANGE,
             "created_by": self.user,
-            "old_item_status": old_status,
-            "new_item_status": new_status,
             "old_status": old_status,
             "new_status": new_status,
             "description": description or "وضعیت آیتم سفارش تغییر کرد.",
         }
 
-        valid_fields = {
-            field.name for field in WorkshopStatusLog._meta.get_fields()
-            if hasattr(field, "name")
-        }
+        return WorkshopStatusLog.objects.create(**log_data)
 
-        safe_log_data = {
-            key: value for key, value in log_data.items()
-            if key in valid_fields
-        }
-
-        if not safe_log_data:
-            return None
-
-        return WorkshopStatusLog.objects.create(**safe_log_data)

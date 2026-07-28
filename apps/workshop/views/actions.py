@@ -13,6 +13,7 @@ from apps.workshop.services.workflow import WorkshopWorkflowService
 from django.shortcuts import resolve_url
 from django.utils.http import url_has_allowed_host_and_scheme
 
+
 def _require_post(request):
     return request.method == "POST"
 
@@ -138,6 +139,7 @@ def mark_ready_for_fitting(request, item_id):
         default_description="آماده‌سازی آیتم برای پرو",
     )
 
+
 @login_required
 def resume_manufacturing(request, item_id):
     return _handle_workflow_action(
@@ -147,6 +149,7 @@ def resume_manufacturing(request, item_id):
         success_message="کار روی محصول دریافتی از تولیدکننده در کارگاه شروع شد.",
         default_description="ادامه تکمیل محصول دریافتی از تولیدکننده در کارگاه",
     )
+
 
 @login_required
 def send_to_qc(request, item_id):
