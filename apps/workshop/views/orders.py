@@ -11,72 +11,66 @@ from apps.reception.models import Order, OrderItem
 from apps.workshop.selectors.orders import workshop_orders_queryset
 from apps.workshop.selectors.actions import get_available_item_actions
 
+from django.utils import timezone
+from apps.workshop.constants import (
+    ITEM_STATUS_PENDING_SUPPLIER_REGISTRATION,
+    ITEM_STATUS_AWAITING_SUPPLIER,
+    ITEM_STATUS_READY,
+)
+
 @login_required
 @group_required('workshop')
 def workshop_order_list(request):
-    search_query = request.GET.get('q', '').strip()
-    selected_status = request.GET.get('status', '').strip()
-    selected_priority = request.GET.get('priority', '').strip()
+    orders = workshop_orders_queryset()
 
-    orders = workshop_orders_queryset().exclude(
-        status='cancelled'
-    )
+    search = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+    priority = request.GET.get('priority', '').strip()
+    quick_filter = request.GET.get('quick', '').strip()
 
-    valid_statuses = {
-        value for value, _ in Order.STATUS_CHOICES
-    }
-
-    valid_priorities = {
-        value for value, _ in Order.PRIORITY_CHOICES
-    }
-
-    if selected_status in valid_statuses:
-        orders = orders.filter(status=selected_status)
-
-    if selected_priority in valid_priorities:
-        orders = orders.filter(priority=selected_priority)
-
-    if search_query:
-        search_filter = (
-            Q(patient__first_name__icontains=search_query) |
-            Q(patient__last_name__icontains=search_query) |
-            Q(patient__case_number__icontains=search_query) |
-            Q(patient__phone__icontains=search_query) |
-            Q(items__service__name__icontains=search_query)
+    if search:
+        orders = orders.filter(
+            Q(patient__first_name__icontains=search) |
+            Q(patient__last_name__icontains=search) |
+            Q(id__icontains=search)
         )
 
-        if search_query.isdigit():
-            search_filter |= Q(id=int(search_query))
+    if status:
+        orders = orders.filter(status=status)
 
-        orders = orders.filter(search_filter).distinct()
+    if priority:
+        orders = orders.filter(priority=priority)
 
-    priority_order = {
-        'urgent': 0,
-        'fast': 1,
-        'normal': 2,
-    }
+    today = timezone.localdate()
 
-    orders = list(orders)
+    if quick_filter == 'today':
+        orders = orders.filter(items__delivery_date=today).exclude(
+            items__status__in=['delivered', 'cancelled']
+        ).distinct()
 
-    orders.sort(
-        key=lambda order: (
-            priority_order.get(order.priority, 3),
-            -order.id,
-        )
-    )
+    elif quick_filter == 'overdue':
+        orders = orders.filter(items__delivery_date__lt=today).exclude(
+            items__status__in=['delivered', 'cancelled']
+        ).distinct()
 
-    paginator = Paginator(orders, 25)
-    page_obj = paginator.get_page(request.GET.get('page'))
+    elif quick_filter == 'awaiting_supplier':
+        orders = orders.filter(
+            items__status__in=[
+                ITEM_STATUS_PENDING_SUPPLIER_REGISTRATION,
+                ITEM_STATUS_AWAITING_SUPPLIER,
+            ]
+        ).distinct()
+
+    elif quick_filter == 'ready':
+        orders = orders.filter(items__status=ITEM_STATUS_READY).distinct()
 
     context = {
-        'orders': page_obj,
-        'search_query': search_query,
-        'selected_status': selected_status,
-        'selected_priority': selected_priority,
-        'status_choices': Order.STATUS_CHOICES,
-        'priority_choices': Order.PRIORITY_CHOICES,
+        'orders': orders,
+        'search': search,
+        'status': status,
+        'priority': priority,
+        'quick_filter': quick_filter,
     }
-
     return render(request, 'workshop/order_list.html', context)
 
 
@@ -104,9 +98,14 @@ def workshop_order_detail(request, order_id):
     for item in order.workshop_items:
             item.available_actions = get_available_item_actions(item)
             
+    patient_orders_count = Order.objects.filter(
+        patient=order.patient
+    ).exclude(status='draft').count()
+        
     context = {
         'order': order,
         'patient': order.patient,
+        'patient_orders_count': patient_orders_count,
         'workshop_items': order.workshop_items,
         'item_status_choices': OrderItem.ITEM_STATUS_CHOICES,
         'workshop_logs': logs,

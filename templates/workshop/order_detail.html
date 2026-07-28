@@ -1180,16 +1180,6 @@
 
                         <div class="info-list">
 
-                            <div class="info-row">
-                                <span class="info-label">
-                                    <i class="fas fa-phone"></i>
-                                    شماره تلفن
-                                </span>
-
-                                <span class="info-value" dir="ltr">
-                                    {{ patient.phone|default:"-" }}
-                                </span>
-                            </div>
 
                             <div class="info-row">
                                 <span class="info-label">
@@ -1234,7 +1224,11 @@
                                     {{ patient.weight|default:"-" }}
                                 </span>
                             </div>
-
+                            <div class="info-row">
+                                <a href="{% url 'reception:patient-detail' patient.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i> مشاهده پرونده کامل
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -1531,21 +1525,33 @@
                                 <div class="product-summary-box">
                                     <span class="product-summary-label">
                                         <i class="fas fa-calendar-check me-1"></i>
-                                        تحویل تقریبی
+                                        تحویل تقریبی (از سفارش)
                                     </span>
 
                                     <div class="product-summary-value">
-                                        {% if item.expected_delivery_date %}
-                                            {{ item.expected_delivery_date|jformat:"%Y/%m/%d" }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
+                                        {{ item.delivery_date|default:"-" }}
                                     </div>
+                                </div>
+
+                                {% if item.delivered_at %}
+                                <div class="product-summary-box">
+                                    <span class="product-summary-label">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        تاریخ تحویل واقعی
+                                    </span>
+
+                                    <div class="product-summary-value">
+                                        {{ item.delivered_at|jformat:"%Y/%m/%d" }}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="product-summary-box">
                                     <span class="product-summary-label">
                                         <i class="fas fa-user-check me-1"></i>
                                         تحویل‌دهنده
                                     </span>
-    
+
                                     <div class="product-summary-value">
                                         {% if item.delivered_by %}
                                             {{ item.delivered_by.get_full_name|default:item.delivered_by.username }}
@@ -1650,9 +1656,31 @@
                                 </div>
 
                                 {% if item.available_actions %}
-                                    <div class="item-action-grid">
+                                <div class="item-action-grid">
 
-                                        {% for action in item.available_actions %}
+                                    {% for action in item.available_actions %}
+                                        {% if action.name == 'deliver_item' %}
+                                            <form method="post"
+                                                action="{{ action.url }}"
+                                                class="d-flex align-items-center gap-2"
+                                                onsubmit="return confirm('{{ action.confirm }}');">
+
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <input type="hidden" name="description" value="{{ action.label }}">
+
+                                                <input type="text"
+                                                    name="delivery_date_input"
+                                                    class="form-control form-control-sm"
+                                                    style="max-width: 150px;"
+                                                    placeholder="۱۴۰۴/۰۵/۱۰ (خالی=امروز)">
+
+                                                <button type="submit" class="btn {{ action.class }} item-action-btn">
+                                                    <i class="{{ action.icon }} me-1"></i>
+                                                    {{ action.label }}
+                                                </button>
+                                            </form>
+                                        {% else %}
                                             <form method="post"
                                                 action="{{ action.url }}"
                                                 {% if action.confirm %}
@@ -1675,10 +1703,11 @@
                                                     {{ action.label }}
                                                 </button>
                                             </form>
-                                        {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
 
-                                    </div>
-                                {% else %}
+                                </div>
+                            {% else %}
                                     <div class="no-action-state">
                                         <i class="fas fa-lock"></i>
                                         در وضعیت فعلی، عملیات قابل انجامی برای این محصول وجود ندارد.

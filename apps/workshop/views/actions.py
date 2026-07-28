@@ -15,33 +15,11 @@ from apps.core.decorators import group_required
 from django.shortcuts import resolve_url
 from django.utils.http import url_has_allowed_host_and_scheme
 
+import jdatetime
+from apps.reception.utils import standardize_persian_date
 
 def _require_post(request):
     return request.method == "POST"
-
-
-def _get_next_url(request, item):
-    """
-    Central redirect resolver for workshop actions.
-
-    Priority:
-    1. explicit next from form
-    2. HTTP referer
-    3. order detail fallback
-    """
-
-    next_url = request.POST.get("next") or request.GET.get("next")
-
-    if next_url:
-        return next_url
-
-    referer = request.META.get("HTTP_REFERER")
-
-    if referer:
-        return referer
-
-    return reverse("reception:order_detail", kwargs={"pk": item.order_id})
-
 
 def _get_description(request, default=""):
     return request.POST.get("description") or default
@@ -248,13 +226,40 @@ def mark_ready(request, item_id):
 
 @login_required
 def deliver_item(request, item_id):
-    return _handle_workflow_action(
-        request=request,
-        item_id=item_id,
-        service_method_name="deliver_item",
-        success_message="تحویل آیتم ثبت شد.",
-        default_description="تحویل آیتم به بیمار",
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    item = get_object_or_404(
+        OrderItem.objects.select_related("order"),
+        pk=item_id,
     )
+
+    raw_date = request.POST.get("delivery_date_input", "").strip()
+    delivered_at = None
+
+    if raw_date:
+        try:
+            clean_date = standardize_persian_date(raw_date)      # اعداد فارسی -> انگلیسی و / -> -
+            normalized = clean_date.replace('-', '/')
+            year, month, day = map(int, normalized.split('/'))
+            delivered_at = jdatetime.date(year, month, day).togregorian()
+        except Exception:
+            messages.error(
+                request,
+                'فرمت تاریخ تحویل معتبر نیست. لطفاً به شکل ۱۴۰۴/۰۵/۱۰ وارد کنید یا خالی بگذارید.'
+            )
+            return redirect(_get_next_url(request, item))
+
+    service = WorkshopWorkflowService(user=request.user)
+    description = _get_description(request, default="تحویل آیتم به بیمار")
+
+    try:
+        service.deliver_item(item=item, description=description, delivered_at=delivered_at)
+        messages.success(request, "تحویل آیتم ثبت شد.")
+    except WorkshopWorkflowError as exc:
+        messages.error(request, str(exc))
+
+    return redirect(_get_next_url(request, item))
 
 
 def _get_next_url(request, item):
@@ -276,4 +281,4 @@ def _get_next_url(request, item):
     ):
         return referer
 
-    return resolve_url("reception:order_detail", pk=item.order_id)
+    return resolve_url("workshop:order-detail", order_id=item.order_id)

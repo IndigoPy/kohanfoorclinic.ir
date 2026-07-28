@@ -42,7 +42,7 @@ class WorkshopWorkflowService:
         self.user = user
 
     @transaction.atomic
-    def transition_item(self, item, new_status, description="", force=False):
+    def transition_item(self, item, new_status, description="", force=False, delivered_at=None):
         item = self._lock_item(item)
         self._validate_parent_order(item)
 
@@ -67,7 +67,7 @@ class WorkshopWorkflowService:
         item.status = new_status
 
         if new_status == ITEM_STATUS_DELIVERED:
-            item.delivered_at = timezone.localdate()
+            item.delivered_at = delivered_at or timezone.localdate() 
             item.delivered_by = self.user
             update_fields.extend(["delivered_at", "delivered_by"])
 
@@ -156,11 +156,12 @@ class WorkshopWorkflowService:
             description=description,
         )
 
-    def deliver_item(self, item, description=""):
+    def deliver_item(self, item, description="", delivered_at=None):
         return self.transition_item(
             item=item,
             new_status=ITEM_STATUS_DELIVERED,
             description=description,
+            delivered_at=delivered_at,
         )
 
     def resume_manufacturing(self, item, description=""):

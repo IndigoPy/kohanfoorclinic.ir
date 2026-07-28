@@ -674,10 +674,32 @@
                         <h5 class="ws-card-title">
                             فیلتر و جستجوی سفارش‌ها
                         </h5>
-
                         <div class="ws-card-subtitle">
                             جستجو بر اساس نام، پرونده، موبایل، محصول یا شماره سفارش
                         </div>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a href="?{% if search %}q={{ search }}{% endif %}"
+                            class="btn btn-sm {% if not quick_filter %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                                همه
+                            </a>
+                            <a href="?quick=today{% if search %}&q={{ search }}{% endif %}"
+                            class="btn btn-sm {% if quick_filter == 'today' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                موعد امروز
+                            </a>
+                            <a href="?quick=overdue{% if search %}&q={{ search }}{% endif %}"
+                            class="btn btn-sm {% if quick_filter == 'overdue' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                دیرکرد‌دار
+                            </a>
+                            <a href="?quick=awaiting_supplier{% if search %}&q={{ search }}{% endif %}"
+                            class="btn btn-sm {% if quick_filter == 'awaiting_supplier' %}btn-info{% else %}btn-outline-info{% endif %}">
+                                منتظر تامین‌کننده
+                            </a>
+                            <a href="?quick=ready{% if search %}&q={{ search }}{% endif %}"
+                            class="btn btn-sm {% if quick_filter == 'ready' %}btn-success{% else %}btn-outline-success{% endif %}">
+                                آماده تحویل
+                            </a>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -926,6 +948,11 @@
                                             <i class="fas fa-circle"></i>
                                             {{ order.get_priority_display }}
                                         </span>
+                                    {% endif %}
+                                    {% if order.delivery_badge %}
+                                    <span class="badge {{ order.delivery_badge.css_class }}">
+                                        {{ order.delivery_badge.label }}
+                                    </span>
                                     {% endif %}
                                 </td>
 

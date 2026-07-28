@@ -10,6 +10,51 @@ from decimal import Decimal, InvalidOperation
 from django.shortcuts import  get_object_or_404
 from django.utils import timezone
 import jdatetime
+from datetime import datetime, date
+
+def normalize_delivery_date(value):
+    """Convert Gregorian/Jalali delivery-date values to datetime.date."""
+    if not value:
+        return None
+
+    if isinstance(value, datetime):
+        return value.date()
+
+    if isinstance(value, date):
+        return value
+
+    if not isinstance(value, str):
+        return None
+
+    value = value.strip()
+    if not value:
+        return None
+
+    # Normalize Persian and Arabic digits.
+    value = value.translate(
+        str.maketrans(
+            '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩',
+            '01234567890123456789',
+        )
+    )
+
+    normalized_value = value.replace('-', '/')
+
+    try:
+        year, month, day = map(int, normalized_value.split('/'))
+    except (TypeError, ValueError):
+        return None
+
+    try:
+        # Years in this range are expected to be Jalali.
+        if 1200 <= year <= 1600:
+            return jdatetime.date(year, month, day).togregorian()
+
+        return date(year, month, day)
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
 
 # =============================
 # Order
@@ -147,6 +192,43 @@ class Order(TimeStampedModel):
         else:
             self.payment_status = 'partial'
         self.save(update_fields=["payment_status"])
+    
+    def _delivery_badge_from_items(self, items):
+        dated_items = []
+
+        for item in items:
+            if item.status in ('delivered', 'cancelled'):
+                continue
+
+            delivery_date = normalize_delivery_date(item.delivery_date)
+            if delivery_date is None:
+                continue
+
+            dated_items.append((delivery_date, item))
+
+        if not dated_items:
+            return None
+
+        _, nearest_item = min(
+            dated_items,
+            key=lambda pair: pair[0],
+        )
+
+        return nearest_item.delivery_badge
+
+
+    @property
+    def delivery_badge(self):
+        items = getattr(self, 'workshop_items', None)
+
+        if items is None:
+            items = self.items.all()
+
+        return self._delivery_badge_from_items(items)
+
+
+
+
     
 # =============================
 # Order Item
@@ -311,6 +393,50 @@ class OrderItem(TimeStampedModel):
             return "{:,}".format(int(float(final_total)))
         except (ValueError, TypeError):
             return "0"
+        
+    @property
+    def delivery_badge(self):
+        """
+        Return a delivery badge based on this item's approximate delivery date.
+        """
+        if self.status in ('delivered', 'cancelled'):
+            return None
+
+        delivery_date = normalize_delivery_date(self.delivery_date)
+        if delivery_date is None:
+            return None
+
+        delta = (delivery_date - timezone.localdate()).days
+
+        if delta < 0:
+            return {
+                'label': f'{abs(delta)} روز تاخیر',
+                'css_class': 'bg-danger',
+            }
+
+        if delta == 0:
+            return {
+                'label': 'موعد امروز',
+                'css_class': 'bg-warning text-dark',
+            }
+
+        if delta == 1:
+            return {
+                'label': 'تحویل فردا',
+                'css_class': 'bg-warning text-dark',
+            }
+
+        if delta <= 2:
+            return {
+                'label': f'{delta} روز مانده',
+                'css_class': 'bg-info text-dark',
+            }
+
+        return {
+            'label': f'{delta} روز مانده',
+            'css_class': 'bg-secondary',
+        }
+
 
 # =============================
 # Order Item Designs
