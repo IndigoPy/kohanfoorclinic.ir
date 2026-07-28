@@ -14,6 +14,8 @@ from django.views.decorators.http import require_POST
 from decimal import Decimal, InvalidOperation
 import jdatetime
 from django.utils import timezone
+from django.core.serializers.json import DjangoJSONEncoder
+
 
 def is_manager(user):
     """فقط سوپریوزر یا عضو گروه Manager اجازه ویرایش/حذف تراکنش دارد"""
@@ -627,7 +629,63 @@ def delete_payment(request, payment_id):
     messages.success(request, "پرداخت حذف شد.")
     return redirect('reception:patient-detail', patient_id=patient_id)
 
-from django.core.serializers.json import DjangoJSONEncoder
+
+
+@require_POST
+@login_required
+def issue_order_invoice(request, order_id):
+    order = get_object_or_404(
+        Order.objects.select_related('patient'),
+        id=order_id,
+    )
+
+    invoice, created = OrderInvoice.issue_for_order(order, request.user)
+
+    if created:
+        messages.success(
+            request,
+            f'فاکتور شماره {invoice.invoice_number} ثبت شد.'
+        )
+    else:
+        messages.info(
+            request,
+            f'این سفارش قبلا با شماره {invoice.invoice_number} فاکتور شده است.'
+        )
+
+    return redirect('reception:patient-detail', patient_id=order.patient_id)
+
+
+@login_required
+def print_order_invoice(request, order_id, print_type):
+    allowed_types = {
+        'receipt': 'reception/partials/invoices/_order_receipt_print.html',
+        'services': 'reception/partials/invoices/_order_services_invoice_print.html',
+        'visit': 'reception/partials/invoices/_order_visit_invoice_print.html',
+    }
+
+    template_name = allowed_types.get(print_type)
+
+    if not template_name:
+        messages.error(request, 'نوع چاپ فاکتور معتبر نیست.')
+        return redirect('reception:dashboard')
+
+    order = get_object_or_404(
+        Order.objects
+        .select_related('patient', 'examination', 'invoice')
+        .prefetch_related('items__service', 'items__designs__design', 'payments'),
+        id=order_id,
+    )
+
+    invoice, _ = OrderInvoice.issue_for_order(order, request.user)
+
+    context = {
+        'order': order,
+        'invoice': invoice,
+        'print_type': print_type,
+    }
+
+    return render(request, template_name, context)
+
 
 @group_required('Reception')
 @login_required

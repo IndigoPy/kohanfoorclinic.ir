@@ -1753,7 +1753,115 @@
                     </div>
                     <!-- upload document modal -->
                     {% include "reception/partials/_upload_document_modal.html" %}
-                    <div class="tab-pane fade" id="invoices" role="tabpanel"></div>
+
+                    <!-- Invoices -->
+                    <div class="tab-pane fade" id="invoices" role="tabpanel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="fas fa-file-invoice me-2 text-primary"></i>
+            فاکتورهای ثبت‌شده
+        </h4>
+    </div>
+
+    {% if invoices %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white shadow-sm rounded overflow-hidden">
+                <thead class="table-light">
+                    <tr>
+                        <th>شماره فاکتور</th>
+                        <th>تاریخ صدور</th>
+                        <th>شماره سفارش</th>
+                        <th>مبلغ کل</th>
+                        <th>پرداخت‌شده</th>
+                        <th>باقی‌مانده</th>
+                        <th>صادرکننده</th>
+                        <th class="text-center">چاپ</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for invoice in invoices %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-success fs-6">
+                                    {{ invoice.invoice_number }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ invoice.issued_at|jformat:"%Y/%m/%d - %H:%M" }}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-dark">
+                                    #{{ invoice.order.id }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ invoice.order.formatted_total }} تومان
+                            </td>
+
+                            <td>
+                                {{ invoice.order.formatted_total_paid }} تومان
+                            </td>
+
+                            <td>
+                                {% if invoice.order.remaining_amount > 0 %}
+                                    <span class="text-danger fw-bold">
+                                        {{ invoice.order.formatted_remaining }} تومان
+                                    </span>
+                                {% else %}
+                                    <span class="text-success fw-bold">تسویه شده</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if invoice.issued_by %}
+                                    {{ invoice.issued_by.get_full_name|default:invoice.issued_by.username }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center text-nowrap">
+                                <a href="{% url 'reception:print-order-invoice' invoice.order.id 'receipt' %}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-dark">
+                                    <i class="fas fa-receipt me-1"></i>
+                                    رسید
+                                </a>
+
+                                <a href="{% url 'reception:print-order-invoice' invoice.order.id 'services' %}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-list me-1"></i>
+                                    خدمات
+                                </a>
+
+                                <a href="{% url 'reception:print-order-invoice' invoice.order.id 'visit' %}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-user-md me-1"></i>
+                                    ویزیت
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 bg-white rounded shadow-sm">
+            <i class="fas fa-file-invoice fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted mb-2">هنوز فاکتوری برای این بیمار ثبت نشده است.</h5>
+            <p class="text-muted mb-0">
+                بعد از ثبت فاکتور برای سفارش، فاکتور در این بخش نمایش داده می‌شود.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
                    <div class="tab-pane fade" id="financial" role="tabpanel">
     <h4 class="mb-4">اطلاعات مالی بیمار</h4>
     <div class="financial-summary row g-3 mb-4">

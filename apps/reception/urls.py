@@ -29,6 +29,10 @@ urlpatterns = [
     path('orders/<int:order_id>/add-payment/', order_views.add_payment, name='add-payment'),
     path('payments/<int:payment_id>/edit/', order_views.edit_payment, name='edit-payment'),
     path('payments/<int:payment_id>/delete/', order_views.delete_payment, name='delete-payment'),
+    # Invoives
+    path('orders/<int:order_id>/invoice/issue/',order_views.issue_order_invoice,name='issue-order-invoice'),
+    path('orders/<int:order_id>/invoice/print/<str:print_type>/',order_views.print_order_invoice,name='print-order-invoice'),
+
     # api
     path('api/get-price-by-size/', views.get_price_by_size, name='get_price_by_size'),
     

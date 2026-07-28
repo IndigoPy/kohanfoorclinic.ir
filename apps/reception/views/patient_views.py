@@ -13,10 +13,11 @@ import jdatetime
 from ..utils import standardize_persian_date
 from django.db.models.functions import Concat
 from django.db import models
-from ..models.orders import PaymentMethod,PaymentAccount,Payment
+from ..models.orders import PaymentMethod,PaymentAccount,Payment,OrderInvoice
 from decimal import Decimal
 from ..models.patient import PatientAttachment, PatientInsuranceInfo,UnderlyingDisease,OrthoticHistoryType
 from django.views.decorators.http import require_POST
+
 
 def is_manager(user):
     """فقط سوپریوزر یا عضو گروه Manager اجازه ویرایش/حذف تراکنش دارد"""
@@ -428,8 +429,16 @@ def patient_detail(request, patient_id):
 
     orders_qs = (
         Order.objects.filter(patient=patient)
+        .select_related('invoice')
         .prefetch_related('items__service', 'items__designs__design')
         .order_by('-created_at')
+    )
+
+    invoices = (
+        OrderInvoice.objects
+        .filter(order__patient=patient)
+        .select_related('order', 'order__patient', 'issued_by')
+        .order_by('-issued_at')
     )
 
     orders = list(orders_qs)
@@ -509,6 +518,7 @@ def patient_detail(request, patient_id):
     context = {
         'patient': patient,
         'orders': orders,
+        'invoices': invoices,
         'examinations': examinations,
         'latest_exam': latest_exam,
         'related_patients': related_patients,

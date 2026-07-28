@@ -1,0 +1,116 @@
+{% load jformat %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>فاکتور ویزیت {{ invoice.invoice_number }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <style>
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      background: #fff;
+      color: #111;
+    }
+
+    .invoice-sheet {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 16mm;
+    }
+
+    @media print {
+      .no-print {
+        display: none;
+      }
+
+      body {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-sheet">
+    <div class="border-bottom pb-3 mb-4">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h4 class="mb-1">فاکتور ویزیت</h4>
+          <div class="text-muted small">شماره فاکتور: {{ invoice.invoice_number }}</div>
+          <div class="text-muted small">شماره سفارش: #{{ order.id }}</div>
+          <div class="text-muted small">تاریخ صدور: {{ invoice.issued_at|jformat:"%Y/%m/%d - %H:%M" }}</div>
+        </div>
+        <div class="text-end">
+          <div class="fw-bold">کلینیک / مرکز شما</div>
+          <div class="small text-muted">kohanfootclinic.ir</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6">
+        <div class="small text-muted">نام بیمار</div>
+        <div class="fw-bold">{{ order.patient }}</div>
+      </div>
+
+      <div class="col-6 text-end">
+        <div class="small text-muted">تاریخ ثبت سفارش</div>
+        <div class="fw-bold">{{ order.order_date|jformat:"%Y/%m/%d" }}</div>
+      </div>
+
+      {% if order.examination %}
+        <div class="col-6">
+          <div class="small text-muted">شماره معاینه</div>
+          <div class="fw-bold">#{{ order.examination.id }}</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>شرح</th>
+          <th>مبلغ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ویزیت / معاینه</td>
+          <td>ثبت نشده</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="border rounded p-3 mt-4">
+      <div class="d-flex justify-content-between mb-2">
+        <span>مبلغ کل سفارش:</span>
+        <strong>{{ order.formatted_total }} تومان</strong>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span>پرداخت‌شده:</span>
+        <strong>{{ order.formatted_total_paid }} تومان</strong>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>باقی‌مانده:</span>
+        <strong>{{ order.formatted_remaining }} تومان</strong>
+      </div>
+    </div>
+
+    <div class="mt-5 pt-4">
+      <div class="row">
+        <div class="col-6 text-center">
+          <div class="border-top pt-2 mx-4">امضای پذیرش</div>
+        </div>
+        <div class="col-6 text-center">
+          <div class="border-top pt-2 mx-4">امضای بیمار</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', function () {
+      window.print();
+    });
+  </script>
+</body>
+</html>

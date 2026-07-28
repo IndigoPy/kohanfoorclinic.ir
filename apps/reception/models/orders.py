@@ -730,3 +730,100 @@ class Payment(TimeStampedModel):
             return "{:,}".format(int(float(self.amount)))
         except (ValueError, TypeError):
             return self.amount
+        
+        
+class OrderInvoice(TimeStampedModel):
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.PROTECT,
+        related_name='invoice',
+        verbose_name='سفارش',
+    )
+
+    invoice_number = models.CharField(
+        max_length=12,
+        unique=True,
+        db_index=True,
+        verbose_name='شماره فاکتور',
+    )
+
+    jalali_date = models.CharField(
+        max_length=8,
+        db_index=True,
+        verbose_name='تاریخ شمسی صدور',
+    )
+
+    daily_sequence = models.PositiveIntegerField(
+        verbose_name='شماره روزانه',
+    )
+
+    issued_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='issued_order_invoices',
+        verbose_name='صادرکننده',
+    )
+
+    issued_at = models.DateTimeField(
+        default=timezone.now,
+        db_index=True,
+        verbose_name='زمان صدور',
+    )
+
+    class Meta:
+        verbose_name = 'فاکتور سفارش'
+        verbose_name_plural = 'فاکتورهای سفارش'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['jalali_date', 'daily_sequence'],
+                name='unique_order_invoice_daily_sequence',
+            ),
+        ]
+
+    def __str__(self):
+        return self.invoice_number
+
+    @classmethod
+    def issue_for_order(cls, order, user=None):
+        existing = getattr(order, 'invoice', None)
+        if existing:
+            return existing, False
+
+        now = timezone.localtime()
+        jalali_now = jdatetime.datetime.fromgregorian(datetime=now)
+        jalali_date = jalali_now.strftime('%Y%m%d')
+
+        for _ in range(3):
+            try:
+                with transaction.atomic():
+                    last_invoice = (
+                        cls.objects
+                        .select_for_update()
+                        .filter(jalali_date=jalali_date)
+                        .order_by('-daily_sequence')
+                        .first()
+                    )
+
+                    next_sequence = (
+                        last_invoice.daily_sequence + 1
+                        if last_invoice
+                        else 1
+                    )
+
+                    invoice = cls.objects.create(
+                        order=order,
+                        invoice_number=f'{jalali_date}{next_sequence:04d}',
+                        jalali_date=jalali_date,
+                        daily_sequence=next_sequence,
+                        issued_by=user if user and user.is_authenticated else None,
+                        issued_at=now,
+                    )
+
+                    return invoice, True
+
+            except IntegrityError:
+                continue
+
+        return cls.objects.get(order=order), False

@@ -9,29 +9,65 @@
       </div>
 
       <div class="modal-body bg-light">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="small text-muted">
-            قبل از چاپ، اطلاعات فاکتور را بررسی کنید.
+        <div class="bg-white border rounded-3 p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <div class="fw-bold">وضعیت فاکتور</div>
+              {% if order.invoice %}
+                <div class="small text-success">
+                  فاکتور شماره {{ order.invoice.invoice_number }} ثبت شده است.
+                </div>
+              {% else %}
+                <div class="small text-muted">
+                  برای این سفارش هنوز شماره فاکتور ثبت نشده است.
+                </div>
+              {% endif %}
+            </div>
+
+            {% if not order.invoice %}
+              <form method="post" action="{% url 'reception:issue-order-invoice' order.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="fas fa-file-invoice me-1"></i> ثبت فاکتور
+                </button>
+              </form>
+            {% endif %}
           </div>
-          <button type="button"
-                  class="btn btn-dark btn-sm print-invoice-btn"
-                  data-print-target="invoicePrintArea{{ order.id }}">
-            <i class="fas fa-print me-1"></i> چاپ
-          </button>
         </div>
 
-        <div id="invoicePrintArea{{ order.id }}" class="invoice-print-area bg-white p-4 rounded-3 border">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div class="small text-muted">
+            بعد از ثبت فاکتور، می‌توانید رسید بیمار یا نسخه‌های چاپی فاکتور را دریافت کنید.
+          </div>
+
+          <div class="btn-group flex-wrap" role="group">
+            <a class="btn btn-dark btn-sm"
+               target="_blank"
+               href="{% url 'reception:print-order-invoice' order.id 'receipt' %}">
+              <i class="fas fa-receipt me-1"></i> رسید بیمار
+            </a>
+
+            <a class="btn btn-outline-dark btn-sm"
+               target="_blank"
+               href="{% url 'reception:print-order-invoice' order.id 'services' %}">
+              <i class="fas fa-list me-1"></i> فاکتور خدمات
+            </a>
+
+            <a class="btn btn-outline-dark btn-sm"
+               target="_blank"
+               href="{% url 'reception:print-order-invoice' order.id 'visit' %}">
+              <i class="fas fa-user-md me-1"></i> فاکتور ویزیت
+            </a>
+          </div>
+        </div>
+
+        <div class="invoice-print-area bg-white p-4 rounded-3 border">
           {% include "reception/partials/_order_invoice_print.html" with order=order %}
         </div>
       </div>
 
       <div class="modal-footer bg-white">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
-        <button type="button"
-                class="btn btn-success print-invoice-btn"
-                data-print-target="invoicePrintArea{{ order.id }}">
-          <i class="fas fa-print me-1"></i> چاپ فاکتور
-        </button>
       </div>
     </div>
   </div>

@@ -1,0 +1,144 @@
+{% load jformat %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>رسید سفارش {{ invoice.invoice_number }}</title>
+  <style>
+    @page {
+      size: 80mm auto;
+      margin: 4mm;
+    }
+
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      font-size: 11px;
+      color: #000;
+      margin: 0;
+    }
+
+    .receipt {
+      width: 72mm;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 4px 0;
+    }
+
+    .line {
+      border-top: 1px dashed #000;
+      margin: 8px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
+    th,
+    td {
+      padding: 3px 0;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    .ltr {
+      direction: ltr;
+      unicode-bidi: embed;
+    }
+
+    @media print {
+      .no-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="center">
+      <strong>کلینیک / مرکز شما</strong>
+      <div>kohanfootclinic.ir</div>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+      <span>شماره فاکتور:</span>
+      <strong class="ltr">{{ invoice.invoice_number }}</strong>
+    </div>
+
+    <div class="row">
+      <span>تاریخ:</span>
+      <span>{{ invoice.issued_at|jformat:"%Y/%m/%d - %H:%M" }}</span>
+    </div>
+
+    <div class="row">
+      <span>بیمار:</span>
+      <strong>{{ order.patient }}</strong>
+    </div>
+
+    <div class="line"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>شرح</th>
+          <th>تعداد</th>
+          <th>جمع</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+          <tr>
+            <td>{{ item.service.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.formatted_item_total }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3">آیتمی ثبت نشده است.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="line"></div>
+
+    <div class="row">
+      <span>مبلغ کل:</span>
+      <strong>{{ order.formatted_total }} تومان</strong>
+    </div>
+
+    <div class="row">
+      <span>پرداخت‌شده:</span>
+      <strong>{{ order.formatted_total_paid }} تومان</strong>
+    </div>
+
+    <div class="row">
+      <span>باقی‌مانده:</span>
+      <strong>{{ order.formatted_remaining }} تومان</strong>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="center">
+      رسید ثبت سفارش
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', function () {
+      window.print();
+    });
+  </script>
+</body>
+</html>
