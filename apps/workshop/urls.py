@@ -39,7 +39,17 @@ urlpatterns = [
         "items/<int:item_id>/send-to-workshop/",
         actions.send_to_workshop_queue,
         name="send_to_workshop_queue",
+    ),  
+    path(
+        "orders/<int:order_id>/send-to-workshop/",
+        actions.send_order_to_workshop_queue,
+        name="send_order_to_workshop_queue",
     ),
+    path(
+        "orders/<int:order_id>/send-to-supplier/",
+        actions.send_order_to_supplier_registration,
+        name="send_order_to_supplier_registration",
+    ),     
     path(
         "items/<int:item_id>/start-manufacturing/",
         actions.start_manufacturing,

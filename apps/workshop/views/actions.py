@@ -6,9 +6,11 @@ from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
-from apps.reception.models import OrderItem
+from apps.reception.models import OrderItem,Order
 from apps.workshop.exceptions import WorkshopWorkflowError
 from apps.workshop.services.workflow import WorkshopWorkflowService
+from django.views.decorators.http import require_POST
+from apps.core.decorators import group_required
 
 from django.shortcuts import resolve_url
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -84,6 +86,66 @@ def send_to_workshop_queue(request, item_id):
         default_description="انتقال آیتم به صف کارگاه",
     )
 
+@login_required
+@group_required('Reception')
+@require_POST
+def send_order_to_workshop_queue(request, order_id):
+    order = get_object_or_404(Order.objects.select_related('patient'), id=order_id)
+
+    items = order.items.filter(send_to='workshop', status='pending')
+
+    if not items.exists():
+        messages.warning(request, 'قلمی برای ارسال به کارگاه در این سفارش یافت نشد.')
+        return redirect('reception:patient-detail', patient_id=order.patient_id)
+
+    service = WorkshopWorkflowService(user=request.user)
+    sent_count = 0
+
+    for item in items:
+        try:
+            service.send_to_workshop_queue(
+                item=item,
+                description='ارسال از پذیرش به صف کارگاه',
+            )
+            sent_count += 1
+        except WorkshopWorkflowError as exc:
+            messages.error(request, f'خطا در ارسال قلم «{item.service.name}»: {exc}')
+
+    if sent_count:
+        messages.success(request, f'{sent_count} قلم به صف کارگاه ارسال شد.')
+
+    return redirect('reception:patient-detail', patient_id=order.patient_id)
+
+
+@login_required
+@group_required('Reception')
+@require_POST
+def send_order_to_supplier_registration(request, order_id):
+    order = get_object_or_404(Order.objects.select_related('patient'), id=order_id)
+
+    items = order.items.filter(send_to='manufacturer', status='pending')
+
+    if not items.exists():
+        messages.warning(request, 'قلمی برای ثبت نزد تامین‌کننده در این سفارش یافت نشد.')
+        return redirect('reception:patient-detail', patient_id=order.patient_id)
+
+    service = WorkshopWorkflowService(user=request.user)
+    sent_count = 0
+
+    for item in items:
+        try:
+            service.register_supplier_order(
+                item=item,
+                description='ثبت از پذیرش برای تامین‌کننده',
+            )
+            sent_count += 1
+        except WorkshopWorkflowError as exc:
+            messages.error(request, f'خطا در ثبت قلم «{item.service.name}»: {exc}')
+
+    if sent_count:
+        messages.success(request, f'{sent_count} قلم برای تامین‌کننده ثبت شد.')
+
+    return redirect('reception:patient-detail', patient_id=order.patient_id)
 
 @login_required
 def start_manufacturing(request, item_id):

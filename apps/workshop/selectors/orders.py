@@ -3,11 +3,12 @@
 from django.db.models import Prefetch
 
 from apps.reception.models import Order, OrderItem
+from apps.workshop.constants import RELEASED_ITEM_STATUSES
 
 
 def workshop_orders_queryset():
     workshop_items = OrderItem.objects.filter(
-        send_to='workshop'
+        status__in=RELEASED_ITEM_STATUSES,
     ).select_related(
         'service',
         'variant',
@@ -19,7 +20,7 @@ def workshop_orders_queryset():
     )
 
     return Order.objects.filter(
-        items__send_to='workshop',
+        items__status__in=RELEASED_ITEM_STATUSES,
     ).exclude(
         status='draft',
     ).select_related(

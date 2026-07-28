@@ -426,10 +426,23 @@ def patient_detail(request, patient_id):
         id=patient_id,
     )
 
-    orders = (
+    orders_qs = (
         Order.objects.filter(patient=patient)
+        .prefetch_related('items__service', 'items__designs__design')
         .order_by('-created_at')
     )
+
+    orders = list(orders_qs)
+
+    for order in orders:
+        order.pending_workshop_items = [
+            item for item in order.items.all()
+            if item.status == 'pending' and item.send_to == 'workshop'
+        ]
+        order.pending_supplier_items = [
+            item for item in order.items.all()
+            if item.status == 'pending' and item.send_to == 'manufacturer'
+        ]
 
     examinations = (
         patient.examinations
@@ -464,7 +477,7 @@ def patient_detail(request, patient_id):
     )
 
     total_orders_price = (
-        orders.aggregate(total=Sum('total_price'))['total']
+        orders_qs.aggregate(total=Sum('total_price'))['total']
         or Decimal('0')
     )
 
@@ -480,7 +493,7 @@ def patient_detail(request, patient_id):
 
     total_overdue = Decimal('0')
 
-    for order in orders.filter(
+    for order in orders_qs.filter(
         status='delivered'
     ).exclude(
         payment_status='paid'
