@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.core',
     'django_jalali',
-    'apps.appointments',
+    'apps.appointments.apps.AppointmentsConfig',
     'apps.workshop',
 ]
 

@@ -223,6 +223,24 @@
         user-select: none;
     }
 
+    .appointment-status-option {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.appointment-status-option:hover {
+    background-color: #f8fafc;
+}
+
+.appointment-status-option .form-check-input {
+    cursor: pointer;
+    margin-top: 0;
+}
+
 </style>
 {% endblock %}
 
@@ -324,6 +342,8 @@
                                     appointment-row
                                     " 
                                     data-id="{{ appointment.id }}"
+                                    data-address-sms-sent="{{ appointment.extra_data.address_sms_sent|yesno:'true,false' }}"
+                                    data-reminder-sms-sent="{{ appointment.extra_data.reminder_sms_sent|yesno:'true,false' }}"
                                     data-detail-url="{% url 'appointments:detail' pk=appointment.pk %}">
                                     <td class="text-center text-muted small">
                                         {{ forloop.counter0|add:page_obj.start_index }}
@@ -351,19 +371,52 @@
                                             <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ appointment.start_time|time:"H:i" }}</span>
                                         </div>
                                     </td>
-                                    <td>
-                                        {% if appointment.status == 'scheduled' %}
-                                            <span class="badge-status bg-primary bg-opacity-10 text-primary">رزرو شده</span>
-                                        {% elif appointment.status == 'confirmed' %}
-                                            <span class="badge-status bg-success bg-opacity-10 text-success">تایید شده</span>
-                                        {% elif appointment.status == 'completed' %}
-                                            <span class="badge-status bg-info bg-opacity-10 text-info">انجام شده</span>
-                                        {% elif appointment.status == 'cancelled' %}
-                                            <span class="badge-status bg-danger bg-opacity-10 text-danger">لغو شده</span>
-                                        {% elif appointment.status == 'no_show' %}
-                                            <span class="badge-status bg-warning bg-opacity-10 text-warning">عدم حضور</span>
-                                        {% endif %}
-                                    </td>
+                                   <td>
+    {% if appointment.status == 'scheduled' %}
+        <span
+            class="badge-status appointment-status-badge bg-primary bg-opacity-10 text-primary"
+            data-status="scheduled">
+            رزرو شده
+        </span>
+
+    {% elif appointment.status == 'confirmed' %}
+        <span
+            class="badge-status appointment-status-badge bg-success bg-opacity-10 text-success"
+            data-status="confirmed">
+            تایید شده
+        </span>
+
+    {% elif appointment.status == 'completed' %}
+        <span
+            class="badge-status appointment-status-badge bg-info bg-opacity-10 text-info"
+            data-status="completed">
+            انجام شده
+        </span>
+
+    {% elif appointment.status == 'cancelled' %}
+        <span
+            class="badge-status appointment-status-badge bg-danger bg-opacity-10 text-danger"
+            data-status="cancelled">
+            لغو شده
+        </span>
+
+    {% elif appointment.status == 'no_show' %}
+        <span
+            class="badge-status appointment-status-badge bg-warning bg-opacity-10 text-warning"
+            data-status="no_show">
+            عدم حضور
+        </span>
+
+    {% else %}
+        <span
+            class="badge-status appointment-status-badge bg-secondary bg-opacity-10 text-secondary"
+            data-status="{{ appointment.status }}">
+            {{ appointment.get_status_display|default:"نامشخص" }}
+        </span>
+    {% endif %}
+</td>
+
+
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
                                             {% if appointment.appointment_type == 'new' %}
@@ -555,6 +608,104 @@
             </div>
         </a>
     </li>
+
+    <li>
+    <hr class="dropdown-divider">
+</li>
+
+<li>
+    <h6 class="dropdown-header">تغییر وضعیت نوبت</h6>
+</li>
+
+<li>
+    <div class="form-check mx-2 my-1">
+        <input
+            class="form-check-input appointment-status-radio"
+            type="radio"
+            name="appointment_status"
+            id="status-scheduled"
+            value="scheduled">
+
+        <label class="form-check-label" for="status-scheduled">
+            رزرو شده
+        </label>
+    </div>
+</li>
+
+<li>
+    <div class="form-check mx-2 my-1">
+        <input
+            class="form-check-input appointment-status-radio"
+            type="radio"
+            name="appointment_status"
+            id="status-confirmed"
+            value="confirmed">
+
+        <label class="form-check-label" for="status-confirmed">
+            تایید شده
+        </label>
+    </div>
+</li>
+<li>
+    <div class="form-check mx-2 my-1">
+        <input
+            class="form-check-input appointment-status-radio"
+            type="radio"
+            name="appointment_status"
+            id="status-waiting"
+            value="waiting">
+
+        <label class="form-check-label" for="status-waiting">
+           حضور در کلینیک
+        </label>
+    </div>
+</li>
+<li>
+    <div class="form-check mx-2 my-1">
+        <input
+            class="form-check-input appointment-status-radio"
+            type="radio"
+            name="appointment_status"
+            id="status-completed"
+            value="completed">
+
+        <label class="form-check-label" for="status-completed">
+            انجام شده
+        </label>
+    </div>
+</li>
+
+<li>
+    <div class="form-check mx-2 my-1">
+        <input
+            class="form-check-input appointment-status-radio"
+            type="radio"
+            name="appointment_status"
+            id="status-cancelled"
+            value="canceled">
+
+        <label class="form-check-label" for="status-cancelled">
+            لغو شده
+        </label>
+    </div>
+</li>
+
+<li>
+    <div class="form-check mx-2 my-1">
+        <input
+            class="form-check-input appointment-status-radio"
+            type="radio"
+            name="appointment_status"
+            id="status-no-show"
+            value="no_show">
+
+        <label class="form-check-label" for="status-no-show">
+            عدم حضور
+        </label>
+    </div>
+</li>
+
+
 </ul>
 
 {% endblock %}
@@ -566,7 +717,9 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/flatpickr.min.js' %}"></script>
 <script>
-// تعریف تابع دریافت کوکی در سطح بالا برای استفاده در تمام درخواست‌ها
+// ══════════════════════════════════════════════════════════════
+// دریافت کوکی CSRF (قابل استفاده در تمام درخواست‌های AJAX)
+// ══════════════════════════════════════════════════════════════
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -582,13 +735,14 @@ function getCookie(name) {
     return cookieValue;
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
 
-    // ─────────────────────────────────────────────
-    // ۱. مقداردهی اولیه پلاگین‌ها
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────
+    // ۱. مقداردهی اولیه پلاگین‌ها داخل مودال ایجاد/ویرایش نوبت
+    // ─────────────────────────────────────────────────────────
     function initModalPlugins() {
-        $('#createAppointmentModal .select2').each(function() {
+        // نابود کردن Select2 قبلی و ساخت دوباره با parent مودال
+        $('#createAppointmentModal .select2').each(function () {
             if ($(this).data('select2')) {
                 $(this).select2('destroy');
             }
@@ -599,9 +753,7 @@ $(document).ready(function() {
             dir: 'rtl'
         });
 
-        let $jalaliInput = $('#id_date_jalali');
-        let $gregorianInput = $('#id_date');
-
+        // تبدیل اعداد فارسی به انگلیسی
         function toEnglishDigits(str) {
             if (!str) return str;
             const persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
@@ -611,6 +763,10 @@ $(document).ready(function() {
             }
             return englishStr;
         }
+
+        // راه‌اندازی Datepicker شمسی
+        let $jalaliInput = $('#id_date_jalali');
+        let $gregorianInput = $('#id_date');
 
         if ($jalaliInput.length) {
             if ($jalaliInput.data('datepicker')) {
@@ -631,24 +787,26 @@ $(document).ready(function() {
                 altFormat: 'YYYY-MM-DD',
                 onSelect: function (unix) {
                     let date = new persianDate(unix);
-                    date.formatPersian = false; 
+                    date.formatPersian = false;
                     $('#id_date').val(date.format('YYYY-MM-DD'));
                 }
             });
 
+            // اگر تاریخ شمسی خالی بود ولی میلادی وجود داشت، تبدیل کن
             if (!rawJalali && $gregorianInput.val()) {
                 try {
                     let dateObj = new Date($gregorianInput.val());
                     let pDate = new persianDate(dateObj);
                     dp.setDate(pDate.valueOf());
                     $jalaliInput.val(pDate.format('YYYY-MM-DD'));
-                } catch(e) {
+                } catch (e) {
                     console.warn('خطا در تبدیل تاریخ میلادی به شمسی:', e);
                 }
             }
         }
 
-        $('.time-picker').each(function() {
+        // راه‌اندازی Time Picker (Flatpickr)
+        $('.time-picker').each(function () {
             if (this._flatpickr) {
                 this._flatpickr.destroy();
             }
@@ -663,12 +821,16 @@ $(document).ready(function() {
         }
     }
 
+    // بررسی اینکه آیا فرم در حالت ویرایش (Update) است یا ایجاد جدید
     function isUpdateMode() {
         let val = $('#appointmentForm').data('is-update');
         return val === true || val === 'true';
     }
 
-    $(document).on('change', '#id_appointment_type', function() {
+    // ─────────────────────────────────────────────────────────
+    // ۲. تغییر نوع نوبت → بارگذاری فیلدهای داینامیک با AJAX
+    // ─────────────────────────────────────────────────────────
+    $(document).on('change', '#id_appointment_type', function () {
         let type = $(this).val();
         if (!type || isUpdateMode()) return;
 
@@ -682,17 +844,18 @@ $(document).ready(function() {
             url: url,
             type: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
+            success: function (response) {
                 $('#createAppointmentModal .modal-content').html(response);
                 initModalPlugins();
             },
-            error: function() {
+            error: function () {
                 console.error('خطا در بارگذاری فیلدهای داینامیک');
             }
         });
     });
 
-    $('#createAppointmentModal').on('shown.bs.modal', function() {
+    // هنگام باز شدن مودال ایجاد نوبت
+    $('#createAppointmentModal').on('shown.bs.modal', function () {
         if (!isUpdateMode()) {
             let $typeSelect = $('#id_appointment_type');
             if ($typeSelect.length && $typeSelect.val()) {
@@ -702,27 +865,32 @@ $(document).ready(function() {
         initModalPlugins();
     });
 
-    $('[data-bs-target="#createAppointmentModal"]').on('click', function() {
+    // کلیک روی دکمه باز کردن مودال ایجاد (در حالت ویرایش قبلی، فرم را ریست می‌کند)
+    $('[data-bs-target="#createAppointmentModal"]').on('click', function () {
         if (!isUpdateMode()) return;
 
         $.ajax({
             url: "{% url 'appointments:create' %}",
             type: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
+            success: function (response) {
                 $('#createAppointmentModal .modal-content').html(response);
                 initModalPlugins();
             },
-            error: function() {
+            error: function () {
                 console.error('خطا در بارگذاری فرم افزودن');
             }
         });
     });
 
-    $(document).on('click', '.btn-edit', function(e) {
+    // ─────────────────────────────────────────────────────────
+    // ۳. ویرایش نوبت (دکمه .btn-edit)
+    // ─────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-edit', function (e) {
         e.preventDefault();
         let url = $(this).data('url');
 
+        // نمایش لودینگ
         $('#createAppointmentModal .modal-content').html(
             '<div class="p-5 text-center">' +
                 '<i class="fa-solid fa-spinner fa-spin fa-3x text-primary mb-3"></i>' +
@@ -735,11 +903,11 @@ $(document).ready(function() {
             url: url,
             type: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
+            success: function (response) {
                 $('#createAppointmentModal .modal-content').html(response);
                 initModalPlugins();
             },
-            error: function() {
+            error: function () {
                 $('#createAppointmentModal .modal-content').html(
                     '<div class="p-5 text-center text-danger">' +
                         '<i class="fa-solid fa-circle-exclamation fa-3x mb-3"></i>' +
@@ -750,7 +918,10 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('submit', '#appointmentForm', function(e) {
+    // ─────────────────────────────────────────────────────────
+    // ۴. ارسال فرم ایجاد/ویرایش نوبت
+    // ─────────────────────────────────────────────────────────
+    $(document).on('submit', '#appointmentForm', function (e) {
         e.preventDefault();
         let $form = $(this);
         let url = $form.attr('action');
@@ -769,16 +940,17 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
+            success: function (response) {
                 if (response && response.success) {
                     $('#createAppointmentModal').modal('hide');
                     window.location.reload();
                 } else {
+                    // فرم با خطاهای اعتبارسنجی برگشت
                     $('#createAppointmentModal .modal-content').html(response);
                     initModalPlugins();
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 if (xhr.status === 400 && xhr.responseText) {
                     $('#createAppointmentModal .modal-content').html(xhr.responseText);
                     initModalPlugins();
@@ -790,23 +962,29 @@ $(document).ready(function() {
         });
     });
 
-    $('#createAppointmentModal').on('hidden.bs.modal', function() {
-        $('#createAppointmentModal .select2').each(function() {
+    // ─────────────────────────────────────────────────────────
+    // ۵. پاک‌سازی پلاگین‌ها هنگام بسته شدن مودال
+    // ─────────────────────────────────────────────────────────
+    $('#createAppointmentModal').on('hidden.bs.modal', function () {
+        $('#createAppointmentModal .select2').each(function () {
             if ($(this).data('select2')) {
                 $(this).select2('destroy');
             }
         });
-        $('.time-picker').each(function() {
+        $('.time-picker').each(function () {
             if (this._flatpickr) {
                 this._flatpickr.destroy();
             }
         });
     });
 
-    $(document).on('click', '.btn-delete', function(e) {
+    // ─────────────────────────────────────────────────────────
+    // ۶. حذف نوبت
+    // ─────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-delete', function (e) {
         e.preventDefault();
         let url = $(this).data('url');
-        let $row = $(this).closest('tr'); 
+        let $row = $(this).closest('tr');
         let csrftoken = getCookie('csrftoken');
 
         if (confirm('آیا از حذف این نوبت اطمینان دارید؟ این عملیات غیرقابل بازگشت است.')) {
@@ -817,13 +995,13 @@ $(document).ready(function() {
             $.ajax({
                 url: url,
                 type: 'POST',
-                headers: { 
+                headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRFToken': csrftoken
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
-                        $row.fadeOut(400, function() {
+                        $row.fadeOut(400, function () {
                             $(this).remove();
                         });
                     } else {
@@ -831,7 +1009,7 @@ $(document).ready(function() {
                         $btn.prop('disabled', false).html(originalHtml);
                     }
                 },
-                error: function() {
+                error: function () {
                     alert('ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.');
                     $btn.prop('disabled', false).html(originalHtml);
                 }
@@ -839,14 +1017,17 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('click', '.btn-open-sms-modal', function(e) {
+    // ─────────────────────────────────────────────────────────
+    // ۷. باز کردن مودال ارسال پیامک دستی
+    // ─────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-open-sms-modal', function (e) {
         e.preventDefault();
         let id = $(this).data('id');
         let phone1 = $(this).data('phone1');
         let phone2 = $(this).data('phone2');
 
         $('#smsAppointmentId').val(id);
-        $('#smsMessageText').val(''); 
+        $('#smsMessageText').val('');
         $('#phoneError').addClass('d-none');
 
         let phoneHtml = '';
@@ -864,7 +1045,7 @@ $(document).ready(function() {
                     <label class="form-check-label" for="chkPhone2">${phone2} (شماره دوم)</label>
                 </div>`;
         }
-        
+
         if (!phone1 && !phone2) {
             phoneHtml = '<span class="text-danger small">شماره تماسی برای این نوبت ثبت نشده است.</span>';
             $('#btnSendSms').prop('disabled', true);
@@ -876,10 +1057,11 @@ $(document).ready(function() {
         $('#smsModal').modal('show');
     });
 
-    $(document).on('click', '.sms-template', function() {
+    // انتخاب قالب پیامک آماده
+    $(document).on('click', '.sms-template', function () {
         let templateText = $(this).text();
         let fullText = "";
-        if(templateText === "یادآوری نوبت فردا") {
+        if (templateText === "یادآوری نوبت فردا") {
             fullText = "بیمار گرامی، یادآوری می‌شود نوبت شما برای فردا در کلینیک ثبت شده است.";
         } else if (templateText === "تغییر ساعت حضور") {
             fullText = "بیمار گرامی، لطفا یک ساعت زودتر از زمان مقرر در کلینیک حضور یابید.";
@@ -889,12 +1071,13 @@ $(document).ready(function() {
         $('#smsMessageText').val(fullText);
     });
 
-    $(document).on('click', '#btnSendSms', function() {
+    // ارسال پیامک
+    $(document).on('click', '#btnSendSms', function () {
         let message = $('#smsMessageText').val().trim();
         let appointmentId = $('#smsAppointmentId').val();
         let selectedPhones = [];
 
-        $('.phone-selector:checked').each(function() {
+        $('.phone-selector:checked').each(function () {
             selectedPhones.push($(this).val());
         });
 
@@ -917,7 +1100,7 @@ $(document).ready(function() {
             url: `/appointments/${appointmentId}/send-sms/`,
             type: 'POST',
             contentType: 'application/json',
-            headers: { 
+            headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRFToken': csrftoken
             },
@@ -925,7 +1108,7 @@ $(document).ready(function() {
                 message: message,
                 phones: selectedPhones
             }),
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     alert('پیامک با موفقیت در صف ارسال قرار گرفت.');
                     $('#smsModal').modal('hide');
@@ -933,20 +1116,24 @@ $(document).ready(function() {
                     alert(response.error || 'خطا در ارسال پیامک.');
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 let errorMsg = 'ارتباط با سرور برقرار نشد.';
-                if(xhr.responseJSON && xhr.responseJSON.error) {
+                if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMsg = xhr.responseJSON.error;
                 }
                 alert(errorMsg);
             },
-            complete: function() {
+            complete: function () {
                 $btn.prop('disabled', false).html(originalHtml);
             }
         });
     });
 
-    $(document).on('click', '.clickable-row', function(e) {
+    // ─────────────────────────────────────────────────────────
+    // ۸. کلیک روی ردیف برای نمایش جزئیات نوبت
+    // ─────────────────────────────────────────────────────────
+    $(document).on('click', '.clickable-row', function (e) {
+        // اگر روی لینک یا دکمه کلیک شده بود، کاری نکن
         if ($(e.target).closest('a, button, .btn-action').length) {
             return;
         }
@@ -966,10 +1153,10 @@ $(document).ready(function() {
             url: url,
             type: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
+            success: function (response) {
                 $modalContent.html(response);
             },
-            error: function() {
+            error: function () {
                 $modalContent.html(
                     '<div class="p-5 text-center text-danger">' +
                         '<i class="fa-solid fa-circle-exclamation fa-3x mb-3"></i>' +
@@ -981,24 +1168,29 @@ $(document).ready(function() {
         });
     });
 
+    // ─────────────────────────────────────────────────────────
+    // ۹. فیلتر تاریخ (Datepicker در فیلترها)
+    // ─────────────────────────────────────────────────────────
     if ($('.date-filter').length) {
         $('.date-filter').persianDatepicker({
             format: 'YYYY-MM-DD',
             initialValueType: 'persian',
-            initialValue: false, 
+            initialValue: false,
             autoClose: true
         });
     }
 
-    document.addEventListener('sidebarDateSelected', function(e) {
+    // انتخاب تاریخ از سایدبار
+    document.addEventListener('sidebarDateSelected', function (e) {
         let pd = new persianDate(e.detail.timestamp);
-        pd.formatPersian = false; 
+        pd.formatPersian = false;
         let pDate = pd.format('YYYY-MM-DD');
         $('input[name="start_date"]').val(pDate);
         $('input[name="end_date"]').val(pDate);
         $('input[name="start_date"]').closest('form').submit();
     });
 
+    // هایلایت محدوده تاریخ در Datepicker اینلاین
     let startDateVal = $('input[name="start_date"]').val();
     let endDateVal = $('input[name="end_date"]').val();
 
@@ -1015,8 +1207,8 @@ $(document).ready(function() {
                 let endParts = endDateVal.split('-');
                 let endUnix = new persianDate([parseInt(endParts[0]), parseInt(endParts[1]), parseInt(endParts[2])]).valueOf();
 
-                setTimeout(function() {
-                    $('#inline-datepicker .datepicker-plot-area .table-days td').each(function() {
+                setTimeout(function () {
+                    $('#inline-datepicker .datepicker-plot-area .table-days td').each(function () {
                         let cellUnix = $(this).data('date');
                         if (cellUnix) {
                             let $span = $(this).find('span');
@@ -1027,8 +1219,7 @@ $(document).ready(function() {
                                     'border-radius': '0',
                                     'width': '100%'
                                 });
-                            }
-                            else if (cellUnix === startUnix || cellUnix === endUnix) {
+                            } else if (cellUnix === startUnix || cellUnix === endUnix) {
                                 $span.css({
                                     'background-color': '#3b82f6',
                                     'color': '#ffffff',
@@ -1043,12 +1234,16 @@ $(document).ready(function() {
         }
     }
 
+    // Select2 عمومی (خارج از مودال)
     $('.select2').select2({
         width: '100%',
         dir: 'rtl',
         dropdownParent: $('#appointmentModal')
     });
 
+    // ─────────────────────────────────────────────────────────
+    // ۱۰. نمایش/مخفی کردن فیلدهای داینامیک بر اساس نوع نوبت
+    // ─────────────────────────────────────────────────────────
     const appointmentTypeSelect = $('#id_appointment_type');
     const servicesContainer = $('#id_provided_services').closest('.form-group');
     const patientFileContainer = $('#id_dynamic_patient_file').closest('.form-group');
@@ -1071,19 +1266,38 @@ $(document).ready(function() {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // بخش اصلاح شده منوی کلیک راست پیامک
-    // ─────────────────────────────────────────────
-    const contextMenu = document.getElementById('sms-context-menu');
+    toggleDynamicFields();
+    appointmentTypeSelect.on('change', function () {
+        toggleDynamicFields();
+    });
 
+    // ─────────────────────────────────────────────────────────
+    // ۱۱. منوی کلیک راست (Context Menu) برای تغییر وضعیت و SMS
+    // ─────────────────────────────────────────────────────────
+    const contextMenu = document.getElementById('sms-context-menu');
+    let selectedAppointmentRow = null;
+
+    // جلوگیری از بسته شدن منو هنگام کلیک داخل آن
+    contextMenu.addEventListener('click', function (event) {
+        event.stopPropagation();
+    });
+
+    // جلوگیری از منوی پیش‌فرض مرورگر روی خود منو
+    contextMenu.addEventListener('contextmenu', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    });
+
+    // اتصال رویداد کلیک راست و لمس طولانی به ردیف‌های نوبت
     document.querySelectorAll('.appointment-row').forEach(row => {
-        row.addEventListener('contextmenu', function(e) {
+        row.addEventListener('contextmenu', function (e) {
             e.preventDefault();
             showContextMenu(e, this);
         });
 
+        // پشتیبانی از لمس طولانی در موبایل
         let pressTimer;
-        row.addEventListener('touchstart', function(e) {
+        row.addEventListener('touchstart', function (e) {
             pressTimer = window.setTimeout(() => {
                 showContextMenu(e.touches[0], this);
             }, 800);
@@ -1092,104 +1306,294 @@ $(document).ready(function() {
         row.addEventListener('touchmove', () => clearTimeout(pressTimer));
     });
 
-    function showContextMenu(e, rowElement) {
-        // خواندن ID از ویژگی data-id تگ tr
-        const apptId = rowElement.getAttribute('data-id');
-        if (!apptId) {
-            console.error("مشکل: ویژگی data-id در سطر مربوطه یافت نشد.");
+    // تغییر وضعیت نوبت از طریق رادیو باتن‌های داخل منو
+    document.addEventListener('change', function (event) {
+        const target = event.target;
+
+        if (!target.matches('input[name="appointment_status"]')) {
             return;
         }
-        
-        // ذخیره ID به صورت مستقیم در المان منوی زمینه
-        contextMenu.setAttribute('data-target-id', apptId);
-        
+
+        event.stopPropagation();
+
+        const appointmentId = contextMenu.getAttribute('data-target-id');
+        const newStatus = target.value;
+
+        updateAppointmentStatus(appointmentId, newStatus, target);
+    });
+
+    // بستن منو با کلیک خارج از آن
+    document.addEventListener('click', function (event) {
+        if (contextMenu.style.display === 'block' && !contextMenu.contains(event.target)) {
+            closeContextMenu();
+        }
+    });
+
+    // نمایش منوی کلیک راست
+    function showContextMenu(event, rowElement) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const appointmentId = rowElement.getAttribute('data-id');
+
+        if (!appointmentId) {
+            console.error('ویژگی data-id در ردیف نوبت پیدا نشد.');
+            alert('شناسه نوبت نامعتبر است.');
+            return;
+        }
+
+        selectedAppointmentRow = rowElement;
+        contextMenu.setAttribute('data-target-id', appointmentId);
+
+        // خواندن وضعیت فعلی از badge
+        const badge = rowElement.querySelector('.appointment-status-badge');
+        console.log(badge);
+
+        const currentStatus = badge
+            ? badge.dataset.status
+            : '';
+
+        console.log('Current appointment status:', currentStatus);
+        console.log('--- Menu Opening ---');
+        setAppointmentStatusRadio(currentStatus);
+
+        // موقعیت منو
         contextMenu.style.display = 'block';
-        contextMenu.style.left = e.pageX + 'px';
-        contextMenu.style.top = e.pageY + 'px';
+        contextMenu.style.left = `${event.pageX}px`;
+        contextMenu.style.top = `${event.pageY}px`;
 
-        const addressIcon = rowElement.querySelector('.address-sms-icon');
-        const reminderIcon = rowElement.querySelector('.reminder-sms-icon');
-        
-        document.getElementById('toggle-address').checked = addressIcon && addressIcon.classList.contains('text-success');
-        document.getElementById('toggle-reminder').checked = reminderIcon && reminderIcon.classList.contains('text-success');
-    }
+        // تنظیم وضعیت چک‌باکس‌های SMS
+        const addressToggle = document.getElementById('toggle-address');
+        const reminderToggle = document.getElementById('toggle-reminder');
 
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('#sms-context-menu') === null) {
-            contextMenu.style.display = 'none';
+        const addressSmsSent = rowElement.dataset.addressSmsSent === 'true';
+        const reminderSmsSent = rowElement.dataset.reminderSmsSent === 'true';
+
+        if (addressToggle) {
+            addressToggle.checked = addressSmsSent;
         }
-    });
+        if (reminderToggle) {
+            reminderToggle.checked = reminderSmsSent;
+        }
 
-    // تعریف تابع در دامنه سراسری و استخراج ID به صورت ایمن
-    window.toggleSmsStatus = function(smsType, event) {
-    // دیگه preventDefault لازم نیست چون داریم روی change خود checkbox گوش می‌دیم
-    event.stopPropagation();
-
-    const menuElement = document.getElementById('sms-context-menu');
-    const contextApptId = menuElement.getAttribute('data-target-id');
-
-    if (!contextApptId) {
-        alert('خطا: شناسه نوبت نامعتبر است.');
-        return;
+        console.log('Setting status to:', currentStatus);
     }
 
-    const checkbox = event.currentTarget; // خودِ چک‌باکس هدف رویداد change است
-    const newState = checkbox.checked;    // الان مقدار نهایی و درستِ بعد از کلیک است
-    const csrfToken = getCookie('csrftoken');
+    // بستن منوی کلیک راست
+    function closeContextMenu() {
+        contextMenu.style.display = 'none';
+        contextMenu.removeAttribute('data-target-id');
+        selectedAppointmentRow = null;
+    }
 
-    fetch(`/appointments/${contextApptId}/toggle-sms-status/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({ sms_type: smsType, state: newState })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("HTTP error " + response.status);
-        return response.json();
-    })
-    .then(data => {
-        if (data.status === 'success') {
+    // آدرس API تغییر وضعیت
+    const updateStatusUrl = "{% url 'appointments:api_update_appointment_status' %}";
+
+    // ارسال درخواست تغییر وضعیت نوبت
+    async function updateAppointmentStatus(appointmentId, newStatus, radioElement = null) {
+        if (!appointmentId || !newStatus) {
+            alert('شناسه نوبت یا وضعیت جدید نامعتبر است.');
+            return;
+        }
+
+        const previousStatus = selectedAppointmentRow
+            ? selectedAppointmentRow.querySelector('.appointment-status-badge')?.dataset.status || null
+            : null;
+
+        try {
+            const response = await fetch(updateStatusUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    id: appointmentId,
+                    status: newStatus
+                })
+            });
+
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                throw new Error('پاسخ سرور JSON معتبر نیست.');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'خطا در ارتباط با سرور.');
+            }
+
+            if (!data.success) {
+                throw new Error(data.error || data.message || 'تغییر وضعیت نوبت ناموفق بود.');
+            }
+
+            // به‌روزرسانی UI
+            if (selectedAppointmentRow) {
+                updateAppointmentStatusUI(
+                    selectedAppointmentRow,
+                    data.status,
+                    data.status_label
+                );
+            }
+
+            closeContextMenu();
+
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+
+            // برگرداندن رادیو به وضعیت قبلی در صورت خطا
+            if (previousStatus) {
+                setAppointmentStatusRadio(previousStatus);
+            }
+
+            alert(error.message || 'خطای داخلی هنگام تغییر وضعیت نوبت!');
+        }
+    }
+
+    // به‌روزرسانی ظاهر badge وضعیت در جدول
+    function updateAppointmentStatusUI(rowElement, status, statusLabel) {
+        if (!rowElement) return;
+
+        const badge = rowElement.querySelector('.appointment-status-badge');
+        if (!badge) return;
+
+        badge.textContent = statusLabel || status;
+        badge.dataset.status = status;
+
+        // حذف کلاس‌های رنگی قبلی
+        badge.classList.remove(
+            'bg-primary', 'text-primary',
+            'bg-success', 'text-success',
+            'bg-info', 'text-info',
+            'bg-danger', 'text-danger',
+            'bg-warning', 'text-warning',
+            'bg-secondary', 'text-secondary'
+        );
+
+        // نگاشت وضعیت به کلاس‌های Bootstrap
+        const classMap = {
+            scheduled: ['bg-primary', 'text-primary'],
+            confirmed: ['bg-success', 'text-success'],
+            waiting: ['bg-info', 'text-info'],
+            completed: ['bg-info', 'text-info'],
+            canceled: ['bg-danger', 'text-danger'],
+            no_show: ['bg-warning', 'text-warning']
+        };
+
+        const newClasses = classMap[status] || ['bg-secondary', 'text-secondary'];
+        badge.classList.add(...newClasses);
+    }
+
+    // تنظیم رادیو باتن وضعیت داخل منو
+    function setAppointmentStatusRadio(status) {
+        const menu = document.getElementById('sms-context-menu');
+        if (!menu) return;
+
+        menu.querySelectorAll('input[name="appointment_status"]').forEach(function (radio) {
+            radio.checked = (radio.value === status);
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // ۱۲. تغییر وضعیت ارسال پیامک (آدرس / یادآوری) از منوی راست
+    // ─────────────────────────────────────────────────────────
+    window.toggleSmsStatus = function (smsType, event) {
+        event.stopPropagation();
+
+        const menuElement = document.getElementById('sms-context-menu');
+        const contextApptId = menuElement.getAttribute('data-target-id');
+
+        if (!contextApptId) {
+            alert('خطا: شناسه نوبت نامعتبر است.');
+            return;
+        }
+
+        const checkbox = event.currentTarget;
+        const newState = checkbox.checked;
+        const csrfToken = getCookie('csrftoken');
+
+        fetch(`/appointments/${contextApptId}/toggle-sms-status/`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                sms_type: smsType,
+                state: newState
+            })
+        })
+        .then(async (response) => {
+            const rawText = await response.text();
+            let data = {};
+
+            try {
+                data = rawText ? JSON.parse(rawText) : {};
+            } catch (e) {
+                console.error('Invalid JSON response:', rawText);
+                throw new Error('پاسخ سرور معتبر نیست.');
+            }
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || data.error || `HTTP error ${response.status}`);
+            }
+
+            return data;
+        })
+        .then(data => {
             updateRowUI(contextApptId, smsType, newState);
-        } else {
-            // در صورت خطا، وضعیت چک‌باکس رو برگردون
+        })
+        .catch(err => {
+            console.error('Fetch Error:', err);
+            // برگرداندن چک‌باکس به حالت قبلی
             checkbox.checked = !newState;
-            alert('خطا از سمت سرور: ' + (data.message || ''));
-        }
-    })
-    .catch(err => {
-        console.error('Fetch Error:', err);
-        checkbox.checked = !newState; // rollback
-        alert('خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.');
-    });
-};  
+            alert(err.message || 'خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.');
+        });
+    };
+
+    // به‌روزرسانی آیکون‌های SMS در ردیف جدول
     function updateRowUI(apptId, smsType, isSent) {
         const row = document.querySelector(`tr[data-id="${apptId}"]`);
         if (!row) return;
 
-        const iconClass = smsType === 'address_sms_sent' ? '.address-sms-icon' : '.reminder-sms-icon';
+        if (smsType === 'address_sms_sent') {
+            row.dataset.addressSmsSent = isSent ? 'true' : 'false';
+        }
+
+        if (smsType === 'reminder_sms_sent') {
+            row.dataset.reminderSmsSent = isSent ? 'true' : 'false';
+        }
+
+        const iconClass = smsType === 'address_sms_sent'
+            ? '.address-sms-icon'
+            : '.reminder-sms-icon';
+
         const iconContainer = row.querySelector(iconClass);
-        
+
         if (iconContainer) {
             if (isSent) {
-                iconContainer.className = `${iconClass.replace('.','')} text-success small`;
+                iconContainer.className = `${iconClass.replace('.', '')} text-success small`;
                 iconContainer.style.opacity = '1';
-                iconContainer.innerHTML = `<i class="fa-solid fa-${smsType === 'address_sms_sent' ? 'location-dot' : 'bell'}"></i><i class="fa-solid fa-check" style="font-size: 0.6em; margin-right: -3px;"></i>`;
+                iconContainer.innerHTML = `
+                    <i class="fa-solid fa-${smsType === 'address_sms_sent' ? 'location-dot' : 'bell'}"></i>
+                    <i class="fa-solid fa-check" style="font-size: 0.6em; margin-right: -3px;"></i>
+                `;
             } else {
-                iconContainer.className = `${iconClass.replace('.','')} text-muted small opacity-25`;
-                iconContainer.innerHTML = `<i class="fa-solid fa-${smsType === 'address_sms_sent' ? 'location-dot' : 'bell'}"></i>`;
+                iconContainer.className = `${iconClass.replace('.', '')} text-muted small opacity-25`;
+                iconContainer.innerHTML = `
+                    <i class="fa-solid fa-${smsType === 'address_sms_sent' ? 'location-dot' : 'bell'}"></i>
+                `;
             }
         }
     }
 
-    toggleDynamicFields();
-
-    appointmentTypeSelect.on('change', function() {
-        toggleDynamicFields();
-    });
-
+    // مقداردهی اولیه نهایی پلاگین‌ها
     initModalPlugins();
 });
 </script>

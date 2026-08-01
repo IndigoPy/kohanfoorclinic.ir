@@ -1,7 +1,7 @@
 from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from ..models import Appointment
 from ..forms.appointment import AppointmentForm
 import logging
@@ -47,10 +47,15 @@ class AppointmentCreateView(CreateView):
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        self.object = form.save()
+        self.object = form.save(commit=False)
+        self.object._changed_by = self.request.user if self.request.user.is_authenticated else None
+        self.object.save()
+        form.save_m2m()
+
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
-        return super().form_valid(form)
+
+        return redirect(self.get_success_url())
 
     def form_invalid(self, form):
         logger.warning(f"Create form errors: {form.errors.as_json()}")
@@ -71,8 +76,7 @@ class AppointmentUpdateView(UpdateView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
-        
-        # موقت — فقط برای دیباگ
+
         if request.GET.get('debug') == '1':
             from django.http import HttpResponse
             return HttpResponse(
@@ -80,29 +84,40 @@ class AppointmentUpdateView(UpdateView):
                 f"date value: {self.object.date}<br>"
                 f"jalali_date_value: {context.get('jalali_date_value')}"
             )
-        
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return render(request, self.template_name, context)
+
         return render(request, self.template_name, context)
 
     def form_valid(self, form):
-        self.object = form.save()
+        self.object = form.save(commit=False)
+        self.object._changed_by = self.request.user if self.request.user.is_authenticated else None
+        self.object.save()
+        form.save_m2m()
+
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': True})
-        return super().form_valid(form)
+            return JsonResponse({
+                'success': True,
+                'id': self.object.pk,
+                'redirect_url': str(self.get_success_url())
+            })
+
+        return redirect(self.get_success_url())
 
     def form_invalid(self, form):
         logger.warning(f"Update form errors: {form.errors.as_json()}")
+
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            context = self.get_context_data(form=form)
+            context = self.get_context_data(form=form, object=self.object)
             return render(self.request, self.template_name, context, status=400)
+
         return super().form_invalid(form)
+
     
 class AppointmentDeleteView(View):
     def post(self, request, pk, *args, **kwargs):
         # بررسی اینکه درخواست حتما از طریق AJAX ارسال شده باشد
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             appointment = get_object_or_404(Appointment, pk=pk)
+            appointment._changed_by = request.user if request.user.is_authenticated else None
             appointment.delete()
             return JsonResponse({'success': True, 'message': 'نوبت با موفقیت حذف شد.'})
         

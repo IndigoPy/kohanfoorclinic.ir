@@ -8,12 +8,15 @@ from django.utils.dateparse import parse_datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-import json
 from datetime import date
 from django.shortcuts import render
 from ..forms.appointment import AppointmentForm, EXTRA_FIELDS_SCHEMA
 from django.shortcuts import get_object_or_404
-
+import datetime
+import jdatetime
+from django.contrib.auth.decorators import login_required
+import logging
+from django.utils.encoding import force_str
 
 class AppointmentCalendarAPIView(View):
     def get(self, request, *args, **kwargs):
@@ -106,42 +109,67 @@ def calendar_events_api(request):
     return JsonResponse(events, safe=False)
 
 
-
-
-@csrf_exempt
 @require_http_methods(["POST"])
 def update_event_time(request):
     try:
         data = json.loads(request.body)
-        appointment_id = data['id']
-        
+        appointment_id = data.get('id')
+
+        if not appointment_id:
+            return JsonResponse({'error': 'شناسه نوبت ارسال نشده است'}, status=400)
+
         appointment = Appointment.objects.get(id=appointment_id)
-        
-        # 🔧 تشخیص نوع درخواست
-        if 'date' in data:
-            # نمای ماه → فقط date تغییر کند
-            new_date = date.fromisoformat(data['date'])
-            appointment.date = new_date
-            
-        elif 'start' in data:
-            # نماهای week/day → start/end کامل
-            if data['start']:
-                start_full = data['start']
-                appointment.date = date.fromisoformat(start_full.split('T')[0])
-                # start_time رو از full datetime استخراج کن
-                start_time_str = start_full.split('T')[1].split('.')[0]  # "HH:MM:SS"
-                appointment.start_time = start_time_str[:5]  # "HH:MM"
-                
+
+        # حالت ۱: نمای ماهانه FullCalendar
+        # فقط تاریخ تغییر می‌کند و ساعت قبلی حفظ می‌شود
+        if 'date' in data and data.get('date'):
+            # تاریخ ورودی از FullCalendar میلادی است: YYYY-MM-DD
+            gregorian_date = datetime.date.fromisoformat(data['date'])
+
+            # تبدیل تاریخ میلادی به جلالی برای jDateField
+            jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+
+            appointment.date = jalali_date
+
+        # حالت ۲: نمای روز/هفته
+        # تاریخ و ساعت شروع/پایان تغییر می‌کند
+        elif 'start' in data and data.get('start'):
+            start_full = data['start']
+
+            # نمونه ورودی مورد انتظار:
+            # 2026-07-28T15:00:00
+            start_date_part = start_full.split('T')[0]
+            start_time_part = start_full.split('T')[1].split('.')[0][:8]
+
+            gregorian_date = datetime.date.fromisoformat(start_date_part)
+            jalali_date = jdatetime.date.fromgregorian(date=gregorian_date)
+
+            appointment.date = jalali_date
+            appointment.start_time = datetime.time.fromisoformat(start_time_part)
+
             if data.get('end'):
                 end_full = data['end']
-                end_time_str = end_full.split('T')[1].split('.')[0]
-                appointment.end_time = end_time_str[:5]
-        
+                end_time_part = end_full.split('T')[1].split('.')[0][:8]
+                appointment.end_time = datetime.time.fromisoformat(end_time_part)
+            else:
+                appointment.end_time = None
+
+        else:
+            return JsonResponse({'error': 'داده معتبر برای تغییر زمان ارسال نشده است'}, status=400)
+
         appointment.save()
-        return JsonResponse({'success': True})
-        
+
+        return JsonResponse({
+            'success': True,
+            'id': appointment.id,
+        })
+
     except Appointment.DoesNotExist:
         return JsonResponse({'error': 'نوبت پیدا نشد'}, status=404)
+
+    except ValueError as e:
+        return JsonResponse({'error': f'فرمت تاریخ یا ساعت نامعتبر است: {str(e)}'}, status=400)
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
@@ -168,24 +196,136 @@ def load_dynamic_fields(request):
 class ToggleSMSStatusView(View):
     def post(self, request, pk):
         appointment = get_object_or_404(Appointment, pk=pk)
-        
+
         try:
             data = json.loads(request.body)
-            sms_type = data.get('sms_type') # 'address_sms_sent' یا 'reminder_sms_sent'
-            state = data.get('state') # True یا False
-            
-            # اطمینان از وجود دیکشنری
+            sms_type = data.get('sms_type')
+            state = data.get('state')
+
+            allowed_sms_types = ['address_sms_sent', 'reminder_sms_sent']
+
+            if sms_type not in allowed_sms_types:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid SMS type'
+                }, status=400)
+
+            if not isinstance(state, bool):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid state value'
+                }, status=400)
+
             if not isinstance(appointment.extra_data, dict):
                 appointment.extra_data = {}
-                
-            if sms_type in ['address_sms_sent', 'reminder_sms_sent']:
-                appointment.extra_data[sms_type] = state
-                appointment.save(update_fields=['extra_data'])
-                return JsonResponse({'status': 'success', 'new_state': state})
-            
-            return JsonResponse({'status': 'error', 'message': 'Invalid SMS type'}, status=400)
-            
+
+            appointment.extra_data[sms_type] = state
+            appointment.save(update_fields=['extra_data'])
+
+            return JsonResponse({
+                'success': True,
+                'sms_type': sms_type,
+                'state': state
+            }, status=200)
+
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid JSON'
+            }, status=400)
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=500)
 
 
+
+logger = logging.getLogger(__name__)
+
+
+logger = logging.getLogger(__name__)
+
+
+@login_required
+@require_POST
+def update_appointment_status(request):
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+
+        appointment_id = payload.get('id')
+        new_status = payload.get('status')
+
+        if not appointment_id or not new_status:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': 'شناسه نوبت و وضعیت جدید الزامی است.'
+                },
+                status=400
+            )
+
+        # دریافت وضعیت‌های معتبر مستقیماً از فیلد مدل
+        status_field = Appointment._meta.get_field('status')
+
+        valid_statuses = {
+            str(value)
+            for value, label in status_field.choices
+        }
+
+        if new_status not in valid_statuses:
+            return JsonResponse(
+            {
+                'success': True,
+                'id': appointment.pk,
+                'status': appointment.status,
+                'status_label': force_str(appointment.get_status_display()),  # ← این خط
+            }
+        )
+
+        try:
+            appointment = Appointment.objects.get(pk=appointment_id)
+        except Appointment.DoesNotExist:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': 'نوبت موردنظر پیدا نشد.'
+                },
+                status=404
+            )
+
+        appointment.status = new_status
+        appointment.save(update_fields=['status'])
+
+        return JsonResponse(
+            {
+                'success': True,
+                'id': appointment.pk,
+                'status': appointment.status,
+                'status_label': str(appointment.get_status_display()),  # ← این خط اصلاح شد
+            }
+        )
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {
+                'success': False,
+                'error': 'داده ارسالی JSON معتبر نیست.'
+            },
+            status=400
+        )
+
+    except Exception as error:
+        # ثبت traceback واقعی در لاگ سرور
+        logger.exception(
+            'Unexpected error while updating appointment status'
+        )
+
+        return JsonResponse(
+            {
+                'success': False,
+                'error': f'خطای داخلی هنگام تغییر وضعیت نوبت: {str(error)}'
+            },
+            status=500
+        )

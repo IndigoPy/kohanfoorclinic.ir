@@ -18,6 +18,8 @@ from decimal import Decimal
 from ..models.patient import PatientAttachment, PatientInsuranceInfo,UnderlyingDisease,OrthoticHistoryType
 from django.views.decorators.http import require_POST
 
+from apps.appointments.models import Appointment
+from apps.appointments.models.choices import AppointmentType, AppointmentStatus
 
 def is_manager(user):
     """فقط سوپریوزر یا عضو گروه Manager اجازه ویرایش/حذف تراکنش دارد"""
@@ -27,14 +29,40 @@ def is_manager(user):
 @login_required
 def reception_dashboard(request):
     search_query = request.GET.get('q', '').strip()
+    today_jalali = jdatetime.date.today()
 
-    # ────── ۱. سه بخش بالای داشبورد (خلاصه وضعیت) ──────
-    waiting_exam = Patient.objects.filter(
-        stage='waiting_exam').order_by('-created_at')[:12]
-    in_delivery = Patient.objects.filter(
-        stage='in_delivery').order_by('-updated_at')[:10]
-    waiting_qc = Patient.objects.filter(
-        stage='waiting_qc').order_by('-updated_at')[:10]
+    # =========================================================
+    # 1) باکس‌های بالای داشبورد
+    # =========================================================
+
+    # الف) بیماران جدید که واقعاً منتظر معاینه هستند
+    waiting_exam_new_patients = Patient.objects.filter(
+        stage='waiting_exam'
+    ).order_by('-created_at')[:12]
+
+    # ب) نوبت‌های فالوآپ/تماس کلینیک که امروز حضور خورده‌اند
+    waiting_exam_appointments = Appointment.objects.filter(
+        date=today_jalali,
+        status=AppointmentStatus.WAITING,
+        appointment_type__in=[
+            AppointmentType.FOLLOW_UP,
+            AppointmentType.CLINIC_CALL,
+        ]
+    ).select_related('patient').order_by('start_time', '-created_at')[:12]
+
+    # ج) نوبت‌های تحویل که امروز حضور خورده‌اند
+    in_delivery_appointments = Appointment.objects.filter(
+        date=today_jalali,
+        status=AppointmentStatus.WAITING,
+        appointment_type=AppointmentType.DELIVERY,
+    ).select_related('patient').order_by('start_time', '-created_at')[:10]
+
+    # د) نوبت‌های بررسی کار که امروز حضور خورده‌اند
+    waiting_qc_appointments = Appointment.objects.filter(
+        date=today_jalali,
+        status=AppointmentStatus.WAITING,
+        appointment_type=AppointmentType.CHECKUP,
+    ).select_related('patient').order_by('start_time', '-created_at')[:10]
 
     # ────── ۲. لیست کامل بیماران (برای جدول پایین) ──────
     patients_qs = Patient.objects.all().order_by('-created_at').prefetch_related(
@@ -97,10 +125,11 @@ def reception_dashboard(request):
 
     # ────── ۵. رندر نهایی در حالت عادی ──────
     context = {
-        # بخش‌های بالای داشبورد
-        'waiting_exam': waiting_exam,
-        'in_delivery': in_delivery,
-        'waiting_qc': waiting_qc,
+        # برای کارت‌های بالا
+        'waiting_exam_new_patients': waiting_exam_new_patients,
+        'waiting_exam_appointments': waiting_exam_appointments,
+        'in_delivery_appointments': in_delivery_appointments,
+        'waiting_qc_appointments': waiting_qc_appointments,
 
         # لیست کامل برای جدول
         'patients': page_obj,

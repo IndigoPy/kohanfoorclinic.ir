@@ -180,81 +180,157 @@
 
     <!-- Stats Cards -->
     <div class="row g-4 mb-5">
-        <!-- ۱. منتظر معاینه -->
         <div class="col-lg-4">
-            <div class="card h-100 shadow-sm status-indicator-green">
-                <div class="card-header bg-success bg-opacity-10 text-success border-0 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold"><i class="fas fa-user-clock me-2"></i>منتظر معاینه</h6>
-                    <span class="badge bg-success rounded-pill px-3">{{ waiting_exam|length }}</span>
-                </div>
-                <div class="card-body p-0">
-                    {% for patient in waiting_exam %}
-                    <a href="{% url 'reception:patient-detail' patient.id %}" class="text-decoration-none text-body">
-                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
-                            <div>
-                                <strong class="d-block">{{ patient.full_name }}</strong>
-                                <small class="text-muted">{{ patient.case_number }}</small>
-                            </div>
-                            <span class="badge bg-success bg-opacity-25 text-success">جدید</span>
-                        </div>
-                    </a>
-                    {% empty %}
-                    <p class="text-center text-muted py-4 mb-0"><small>کسی منتظر معاینه نیست ✓</small></p>
-                    {% endfor %}
-                </div>
-            </div>
+    <div class="card h-100 shadow-sm status-indicator-green">
+        <div class="card-header bg-success bg-opacity-10 text-success border-0 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="fas fa-user-clock me-2"></i>منتظر معاینه
+            </h6>
+            <span class="badge bg-success rounded-pill px-3">
+                {{ waiting_exam_new_patients|length|add:waiting_exam_appointments|length }}
+            </span>
         </div>
 
-        <!-- ۲. در حال تحویل -->
-        <div class="col-lg-4">
-            <div class="card h-100 shadow-sm status-indicator-yellow">
-                <div class="card-header bg-warning bg-opacity-10 text-warning border-0 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold"><i class="fas fa-truck-loading me-2"></i>در حال تحویل</h6>
-                    <span class="badge bg-warning text-dark rounded-pill px-3">{{ in_delivery|length }}</span>
-                </div>
-                <div class="card-body p-0">
-                    {% for patient in in_delivery %}
-                    <a href="{% url 'reception:patient-detail' patient.id %}" class="text-decoration-none text-body">
-                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
-                            <div>
-                                <strong class="d-block">{{ patient.full_name }}</strong>
-                                <small class="text-muted">{{ patient.case_number }}</small>
-                            </div>
-                            <span class="badge bg-warning bg-opacity-25 text-warning">تحویل</span>
-                        </div>
-                    </a>
-                    {% empty %}
-                    <p class="text-center text-muted py-4 mb-0"><small>سفارشی در حال تحویل نیست</small></p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+        <div class="card-body p-0">
 
-        <!-- ۳. منتظر QC -->
-        <div class="col-lg-4">
-            <div class="card h-100 shadow-sm status-indicator-red">
-                <div class="card-header bg-danger bg-opacity-10 text-danger border-0 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold"><i class="fas fa-clipboard-check me-2"></i>منتظر QC</h6>
-                    <span class="badge bg-danger rounded-pill px-3">{{ waiting_qc|length }}</span>
+            <!-- بیماران جدید -->
+            {% for patient in waiting_exam_new_patients %}
+            <a href="{% url 'reception:patient-detail' patient.id %}" class="text-decoration-none text-body">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
+                    <div>
+                        <strong class="d-block">{{ patient.full_name }}</strong>
+                        <small class="text-muted">{{ patient.case_number }}</small>
+                    </div>
+                    <span class="badge bg-success bg-opacity-25 text-success">جدید</span>
                 </div>
-                <div class="card-body p-0">
-                    {% for patient in waiting_qc %}
-                    <a href="{% url 'reception:patient-detail' patient.id %}" class="text-decoration-none text-body">
-                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
-                            <div>
-                                <strong class="d-block">{{ patient.full_name }}</strong>
-                                <small class="text-muted">{{ patient.case_number }}</small>
-                            </div>
-                            <span class="badge bg-danger bg-opacity-25 text-danger">QC</span>
-                        </div>
-                    </a>
-                    {% empty %}
-                    <p class="text-center text-muted py-4 mb-0"><small>موردی برای QC وجود ندارد</small></p>
-                    {% endfor %}
+            </a>
+            {% endfor %}
+
+            <!-- فالوآپ / تماس کلینیک -->
+            {% for appt in waiting_exam_appointments %}
+            <a href="{% if appt.patient %}{% url 'reception:patient-detail' appt.patient.id %}{% else %}#{% endif %}" class="text-decoration-none text-body">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
+                    <div>
+                        <strong class="d-block">
+                            {% if appt.patient %}
+                                {{ appt.patient.full_name }}
+                            {% else %}
+                                {{ appt.first_name }} {{ appt.last_name }}
+                            {% endif %}
+                        </strong>
+                        <small class="text-muted">
+                            {% if appt.patient %}
+                                {{ appt.patient.case_number }}
+                            {% else %}
+                                بدون پرونده
+                            {% endif %}
+                            - {{ appt.start_time|time:"H:i" }}
+                        </small>
+                    </div>
+                    <span class="badge bg-info bg-opacity-25 text-info">
+                        {{ appt.get_appointment_type_display }}
+                    </span>
                 </div>
-            </div>
+            </a>
+            {% endfor %}
+
+            {% if not waiting_exam_new_patients and not waiting_exam_appointments %}
+            <p class="text-center text-muted py-4 mb-0">
+                <small>کسی منتظر معاینه نیست ✓</small>
+            </p>
+            {% endif %}
         </div>
     </div>
+</div>
+
+
+       <div class="col-lg-4">
+    <div class="card h-100 shadow-sm status-indicator-yellow">
+        <div class="card-header bg-warning bg-opacity-10 text-warning border-0 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="fas fa-truck-loading me-2"></i>در حال تحویل
+            </h6>
+            <span class="badge bg-warning text-dark rounded-pill px-3">
+                {{ in_delivery_appointments|length }}
+            </span>
+        </div>
+        <div class="card-body p-0">
+            {% for appt in in_delivery_appointments %}
+            <a href="{% if appt.patient %}{% url 'reception:patient-detail' appt.patient.id %}{% else %}#{% endif %}" class="text-decoration-none text-body">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
+                    <div>
+                        <strong class="d-block">
+                            {% if appt.patient %}
+                                {{ appt.patient.full_name }}
+                            {% else %}
+                                {{ appt.first_name }} {{ appt.last_name }}
+                            {% endif %}
+                        </strong>
+                        <small class="text-muted">
+                            {% if appt.patient %}
+                                {{ appt.patient.case_number }}
+                            {% else %}
+                                بدون پرونده
+                            {% endif %}
+                            - {{ appt.start_time|time:"H:i" }}
+                        </small>
+                    </div>
+                    <span class="badge bg-warning bg-opacity-25 text-warning">تحویل</span>
+                </div>
+            </a>
+            {% empty %}
+            <p class="text-center text-muted py-4 mb-0">
+                <small>سفارشی در حال تحویل نیست</small>
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+        <div class="col-lg-4">
+    <div class="card h-100 shadow-sm status-indicator-red">
+        <div class="card-header bg-danger bg-opacity-10 text-danger border-0 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="fas fa-clipboard-check me-2"></i>منتظر QC
+            </h6>
+            <span class="badge bg-danger rounded-pill px-3">
+                {{ waiting_qc_appointments|length }}
+            </span>
+        </div>
+        <div class="card-body p-0">
+            {% for appt in waiting_qc_appointments %}
+            <a href="{% if appt.patient %}{% url 'reception:patient-detail' appt.patient.id %}{% else %}#{% endif %}" class="text-decoration-none text-body">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom hover-bg">
+                    <div>
+                        <strong class="d-block">
+                            {% if appt.patient %}
+                                {{ appt.patient.full_name }}
+                            {% else %}
+                                {{ appt.first_name }} {{ appt.last_name }}
+                            {% endif %}
+                        </strong>
+                        <small class="text-muted">
+                            {% if appt.patient %}
+                                {{ appt.patient.case_number }}
+                            {% else %}
+                                بدون پرونده
+                            {% endif %}
+                            - {{ appt.start_time|time:"H:i" }}
+                        </small>
+                    </div>
+                    <span class="badge bg-danger bg-opacity-25 text-danger">QC</span>
+                </div>
+            </a>
+            {% empty %}
+            <p class="text-center text-muted py-4 mb-0">
+                <small>موردی برای QC وجود ندارد</small>
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 
     <!-- Live Search -->
     <div class="search-card mb-4">

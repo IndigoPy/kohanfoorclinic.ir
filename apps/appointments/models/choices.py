@@ -11,7 +11,7 @@ class AppointmentType(models.TextChoices):
 class AppointmentStatus(models.TextChoices):
     SCHEDULED = 'scheduled', _('رزرو شده')
     CONFIRMED = 'confirmed', _('تایید شده (یادآوری انجام شد)')
-    WAITING = 'waiting', _('در انتظار (حاضر در کلینیک)')
+    WAITING = 'waiting', _('در انتظار')
     COMPLETED = 'completed', _('انجام شده')
     CANCELED = 'canceled', _('لغو شده')
     NO_SHOW = 'no_show', _('عدم حضور')

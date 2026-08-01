@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}تقویم کلینیک{% endblock %}
+{% block title %}تقویم نوبت دهی کلینیک{% endblock %}
 {% load static %}
 
 {% block extra_head %}
@@ -52,6 +52,96 @@
         .fc-button { padding: 4px 8px !important; font-size: 0.8rem !important; }
         .fc-timeGridWeek-button { display: none !important; }
     }
+    .fc-event {
+    cursor: pointer;
+    border: 0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.fc-event-custom {
+    width: 100%;
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+.fc-event-month {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    font-size: 12px;
+}
+
+.fc-event-timegrid {
+    padding: 2px 4px;
+    font-size: 12px;
+}
+
+.fc-event-title-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.fc-event-time-text {
+    flex: 0 0 auto;
+    font-weight: 600;
+    font-size: 11px;
+    opacity: 0.95;
+}
+
+.fc-timegrid-event .fc-event-custom {
+    padding: 2px 4px;
+}
+
+.fc-timegrid-event .fc-event-title-text {
+    font-weight: 600;
+}
+
+.fc-timegrid-event .fc-event-time-text {
+    margin-top: 2px;
+}
+
+.fc-daygrid-event {
+    padding: 1px 4px;
+}
+
+.fc-event {
+    border: 0 !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.fc-event:hover {
+    filter: brightness(0.96);
+}
+
+.clinic-event-title {
+    width: 100%;
+    padding: 3px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: center;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fc-timegrid-event .clinic-event-title {
+    padding: 4px 6px;
+}
+
+.fc-daygrid-event .clinic-event-title {
+    text-align: right;
+    font-size: 11px;
+}
+
 </style>
 {% endblock %}
 
@@ -88,6 +178,48 @@
         </div>
     </div>
 </div>
+
+
+<div class="modal fade" id="appointmentEventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-end">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalTitle">جزئیات نوبت</h5>
+                <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-2">
+                    <strong>بیمار:</strong>
+                    <span id="eventPatient"></span>
+                </div>
+
+                <div class="mb-2">
+                    <strong>تاریخ:</strong>
+                    <span id="eventDate"></span>
+                </div>
+
+                <div class="mb-2">
+                    <strong>ساعت:</strong>
+                    <span id="eventTime"></span>
+                </div>
+
+                <div class="mb-2">
+                    <strong>وضعیت:</strong>
+                    <span id="eventStatus"></span>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-start">
+                <a href="#" id="eventDetailLink" class="btn btn-outline-primary btn-sm">مشاهده</a>
+                <a href="#" id="eventEditLink" class="btn btn-primary btn-sm">ویرایش</a>
+                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}
 
 {% block extra_js %}
@@ -112,14 +244,62 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function padNumber(value) {
+    return String(value).padStart(2, '0');
+}
+
+function formatLocalDate(date) {
+    return date.getFullYear() + '-' +
+        padNumber(date.getMonth() + 1) + '-' +
+        padNumber(date.getDate());
+}
+
+function formatLocalDateTime(dateObj) {
+    // استفاده مستقیم از متدها، بدون تبدیل به فرمت ISO که مرورگر در آن دخالت کند
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    const hh = String(dateObj.getHours()).padStart(2, '0');
+    const mm = String(dateObj.getMinutes()).padStart(2, '0');
+    const ss = String(dateObj.getSeconds()).padStart(2, '0');
+    
+    return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function formatPersianDate(date) {
+    if (!date) return '-';
+    return date.toLocaleDateString('fa-IR');
+}
+
+function formatPersianTime(date) {
+    if (!date) return '';
+    return date.toLocaleTimeString('fa-IR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+let clinicCalendar = null;
+
+
 document.addEventListener('DOMContentLoaded', function() {
     var isMobile = window.innerWidth < 768;
     const csrftoken = getCookie('csrftoken');
 
     var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    clinicCalendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'fa',
-        timeZone: 'Asia/Tehran',
+        timeZone: 'local',
         direction: 'rtl',
         initialView: isMobile ? 'timeGridDay' : 'timeGridWeek',
         height: isMobile ? 'auto' : 750,
@@ -132,113 +312,161 @@ document.addEventListener('DOMContentLoaded', function() {
             left: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         buttonText: { today: 'امروز', month: 'ماه', week: 'هفته', day: 'روز' },
-        slotMinTime: '08:00:00',
-        slotMaxTime: '24:00:00',
+        slotMinTime: '10:00:00',
+        slotMaxTime: '21:00:00',
         allDaySlot: false,
-        slotDuration: '00:15:00',
+        slotDuration: '00:05:00',
         nowIndicator: true,
         events: '{% url "appointments:api_calendar" %}',
         
 
-        // ✅ فقط تغییر DATE در نمای ماهانه
         eventDrop: function(info) {
-            if (!confirm("آیا از تغییر **تاریخ** نوبت اطمینان دارید؟")) {
-                info.revert();
-                return;
-            }
+    if (!confirm("آیا از تغییر تاریخ/زمان نوبت اطمینان دارید؟")) {
+        info.revert();
+        return;
+    }
 
-            // فقط در نمای ماهانه → فقط DATE تغییر کند
-            if (info.view.type === 'dayGridMonth') {
-                // فقط تاریخ جدید (بدون ساعت)
-                const newDateOnly = info.event.start.toISOString().split('T')[0];
-                
-                fetch('/appointments/api/update_event_time/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({
-                        id: info.event.id,
-                        date: newDateOnly  // فقط تاریخ!
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        alert('خطا در تغییر تاریخ');
-                        info.revert();
-                    } else {
-                        // ✅ Refetch events برای آپدیت UI
-                        calendar.refetchEvents();
-                    }
-                })
-                .catch(() => {
-                    alert('خطای سرور');
-                    info.revert();
-                });
-            } else {
-                // سایر نماها → start/end کامل
-                fetch('/appointments/api/update_event_time/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({
-                        id: info.event.id,
-                        start: info.event.start.toISOString(),
-                        end: info.event.end ? info.event.end.toISOString() : null
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) info.revert();
-                })
-                .catch(() => info.revert());
-            }
-        },
+    let payload = {
+        id: info.event.id
+    };
 
-        eventResize: function(info) {
-            // فقط برای نماهای timeGrid
-            fetch('/appointments/api/update_event_time/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({
-                    id: info.event.id,
-                    start: info.event.start.toISOString(),
-                    end: info.event.end.toISOString()
-                })
-            })
-            .then(response => {
-                if (!response.ok) info.revert();
-            })
-            .catch(() => info.revert());
-        },
+    // نمای ماهانه: فقط تاریخ تغییر کند
+    if (info.view.type === 'dayGridMonth') {
+        payload.date = formatLocalDate(info.event.start);
+    } else {
+        // نمای هفته/روز: تاریخ و ساعت تغییر کند
+        payload.start = formatLocalDateTime(info.event.start);
+        payload.end = info.event.end ? formatLocalDateTime(info.event.end) : null;
+    }
 
-        eventClick: function(info) {
-            if (!info.event.url) {
-                alert('بیمار: ' + info.event.title + '\nتاریخ: ' + 
-                      info.event.start.toLocaleDateString('fa-IR') + '\nساعت: ' + 
-                      info.event.start.toLocaleTimeString('fa-IR'));
-                info.jsEvent.preventDefault();
-            }
+    fetch('/appointments/api/update_event_time/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
         },
+        body: JSON.stringify(payload)
+    })
+    .then(async response => {
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            alert(data.error || 'خطا در تغییر نوبت');
+            info.revert();
+            return;
+        }
+
+        clinicCalendar.refetchEvents();
+
+    })
+    .catch(() => {
+        alert('خطای ارتباط با سرور');
+        info.revert();
+    });
+},
+
+
+       eventResize: function(info) {
+    if (!confirm("آیا از تغییر مدت زمان نوبت اطمینان دارید؟")) {
+        info.revert();
+        return;
+    }
+
+    fetch('/appointments/api/update_event_time/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            id: info.event.id,
+            start: formatLocalDateTime(info.event.start),
+            end: info.event.end ? formatLocalDateTime(info.event.end) : null
+        })
+    })
+    .then(async response => {
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            alert(data.error || 'خطا در تغییر مدت زمان نوبت');
+            info.revert();
+            return;
+        }
+
+        calendar.refetchEvents();
+    })
+    .catch(() => {
+        alert('خطای ارتباط با سرور');
+        info.revert();
+    });
+},
+
+
+    eventClick: function(info) {
+        info.jsEvent.preventDefault();
+
+        const event = info.event;
+        const props = event.extendedProps || {};
+
+        const patient = props.patient || event.title || '-';
+        const statusLabel = props.statusLabel || props.status || '-';
+
+        const startTime = props.startTime || formatPersianTime(event.start);
+        const endTime = props.endTime || (event.end ? formatPersianTime(event.end) : '');
+        const timeText = endTime ? `${startTime} - ${endTime}` : startTime;
+
+        document.getElementById('eventModalTitle').textContent = patient;
+        document.getElementById('eventPatient').textContent = patient;
+        document.getElementById('eventDate').textContent = formatPersianDate(event.start);
+        document.getElementById('eventTime').textContent = timeText || '-';
+        document.getElementById('eventStatus').textContent = statusLabel;
+
+        const detailLink = document.getElementById('eventDetailLink');
+        const editLink = document.getElementById('eventEditLink');
+
+        if (props.detailUrl) {
+            detailLink.href = props.detailUrl;
+            detailLink.classList.remove('d-none');
+        } else {
+            detailLink.classList.add('d-none');
+        }
+
+        if (props.editUrl) {
+            editLink.href = props.editUrl;
+            editLink.classList.remove('d-none');
+        } else {
+            editLink.classList.add('d-none');
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('appointmentEventModal'));
+        modal.show();
+    },
+
 
         windowResize: function(arg) {
             if (window.innerWidth < 768) {
-                calendar.changeView('timeGridDay');
-                calendar.setOption('height', 'auto');
+                clinicCalendar.changeView('timeGridDay');
+                clinicCalendar.setOption('height', 'auto');
             } else {
-                calendar.changeView('timeGridWeek');
-                calendar.setOption('height', 750);
+                clinicCalendar.changeView('timeGridDay');
+                clinicCalendar.setOption('height', 750);
             }
         }
     });
 
-    calendar.render();
+    clinicCalendar.render();
 
 });
+
+document.addEventListener('sidebarDateSelected', function(e) {
+    if (!clinicCalendar) return;
+    if (!e.detail || !e.detail.date) return;
+
+    if (window.innerWidth < 768) {
+        clinicCalendar.changeView('timeGridDay', e.detail.date);
+    } else {
+        clinicCalendar.gotoDate(e.detail.date);
+    }
+});
+
+
 </script>
 {% endblock %}
