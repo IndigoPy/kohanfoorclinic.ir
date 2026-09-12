@@ -25,6 +25,7 @@ urlpatterns = [
     path('reception/', include('apps.reception.urls')),
     path('appointments/', include('apps.appointments.urls', namespace='appointments')),
     path('workshop/', include('apps.workshop.urls')),
+    path('calls/', include('apps.calls.urls')),
 ]   
 
 handler403 = custom_403_view

@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django_jalali',
     'apps.appointments.apps.AppointmentsConfig',
     'apps.workshop',
+    'rest_framework',
+    'apps.calls',
 ]
 
 MIDDLEWARE = [
