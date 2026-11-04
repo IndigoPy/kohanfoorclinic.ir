@@ -1,0 +1,1186 @@
+{% extends 'base.html' %}
+{% load jformat %}
+
+{% block title %}داشبورد تماس‌ها و پیامک‌ها | کلینیک کهن{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #3730a3;
+        --secondary: #7c3aed;
+        --success: #16a34a;
+        --danger: #dc2626;
+        --warning: #d97706;
+        --info: #0284c7;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --soft-bg: #f8f9ff;
+        --border-color: #e8eaf3;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at top right, rgba(99, 102, 241, .08), transparent 30%),
+            #f8f9ff;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-title {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+    }
+
+    .dashboard-title-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        box-shadow: 0 10px 25px rgba(79, 70, 229, .25);
+    }
+
+    .dashboard-title h1 {
+        color: var(--text-dark);
+        font-size: 1.55rem;
+        font-weight: 800;
+        margin: 0 0 .25rem;
+    }
+
+    .dashboard-title p {
+        color: var(--text-muted);
+        font-size: .88rem;
+        margin: 0;
+    }
+
+    .sync-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        background: #fff;
+        color: var(--success);
+        border: 1px solid #dcfce7;
+ #dcfce7;
+        border-radius: 999px;
+       9rem;
+        font-size: .82rem;
+        font-weight: 600;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, .04);
+    }
+
+    .sync-status-dot {
+        width: 9px;
+        height: 9px;
+        background: var(--success);
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, .12);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, .75);
+        border-radius: 20px;
+        padding: 1.15rem;
+        min-height: 135px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, .055);
+        transition: .25s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 34px rgba(15, 23, 42, .1);
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        width: 90px;
+        height: 90px;
+        left: -30px;
+        bottom: -35px;
+        border-radius: 50%;
+        background: var(--stat-color);
+        opacity: .07;
+    }
+
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        color: var(--stat-color);
+        background: color-mix(in srgb, var(--stat-color) 12%, white);
+        font-size: 1rem;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: .78rem;
+        line-height: 1.7;
+    }
+
+    .stat-value {
+        color: var(--text-dark);
+        font-size: 1.65rem;
+        font-weight: 800;
+        margin-top: .7rem;
+        direction: ltr;
+        text-align: right;
+    }
+
+    .stat-primary { --stat-color: #4f46e5; }
+    .stat-success { --stat-color: #16a34a; }
+    .stat-danger { --stat-color: #dc2626; }
+    .stat-warning { --stat-color: #d97706; }
+    .stat-info { --stat-color: #0284c7; }
+    .stat-purple { --stat-color: #9333ea; }
+
+    .dashboard-card {
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, .8);
+        border-radius: 20px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, .055);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.15rem 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+    }
+
+    .card-title-custom {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        color: var(--text-dark);
+        font-size: 1rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .card-title-custom i {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .card-subtitle-custom {
+        color: var(--text-muted);
+        font-size: .78rem;
+        margin: .25rem 0 0;
+    }
+
+    .command-form {
+        display: grid;
+        grid-template-columns: 150px 1fr 1.4fr auto;
+        gap: .75rem;
+        padding: 1.25rem;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 44px;
+        border-radius: ;
+        border-radius: 12px !important;
+        border-colorf0;
+        font-size: .86rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 .2rem rgba(79, 70, 229, .12);
+    }
+
+    .btn-modern {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        border: none;
+        border-radius: 12px !important;
+        padding: .65rem 1rem;
+        font-size: .84rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .btn-primary-modern {
+        color: #fff;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        box-shadow: 0 7px 16px rgba(79, 70, 229, .2);
+    }
+
+    .btn-primary-modern:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        background: linear-gradient(135deg, var(--primary-dark), #6d28d9);
+    }
+
+    .btn-soft {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-soft:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .filter-box {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr auto;
+        gap: .75rem;
+        padding: 1rem 1.25rem;
+        background: #fbfcff;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .modern-table {
+        width: 100%;
+        min-width: 850px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .modern-table th {
+        background: #f8fafc;
+        color: #64748b;
+        border-bottom: 1px solid var(--border-color);
+        padding: .95rem 1rem;
+        font-size: .76rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .modern-table td {
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        padding: .9rem 1rem;
+        font-size: .82rem;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .modern-table tbody tr {
+        transition: .2s ease;
+    }
+
+    .modern-table tbody tr:hover {
+        background: #fafbff;
+    }
+
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .contact-info {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    .contact-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        height: 34px;
+        border-radius: 11px;
+ center;
+        color: #fff;
+        background: linear-gradient(135deg, #818cf8, #6366f1);
+        font-size: .8rem;
+    }
+
+    .contact-name {
+        color: #1e293b;
+        font-weight: 700;
+    }
+
+    .contact-number {
+        direction: ltr;
+        text-align: right;
+        color: #64748b;
+        font-size: .78rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        border-radius: 999px;
+        padding: .35rem .65rem;
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+    .status-badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .badge-incoming,
+    .badge-inbox,
+    .badge-done {
+        color: #15803d;
+        background: #dcfce7;
+    }
+
+    .badge-outgoing,
+    .badge-sent {
+        color: #1d4ed8;
+        background: #dbeafe;
+    }
+
+    .badge-missed,
+    .badge-rejected,
+    .badge-failed {
+        color: #b91c1c;
+        background: #fee2e2;
+    }
+
+    .badge-pending {
+        color: #a16207;
+        background: #fef3c7;
+    }
+
+    .action-group {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .icon-btn {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 10px;
+        color: #475569;
+        background: #f1f5f9;
+        transition: .2s ease;
+    }
+
+    .icon-btn:hover {
+        color: #fff;
+        background: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .icon-btn-success:hover {
+        background: var(--success);
+    }
+
+    .icon-btn-warning:hover {
+        background: var(--warning);
+    }
+
+    .tag-select {
+        min-width: 115px;
+        min-height: 34px !important;
+        padding: .25rem .55rem !important;
+        border-radius: 9px !important;
+        font-size: .75rem !important;
+    }
+
+    .message-preview {
+        display: block;
+        max-width: 270px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #64748b;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .empty-state i {
+        display:8;
+    }
+
+    .empty-state i {
+        display: block;
+        font-sizerem;
+        color: #cbd5e1;
+    }
+
+    .empty-state strong {
+        display: block;
+        color: #475569;
+        font-size: .95rem;
+        margin-bottom: .35rem;
+    }
+
+    .empty-state span {
+        font-size: .8rem;
+    }
+
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-title h1 {
+            font-size: 1.25rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: .7rem;
+        }
+
+        .stat-card {
+            min-height: 120px;
+            padding: .9rem;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+        }
+
+        .command-form,
+        .filter-box {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header-custom {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .stat-label {
+            font-size: .7rem;
+        }
+
+        .dashboard-title-icon {
+            width: 46px;
+            height: 46px;
+        }
+
+        .sync-status {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="dashboard-title">
+            <div class="dashboard-title-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <div>
+                <h1>داشبورد همگام‌سازی گوشی</h1>
+                <p>مدیریت تماس‌ها، پیامک‌ها و دستورات گوشی</p>
+            </div>
+        </div>
+
+        <div class="sync-status">
+            <span class="sync-status-dot"></span>
+            سیستم آماده دریافت اطلاعات است
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+
+        <div class="stat-card stat-success">
+            <div class="stat-top">
+                <span class="stat-label">تماس ورودی امروز</span>
+                <div class="stat-icon"><i class="fas fa-phone-alt"></i></div>
+            </div>
+            <div class="stat-value">{{ stats.today_incoming|default:"۰" }}</div>
+        </div>
+
+        <div class="stat-card stat-primary">
+            <div class="stat-top">
+                <span class="stat-label">تماس خروجی امروز</span>
+                <div class="stat-icon"><i class="fas fa-phone"></i></div>
+            </div>
+            <div class="stat-value">{{ stats.today_outgoing|default:"۰" }}</div>
+        </div>
+
+        <div class="stat-card stat-danger">
+            <div class="stat-top">
+                <span class="stat-label">تماس از دست‌رفته</span>
+                <div class="stat-icon"><i class="fas fa-phone-slash"></i></div>
+            </div>
+            <div class="stat-value">{{ stats.today_missed|default:"۰" }}</div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-top">
+                <span class="stat-label">پیامک‌های امروز</span>
+                <div class="stat-icon"><i class="fas fa-sms"></i></div>
+            </div>
+            <div class="stat-value">{{ stats.today_sms|default:"۰" }}</div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-top">
+                <span class="stat-label">کل تماس‌ها</span>
+                <div class="stat-icon"><i class="fas fa-address-book"></i></div>
+            </div>
+            <div class="stat-value">{{ calls_count|default:"۰" }}</div>
+        </div>
+
+        <div class="stat-card stat-purple">
+            <div class="stat-top">
+                <span class="stat-label">کل پیامک‌ها</span>
+                <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+            </div>
+            <div class="stat-value">{{ sms_count|default:"۰" }}</div>
+        </div>
+
+    </div>
+
+    <!-- Send Command -->
+    <div class="dashboard-card">
+        <div class="card-header-custom">
+            <div>
+                <select name="device_id" class="form-select">
+                    <option value="main-phone">گوشی اصلی</option>
+                    <option value="test-phone">گوشی تست</option>
+                </select>
+                <h2 class="card-title-custom">
+                    <i class="fas fa-paper-plane"></i>
+                    ارسال دستور به گوشی
+                </h2>
+                <p class="card-subtitle-custom">
+                    برقراری تماس یا ارسال پیامک از طریق گوشی متصل
+                </p>
+            </div>
+        </div>
+
+        <form method="post"
+      action="{% url 'create_command' %}"
+      class="command-form">
+    {% csrf_token %}
+
+    <select name="command_type"
+            id="commandType"
+            class="form-select"
+            aria-label="نوع دستور"
+            required>
+        <option value="call">تماس</option>
+        <option value="sms">پیامک</option>
+    </select>
+
+    <input
+        type="tel"
+        name="number"
+        class="form-control"
+        placeholder="شماره گیرنده"
+        aria-label="شماره گیرنده"
+        inputmode="tel"
+        autocomplete="tel"
+        dir="ltr"
+        required
+    >
+
+    <input
+        type="text"
+        name="body"
+        id="commandBody"
+        class="form-control"
+        placeholder="متن پیامک؛ برای تماس خالی بگذارید"
+        aria-label="متن پیامک"
+    >
+
+    <button type="submit" class="btn-modern btn-primary-modern">
+        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+        <span>ارسال دستور</span>
+    </button>
+</form>
+
+    </div>
+
+    <!-- Filters -->
+<div class="dashboard-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                <i class="fas fa-filter" aria-hidden="true"></i>
+                جستجو و فیلتر اطلاعات
+            </h2>
+
+            <p class="card-subtitle-custom">
+                اطلاعات تماس‌ها و پیامک‌ها را سریع‌تر پیدا کنید
+            </p>
+        </div>
+    </div>
+
+    <form method="get" class="filter-box">
+        <input
+            type="search"
+            name="q"
+            value="{{ q|default:'' }}"
+            class="form-control"
+            placeholder="جستجو بر اساس نام یا شماره"
+            aria-label="جستجو بر اساس نام یا شماره"
+        >
+
+        <select name="call_type"
+                class="form-select"
+                aria-label="نوع تماس">
+            <option value="">همه تماس‌ها</option>
+
+            <option value="incoming"
+                    {% if call_type == "incoming" %}selected{% endif %}>
+                تماس‌های ورودی
+            </option>
+
+            <option value="outgoing"
+                    {% if call_type == "outgoing" %}selected{% endif %}>
+                تماس‌های خروجی
+            </option>
+
+            <option value="missed"
+                    {% if call_type == "missed" %}selected{% endif %}>
+                تماس‌های از دست‌رفته
+            </option>
+        </select>
+
+        <select name="sms_type"
+                class="form-select"
+                aria-label="نوع پیامک">
+            <option value="">همه پیامک‌ها</option>
+
+            <option value="inbox"
+                    {% if sms_type == "inbox" %}selected{% endif %}>
+                پیامک‌های دریافتی
+            </option>
+
+            <option value="sent"
+                    {% if sms_type == "sent" %}selected{% endif %}>
+                پیامک‌های ارسالی
+            </option>
+        </select>
+
+        <div class="d-flex gap-2">
+            <button type="submit"
+                    class="btn-modern btn-primary-modern flex-grow-1">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <span>اعمال فیلتر</span>
+            </button>
+
+            {% if q or call_type or sms_type %}
+                <a href="."
+                   class="btn-modern btn-soft"
+                   title="پاک‌کردن فیلترها"
+                   aria-label="پاک‌کردن فیلترها">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+
+    <!-- Top Numbers -->
+    <div class="dashboard-card">
+        <div class="card-header-custom">
+            <div>
+                <h2 class="card-title-custom">
+                    <i class="fas fa-chart-line"></i>
+                    پرتکرارترین شماره‌ها
+                </h2>
+                <p class="card-subtitle-custom">
+                    شماره‌های پرتکرار در هفت روز اخیر
+                </p>
+            </div>
+
+            <span class="badge rounded-pill text-bg-light">
+                ۷ روز اخیر
+            </span>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>مخاطب</th>
+                        <th>شماره</th>
+                        <th>تعداد ارتباط</th>
+                        <th>برچسب فعلی</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stats.top_numbers %}
+                    <tr>
+                        <td>
+                            <div class="contact-info">
+                                <div class="contact-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <div class="contact-name">
+                                        {{ item.name|default:"بدون نام" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="contact-number">{{ item.number }}</td>
+
+                        <td>
+                            <strong>{{ item.c }}</strong>
+                            <span class="text-muted small"> ارتباط</span>
+                        </td>
+
+                        <td>
+                            {% if item.tag_label %}
+                                <span class="badge rounded-pill text-bg-light">{{ item.tag_label }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            <form method="post" action="{% url 'set_tag' %}" class="action-group">
+                                {% csrf_token %}
+                                <input type="hidden" name="number" value="{{ call.number }}">
+                                <input type="hidden" name="name" value="{{ call.name|default:'' }}">
+
+                                <select name="tag" class="form-select tag-select">
+                                    <option value="customer">مشتری</option>
+                                    <option value="personal">شخصی</option>
+                                    <option value="spam">اسپم</option>
+                                    <option value="work">کاری</option>
+                                    <option value="other">سایر</option>
+                                </select>
+
+                                <button type="submit" class="icon-btn icon-btn-success"
+                                        title="ذخیره برچسب">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <strong>اطلاعاتی برای نمایش وجود ندارد</strong>
+                                <span>پس از ثبت تماس‌ها، شماره‌های پرتکرار در این بخش نمایش داده می‌شوند.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Calls -->
+    <div class="dashboard-card">
+        <div class="card-header-custom">
+            <div>
+                <h2 class="card-title-custom">
+                    <i class="fas fa-phone-volume"></i>
+                    آخرین تماس‌ها
+                </h2>
+                <p class="card-subtitle-custom">
+                    آخرین تماس‌های ثبت‌شده در سیستم
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>مخاطب</th>
+                        <th>شماره</th>
+                        <th>نوع تماس</th>
+                        <th>تاریخ و ساعت</th>
+                        <th>مدت تماس</th>
+                        <th>برچسب</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for call in calls %}
+                    <tr>
+                        <td>
+                            <div class="contact-info">
+                                <div class="contact-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="contact-name">
+                                    {{ call.name|default:"بدون نام" }}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="contact-number">{{ call.number }}</td>
+
+                        <td>
+                            {% if call.call_type == "incoming" %}
+                                <span class="status-badge badge-incoming">ورودی</span>
+                            {% elif call.call_type == "outgoing" %}
+                                <span class="status-badge badge-outgoing">خروجی</span>
+                            {% elif call.call_type == "missed" %}
+                                <span class="status-badge badge-missed">از دست‌رفته</span>
+                            {% else %}
+                                <span class="status-badge">{{ call.call_type }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ call.date|jformat:"%Y/%m/%d - %H:%M" }}</td>
+                        <td>{{ call.duration|default:"—" }}</td>
+
+                        <td>
+                            {% if call.tag_label %}
+                                <span class="badge rounded-pill text-bg-light">
+                                    {{ call.tag_label }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">بدون برچسب</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="action-group">
+                                <form method="post" action="{% url 'create_command' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="command_type" value="call">
+                                    <input type="hidden" name="number" value="{{ call.number }}">
+
+                                    <button type="submit"
+                                            class="icon-btn icon-btn-success"
+                                            title="تماس با این شماره">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                </form>
+
+                                <form method="post"
+                                    action="{% url 'set_tag' %}"
+                                    class="action-group">
+                                    {% csrf_token %}
+
+                                    <input type="hidden"
+                                        name="number"
+                                        value="{{ item.number }}">
+
+                                    <input type="hidden"
+                                        name="name"
+                                        value="{{ item.name|default:'' }}">
+
+                                    <select name="tag"
+                                            class="form-select tag-select"
+                                            aria-label="انتخاب برچسب"
+                                            required>
+                                        <option value="" selected disabled>انتخاب برچسب</option>
+                                        <option value="customer">مشتری</option>
+                                        <option value="personal">شخصی</option>
+                                        <option value="spam">اسپم</option>
+                                        <option value="work">کاری</option>
+                                        <option value="other">سایر</option>
+                                    </select>
+
+                                    <button type="submit"
+                                            class="icon-btn icon-btn-success"
+                                            title="ذخیره برچسب"
+                                            aria-label="ذخیره برچسب">
+                                        <i class="fas fa-check" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-phone-slash"></i>
+                                <strong>تماسی ثبت نشده است</strong>
+                                <span>در حال حاضر اطلاعاتی برای نمایش وجود ندارد.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SMS -->
+    <div class="dashboard-card">
+        <div class="card-header-custom">
+            <div>
+                <h2 class="card-title-custom">
+                    <i class="fas fa-comment-dots"></i>
+                    آخرین پیامک‌ها
+                </h2>
+                <p class="card-subtitle-custom">
+                    آخرین پیامک‌های دریافت‌شده و ارسال‌شده
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>مخاطب</th>
+                        <th>شماره</th>
+                        <th>نوع پیامک</th>
+                        <th>تاریخ و ساعت</th>
+                        <th>متن پیام</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for s in sms_list %}
+                    <tr>
+                        <td>
+                            <div class="contact-info">
+                                <div class="contact-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="contact-name">
+                                    {{ s.name|default:"بدون نام" }}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="contact-number">{{ s.number }}</td>
+
+                        <td>
+                            {% if s.sms_type == "inbox" %}
+                                <span class="status-badge badge-inbox">دریافتی</span>
+                            {% elif s.sms_type == "sent" %}
+                                <span class="status-badge badge-sent">ارسالی</span>
+                            {% else %}
+                                <span class="status-badge">{{ s.sms_type }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ s.date|date:"Y/m/d H:i" }}</td>
+
+                        <td>
+                            <span class="message-preview" title="{{ s.body }}">
+                                {{ s.body|default:"بدون متن"|truncatechars:60 }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <form method="post" action="{% url 'create_command' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="command_type" value="sms">
+                                <input type="hidden" name="number" value="{{ s.number }}">
+                                <input type="hidden" name="body" value="سلام">
+
+                                <button type="submit"
+                                        class="icon-btn"
+                                        title="ارسال پیامک">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-envelope-open"></i>
+                                <strong>پیامکی ثبت نشده است</strong>
+                                <span>در حال حاضر پیامکی برای نمایش وجود ندارد.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Commands History -->
+<div class="dashboard-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                <i class="fas fa-history" aria-hidden="true"></i>
+                تاریخچه دستورات
+            </h2>
+
+            <p class="card-subtitle-custom">
+                وضعیت دستورات ارسال‌شده به گوشی
+            </p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th scope="col">نوع دستور</th>
+                    <th scope="col">شماره</th>
+                    <th scope="col">متن پیام</th>
+                    <th scope="col">وضعیت</th>
+                    <th scope="col">زمان ثبت</th>
+                    <th scope="col">زمان اجرا</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for c in commands %}
+                    <tr>
+                        <td>
+                            {% if c.command_type == "call" %}
+                                <span class="status-badge badge-outgoing">
+                                    تماس
+                                </span>
+                            {% elif c.command_type == "sms" %}
+                                <span class="status-badge badge-sent">
+                                    پیامک
+                                </span>
+                            {% else %}
+                                <span class="status-badge">
+                                    {{ c.get_command_type_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="contact-number">
+                                {{ c.number }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="message-preview"
+                                  title="{{ c.body|default:'' }}">
+                                {{ c.body|default:"—"|truncatechars:40 }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if c.status == "done" %}
+                                <span class="status-badge badge-done">
+                                    انجام‌شده
+                                </span>
+                            {% elif c.status == "pending" %}
+                                <span class="status-badge badge-pending">
+                                    در انتظار
+                                </span>
+                            {% elif c.status == "failed" %}
+                                <span class="status-badge badge-failed">
+                                    ناموفق
+                                </span>
+                            {% else %}
+                                <span class="status-badge">
+                                    {{ c.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if c.created_at %}
+                                {{ c.created_at|jformat:"%Y/%m/%d - %H:%M" }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if c.done_at %}
+                                {{ c.done_at|jformat:"%Y/%m/%d - %H:%M" }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list"
+                                   aria-hidden="true"></i>
+
+                                <strong>دستوری ثبت نشده است</strong>
+
+                                <span>
+                                    تاریخچه دستورات ارسال‌شده در این بخش نمایش داده می‌شود.
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+</div>
+{% endblock %}

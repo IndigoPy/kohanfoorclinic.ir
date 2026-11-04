@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['kohanfootclinic.ir', 'www.kohanfootclinic.ir']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'apps.appointments.apps.AppointmentsConfig',
     'apps.workshop',
     'rest_framework',
+    'channels',
     'apps.calls',
 ]
 
@@ -188,3 +190,23 @@ LOGGING = {
         },
     },
 }
+
+# Phone_Sync
+PHONE_SYNC_API_KEY = "kohan-secret-key-2026-xyz123"
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
+
+ASGI_APPLICATION = 'config.asgi.application'
+
+# برای شروع ساده (بدون Redis):
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 15000

@@ -4,10 +4,10 @@ from .models import CallLog, SmsLog
 class CallLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = CallLog
-        fields = '__all__'
+        fields = ['name', 'number', 'call_type', 'date', 'duration', 'device_id']
 
 
 class SmsLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = SmsLog
-        fields = '__all__'
+        fields = ['name', 'number', 'sms_type', 'body', 'date', 'device_id']
