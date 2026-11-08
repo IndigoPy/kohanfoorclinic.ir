@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
-{% load jformat %}
+{% load static jformat persian_date %}
 {% block title %}لیست نوبت‌ها{% endblock %}
 
 {% block extra_head %}
@@ -241,6 +240,35 @@
     margin-top: 0;
 }
 
+    /* ── فیلترها ── */
+    .filter-card .card-header { padding: 0.9rem 1.25rem; }
+    .filter-card .form-label { color: #64748b; font-weight: 600; margin-bottom: 0.3rem; }
+    .filter-card .form-control,
+    .filter-card .form-select { padding: 0.5rem 0.9rem; font-size: 0.9rem; }
+
+    .quick-chip {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+        border-radius: 999px;
+        padding: 0.3rem 0.95rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+    .quick-chip:hover { background: var(--primary-soft); border-color: #c7d2fe; color: #4338ca; }
+    .quick-chip.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+
+    .active-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .active-filter-chip {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        background: var(--primary-soft); color: #4338ca;
+        border: 0; border-radius: 999px;
+        padding: 0.25rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+    }
+    .active-filter-chip .chip-key { color: #818cf8; font-weight: 500; }
+    .active-filter-chip i { font-size: 0.7rem; opacity: 0.7; }
+    .active-filter-chip:hover i { opacity: 1; color: #dc2626; }
 </style>
 {% endblock %}
 
@@ -277,42 +305,82 @@
         <div class="col-xl-9 col-lg-8">
             <!-- فیلترها -->
             <div class="card filter-card shadow-sm mb-4">
-                <div class="card-header d-flex align-items-center">
-                    <i class="fa-solid fa-sliders me-2 text-primary"></i> فیلتر پیشرفته نوبت‌ها
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-sliders text-primary"></i>
+                        <span>فیلتر نوبت‌ها</span>
+                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary">
+                            {{ page_obj.paginator.count|default:0 }} نوبت
+                        </span>
+                    </div>
+                    {% if showing_today_default %}
+                    <span class="small text-muted">
+                        <i class="fa-regular fa-circle-info me-1"></i>
+                        در حال نمایش نوبت‌های امروز؛ برای دیدن بقیه، فیلتر یا «همه» را بزنید.
+                    </span>
+                    {% endif %}
                 </div>
+
                 <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">نام بیمار</label>
-                            {{ filter.form.patient_name }}
+                    <form method="get" id="filterForm" class="row g-3">
+
+                        <!-- میان‌برهای تاریخ -->
+                        <div class="col-12 d-flex flex-wrap align-items-center gap-2">
+                            <span class="small text-muted ms-1">بازه سریع:</span>
+                            <button type="button" class="quick-chip {% if showing_today_default or request.GET.start_date == quick.today and request.GET.end_date == quick.today %}active{% endif %}"
+                                    data-start="{{ quick.today }}" data-end="{{ quick.today }}">امروز</button>
+                            <button type="button" class="quick-chip {% if request.GET.start_date == quick.tomorrow and request.GET.end_date == quick.tomorrow %}active{% endif %}"
+                                    data-start="{{ quick.tomorrow }}" data-end="{{ quick.tomorrow }}">فردا</button>
+                            <button type="button" class="quick-chip {% if request.GET.start_date == quick.week_start and request.GET.end_date == quick.week_end %}active{% endif %}"
+                                    data-start="{{ quick.week_start }}" data-end="{{ quick.week_end }}">این هفته</button>
+                            <button type="button" class="quick-chip {% if request.GET.start_date == quick.month_start and request.GET.end_date == quick.month_end %}active{% endif %}"
+                                    data-start="{{ quick.month_start }}" data-end="{{ quick.month_end }}">این ماه</button>
+                            <button type="button" class="quick-chip {% if not showing_today_default and not request.GET.start_date and not request.GET.end_date %}active{% endif %}"
+                                    data-start="" data-end="">همه تاریخ‌ها</button>
                         </div>
-                        <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">از تاریخ</label>
+
+                        <!-- فیلدها -->
+                        <div class="col-12 col-lg-4">
+                            <label class="form-label small" for="{{ filter.form.patient_name.id_for_label }}">نام بیمار</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                {{ filter.form.patient_name }}
+                            </div>
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label class="form-label small" for="{{ filter.form.start_date.id_for_label }}">از تاریخ</label>
                             {{ filter.form.start_date }}
                         </div>
-                        <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">تا تاریخ</label>
+                        <div class="col-6 col-lg-2">
+                            <label class="form-label small" for="{{ filter.form.end_date.id_for_label }}">تا تاریخ</label>
                             {{ filter.form.end_date }}
                         </div>
-                        <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">نوع نوبت</label>
+                        <div class="col-6 col-lg-2">
+                            <label class="form-label small" for="{{ filter.form.appointment_type.id_for_label }}">
+                                نوع نوبت <small class="text-muted">(چندتایی)</small>
+                            </label>
                             {{ filter.form.appointment_type }}
                         </div>
-                        <div class="col-md-4 col-lg-2">
-                            <label class="form-label small fw-bold">وضعیت</label>
+                        <div class="col-6 col-lg-2">
+                            <label class="form-label small" for="{{ filter.form.status.id_for_label }}">
+                                وضعیت <small class="text-muted">(چندتایی)</small>
+                            </label>
                             {{ filter.form.status }}
                         </div>
-                        <div class="col-md-4 col-lg-2 d-flex align-items-end gap-2">
-                            <button type="submit" class="btn btn-primary w-100 rounded-3" title="اعمال فیلتر">
-                                <i class="fa-solid fa-magnifying-glass me-1"></i> اعمال
-                            </button>
-                            <a href="{{ request.path }}" class="btn btn-outline-secondary w-50 rounded-3 text-center" title="پاک کردن فیلترها">
-                                <i class="fa-solid fa-eraser"></i>
+
+                        <!-- دکمه‌ها -->
+                        <div class="col-12 d-flex justify-content-end gap-2">
+                            <a href="{{ request.path }}" class="btn btn-light border rounded-pill px-3" title="بازگشت به نوبت‌های امروز">
+                                <i class="fa-solid fa-rotate-left me-1"></i> بازنشانی
                             </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fa-solid fa-check me-1"></i> اعمال فیلتر
+                            </button>
                         </div>
                     </form>
 
-
+                    <!-- فیلترهای فعال -->
+                    <div id="activeFilters" class="active-filters mt-3 pt-3 border-top d-none"></div>
                 </div>
             </div>
 
@@ -344,7 +412,9 @@
                                     data-id="{{ appointment.id }}"
                                     data-address-sms-sent="{{ appointment.extra_data.address_sms_sent|yesno:'true,false' }}"
                                     data-reminder-sms-sent="{{ appointment.extra_data.reminder_sms_sent|yesno:'true,false' }}"
-                                    data-detail-url="{% url 'appointments:detail' pk=appointment.pk %}">
+                                    data-detail-url="{% url 'appointments:detail' pk=appointment.pk %}"
+                                    data-status-note="{{ appointment.status_note }}"
+                                    >
                                     <td class="text-center text-muted small">
                                         {{ forloop.counter0|add:page_obj.start_index }}
                                     </td>
@@ -361,7 +431,7 @@
                                                         {{ appointment.first_name }} {{ appointment.last_name }}
                                                     {% endif %}
                                                 </div>
-                                                <div class="text-muted" style="font-size: 0.75rem;">کد پرونده: {{ appointment.patient.id|default:"---" }}</div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">شماره پرونده: {{ appointment.patient.case_number|default:"---" }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -372,83 +442,60 @@
                                         </div>
                                     </td>
                                    <td>
-    {% if appointment.status == 'scheduled' %}
-        <span
-            class="badge-status appointment-status-badge bg-primary bg-opacity-10 text-primary"
-            data-status="scheduled">
-            رزرو شده
-        </span>
-
-    {% elif appointment.status == 'confirmed' %}
-        <span
-            class="badge-status appointment-status-badge bg-success bg-opacity-10 text-success"
-            data-status="confirmed">
-            تایید شده
-        </span>
-
-    {% elif appointment.status == 'completed' %}
-        <span
-            class="badge-status appointment-status-badge bg-info bg-opacity-10 text-info"
-            data-status="completed">
-            انجام شده
-        </span>
-
-    {% elif appointment.status == 'cancelled' %}
-        <span
-            class="badge-status appointment-status-badge bg-danger bg-opacity-10 text-danger"
-            data-status="cancelled">
-            لغو شده
-        </span>
-
-    {% elif appointment.status == 'no_show' %}
-        <span
-            class="badge-status appointment-status-badge bg-warning bg-opacity-10 text-warning"
-            data-status="no_show">
-            عدم حضور
-        </span>
-
-    {% else %}
-        <span
-            class="badge-status appointment-status-badge bg-secondary bg-opacity-10 text-secondary"
-            data-status="{{ appointment.status }}">
-            {{ appointment.get_status_display|default:"نامشخص" }}
-        </span>
-    {% endif %}
-</td>
+                                        {% if appointment.status == 'scheduled' %}
+                                            <span class="badge-status appointment-status-badge bg-primary bg-opacity-10 text-primary" data-status="scheduled">رزرو شده</span>
+                                        {% elif appointment.status == 'confirmed' %}
+                                            <span class="badge-status appointment-status-badge bg-success bg-opacity-10 text-success" data-status="confirmed">تایید شده</span>
+                                        {% elif appointment.status == 'waiting' %}
+                                            <span class="badge-status appointment-status-badge bg-info bg-opacity-10 text-info" data-status="waiting">حضور در کلینیک</span>
+                                        {% elif appointment.status == 'completed' %}
+                                            <span class="badge-status appointment-status-badge bg-secondary bg-opacity-10 text-secondary" data-status="completed">انجام شده</span>
+                                        {% elif appointment.status == 'canceled' %}
+                                            <span class="badge-status appointment-status-badge bg-danger bg-opacity-10 text-danger" data-status="canceled">لغو شده</span>
+                                        {% elif appointment.status == 'no_show' %}
+                                            <span class="badge-status appointment-status-badge bg-warning bg-opacity-10 text-warning" data-status="no_show">عدم حضور</span>
+                                        {% elif appointment.status == 'rescheduled' %}
+                                            <span class="badge-status appointment-status-badge bg-dark bg-opacity-10 text-dark" data-status="rescheduled" {% if appointment.status_note %}title="{{ appointment.status_note }}"{% endif %}>جابه‌جا شده</span>
+                                        {% else %}
+                                            <span class="badge-status appointment-status-badge bg-secondary bg-opacity-10 text-secondary" data-status="{{ appointment.status }}">{{ appointment.get_status_display|default:"نامشخص" }}</span>
+                                        {% endif %}
+                                        <div id="modal-status-note"
+                                        class="small text-muted mt-1 {% if not appointment.status_note %}d-none{% endif %}">{{ appointment.status_note }}</div>
+                                    </td>
 
 
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
                                             {% if appointment.appointment_type == 'new' %}
-            <a
-                href="{% url 'reception:new-patient' %}?first_name={{ appointment.first_name|urlencode }}&last_name={{ appointment.last_name|urlencode }}&phone={{ appointment.phone_number_1|urlencode }}&phone2={{ appointment.phone_number_2|default:''|urlencode }}&referrer={{ appointment.referrer|default:''|urlencode }}"
-                class="btn btn-outline-info btn-action"
-                title="تشکیل پرونده"
-            >
-                <i class="fas fa-folder-plus"></i>
+                                                <a
+                                                    href="{% url 'reception:new-patient' %}?first_name={{ appointment.first_name|urlencode }}&last_name={{ appointment.last_name|urlencode }}&phone={{ appointment.phone_number_1|urlencode }}&phone2={{ appointment.phone_number_2|default:''|urlencode }}&referrer={{ appointment.referrer|default:''|urlencode }}&referrer_ref={{ appointment.referrer_ref|urlencode }}"
+                                                    class="btn btn-outline-info btn-action"
+                                                    title="تشکیل پرونده"
+                                                >
+                                                    <i class="fas fa-folder-plus"></i>
 
-            </a>
-        {% else %}
-            {% if appointment.patient %}
-                <a
-                    href="{% url 'reception:patient-detail' appointment.patient.id %}"
-                    class="btn btn-outline-success btn-action"
-                    title="مشاهده پرونده"
-                >
-                    <i class="fas fa-folder-open"></i>
-                   
-                </a>
-            {% else %}
-                <a
-                    href="{% url 'reception:new-patient' %}?first_name={{ appointment.first_name|urlencode }}&last_name={{ appointment.last_name|urlencode }}&phone={{ appointment.phone_number_1|urlencode }}&phone2={{ appointment.phone_number_2|default:''|urlencode }}&referrer={{ appointment.referrer|default:''|urlencode }}"
-                    class="btn btn-outline-info btn-action"
-                    title="تشکیل پرونده"
-                >
-                    <i class="fas fa-folder-plus"></i>
-                   
-                </a>
-            {% endif %}
-        {% endif %}
+                                                </a>
+                                            {% else %}
+                                                {% if appointment.patient %}
+                                                    <a
+                                                        href="{% url 'reception:patient-detail' appointment.patient.id %}"
+                                                        class="btn btn-outline-success btn-action"
+                                                        title="مشاهده پرونده"
+                                                    >
+                                                        <i class="fas fa-folder-open"></i>
+                                                    
+                                                    </a>
+                                                {% else %}
+                                                    <a
+                                                        href="{% url 'reception:new-patient' %}?first_name={{ appointment.first_name|urlencode }}&last_name={{ appointment.last_name|urlencode }}&phone={{ appointment.phone_number_1|urlencode }}&phone2={{ appointment.phone_number_2|default:''|urlencode }}&referrer={{ appointment.referrer|default:''|urlencode }}"
+                                                        class="btn btn-outline-info btn-action"
+                                                        title="تشکیل پرونده"
+                                                    >
+                                                        <i class="fas fa-folder-plus"></i>
+                                                    
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
 
                                             <!-- جایگزین دکمه ویرایش قبلی شود -->
                                             <button type="button" class="btn btn-action btn-outline-primary btn-edit" 
@@ -456,10 +503,13 @@
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
                                             <!-- جایگزین دکمه ارسال پیامک قبلی در حلقه for -->
-                                            <button type="button" class="btn btn-action btn-outline-warning btn-open-sms-modal" 
+                                            <button type="button" class="btn btn-action btn-outline-warning btn-open-sms-modal"
                                                     data-id="{{ appointment.pk }}"
-                                                    data-phone1="{{ appointment.phone_number_1|default:'' }}"
-                                                    data-phone2="{{ appointment.phone_number_2|default:'' }}"
+                                                    data-name="{{ appointment.display_name }}"
+                                                    data-time="{{ appointment.start_time|time:'H:i' }}"
+                                                    data-date="{{ appointment.date|jalali_long }}"
+                                                    data-phone1="{{ appointment.display_phone_1 }}"
+                                                    data-phone2="{{ appointment.display_phone_2 }}"
                                                     title="ارسال پیامک">
                                                 <i class="fa fa-paper-plane"></i>
                                             </button>
@@ -484,6 +534,7 @@
                         </table>
                     </div>
                 </div>
+            </div>
                 
                 <!-- پجینیشن -->
                 {% if is_paginated %}
@@ -703,10 +754,40 @@
             عدم حضور
         </label>
     </div>
+    
+</li>
+<li>
+    <div class="form-check mx-2 my-1">
+        <input class="form-check-input appointment-status-radio" type="radio"
+               name="appointment_status" id="status-rescheduled" value="rescheduled">
+        <label class="form-check-label" for="status-rescheduled">جابه‌جا شده</label>
+    </div>
 </li>
 
-
 </ul>
+
+<!-- Modal توضیحات تغییر وضعیت -->
+<div class="modal fade" id="statusNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="statusNoteTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex flex-wrap gap-2 mb-3" id="statusNoteQuick"></div>
+                <label for="statusNoteText" class="form-label small fw-bold">توضیحات (اختیاری)</label>
+                <textarea id="statusNoteText" class="form-control" rows="3" maxlength="500"></textarea>
+            </div>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="btnConfirmStatusNote">
+                    <i class="fa-solid fa-check me-1"></i> ثبت
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 {% block extra_js %}
@@ -715,6 +796,7 @@
     <script src="{% static 'js/persian-date.min.js' %}"></script>
     <script src="{% static 'js/persian-datepicker.min.js' %}"></script>
     <script src="{% static 'js/select2.min.js' %}"></script>
+    <script src="{% static 'js/referrer_select.js' %}"></script>
     <script src="{% static 'js/flatpickr.min.js' %}"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
@@ -753,6 +835,7 @@ $(document).ready(function () {
             dir: 'rtl'
         });
 
+        initReferrerSelects('#createAppointmentModal');
         // تبدیل اعداد فارسی به انگلیسی
         function toEnglishDigits(str) {
             if (!str) return str;
@@ -764,27 +847,24 @@ $(document).ready(function () {
             return englishStr;
         }
 
-        // راه‌اندازی Datepicker شمسی
+                // راه‌اندازی Datepicker شمسی
         let $jalaliInput = $('#id_date_jalali');
-        let $gregorianInput = $('#id_date');
 
         if ($jalaliInput.length) {
             if ($jalaliInput.data('datepicker')) {
                 $jalaliInput.data('datepicker').destroy();
             }
 
-            let rawJalali = $jalaliInput.val();
-            if (rawJalali) {
-                $jalaliInput.val(toEnglishDigits(rawJalali));
-            }
+            const initial = toEnglishDigits($jalaliInput.val() || '').trim();
+            $jalaliInput.val(initial);
+            $('#id_date').val(initial);
 
-            let dp = $jalaliInput.persianDatepicker({
+            $jalaliInput.persianDatepicker({
                 format: 'YYYY-MM-DD',
                 initialValueType: 'persian',
-                initialValue: true,
+                initialValue: !!initial,
+                persianDigit: false,
                 autoClose: true,
-                altField: '#id_date',
-                altFormat: 'YYYY-MM-DD',
                 onSelect: function (unix) {
                     let date = new persianDate(unix);
                     date.formatPersian = false;
@@ -792,16 +872,10 @@ $(document).ready(function () {
                 }
             });
 
-            // اگر تاریخ شمسی خالی بود ولی میلادی وجود داشت، تبدیل کن
-            if (!rawJalali && $gregorianInput.val()) {
-                try {
-                    let dateObj = new Date($gregorianInput.val());
-                    let pDate = new persianDate(dateObj);
-                    dp.setDate(pDate.valueOf());
-                    $jalaliInput.val(pDate.format('YYYY-MM-DD'));
-                } catch (e) {
-                    console.warn('خطا در تبدیل تاریخ میلادی به شمسی:', e);
-                }
+            // datepicker ممکن است مقدار اولیه را بازنویسی کند
+            if (initial) {
+                $jalaliInput.val(initial);
+                $('#id_date').val(initial);
             }
         }
 
@@ -982,93 +1056,120 @@ $(document).ready(function () {
     // ۶. حذف نوبت
     // ─────────────────────────────────────────────────────────
     $(document).on('click', '.btn-delete', function (e) {
-        e.preventDefault();
-        let url = $(this).data('url');
-        let $row = $(this).closest('tr');
-        let csrftoken = getCookie('csrftoken');
+    e.preventDefault();
+    e.stopPropagation();
+    let url = $(this).data('url');
+    let $row = $(this).closest('tr');
+    let csrftoken = getCookie('csrftoken');
 
-        if (confirm('آیا از حذف این نوبت اطمینان دارید؟ این عملیات غیرقابل بازگشت است.')) {
-            let $btn = $(this);
-            let originalHtml = $btn.html();
-            $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
+    // دیباگ موقت
+    console.log('URL:', url);
+    console.log('CSRF Token:', csrftoken);
 
-            $.ajax({
-                url: url,
-                type: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrftoken
-                },
-                success: function (response) {
-                    if (response.success) {
-                        $row.fadeOut(400, function () {
-                            $(this).remove();
-                        });
-                    } else {
-                        alert('خطا در حذف نوبت.');
-                        $btn.prop('disabled', false).html(originalHtml);
-                    }
-                },
-                error: function () {
-                    alert('ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.');
+    if (!csrftoken) {
+        alert('توکن CSRF پیدا نشد. صفحه را رفرش کنید.');
+        return;
+    }
+
+    if (confirm('آیا از حذف این نوبت اطمینان دارید؟ این عملیات غیرقابل بازگشت است.')) {
+        let $btn = $(this);
+        let originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            },
+            success: function (response) {
+                if (response.success) {
+                    $row.fadeOut(400, function () {
+                        $(this).remove();
+                    });
+                } else {
+                    alert(response.message || 'خطا در حذف نوبت.');
                     $btn.prop('disabled', false).html(originalHtml);
                 }
-            });
-        }
-    });
+            },
+            error: function (xhr) {
+                console.error('Status:', xhr.status);
+                console.error('Response:', xhr.responseText);
+                
+                let message = 'ارتباط با سرور برقرار نشد.';
+                if (xhr.status === 403) {
+                    message = 'خطای CSRF. صفحه را رفرش کنید.';
+                } else if (xhr.status === 400) {
+                    message = 'درخواست نامعتبر است.';
+                } else if (xhr.status === 404) {
+                    message = 'نوبت پیدا نشد.';
+                }
+                
+                alert(message);
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    }
+});
 
     // ─────────────────────────────────────────────────────────
-    // ۷. باز کردن مودال ارسال پیامک دستی
+    // ۷. مدال پیامک
     // ─────────────────────────────────────────────────────────
+    let smsContext = {};
+
     $(document).on('click', '.btn-open-sms-modal', function (e) {
         e.preventDefault();
-        let id = $(this).data('id');
-        let phone1 = $(this).data('phone1');
-        let phone2 = $(this).data('phone2');
+        const $b = $(this);
+        smsContext = {
+            name: $b.data('name') || 'بیمار گرامی',
+            time: $b.data('time') || '',
+            date: $b.data('date') || ''
+        };
 
-        $('#smsAppointmentId').val(id);
+        const phone1 = ($b.data('phone1') || '').toString().trim();
+        const phone2 = ($b.data('phone2') || '').toString().trim();
+
+        $('#smsAppointmentId').val($b.data('id'));
         $('#smsMessageText').val('');
         $('#phoneError').addClass('d-none');
 
-        let phoneHtml = '';
-        if (phone1) {
-            phoneHtml += `
-                <div class="form-check">
-                    <input class="form-check-input phone-selector" type="checkbox" value="${phone1}" id="chkPhone1" checked>
-                    <label class="form-check-label" for="chkPhone1">${phone1} (شماره اول)</label>
-                </div>`;
-        }
-        if (phone2) {
-            phoneHtml += `
-                <div class="form-check">
-                    <input class="form-check-input phone-selector" type="checkbox" value="${phone2}" id="chkPhone2">
-                    <label class="form-check-label" for="chkPhone2">${phone2} (شماره دوم)</label>
-                </div>`;
-        }
+        const $box = $('#phoneCheckboxes').empty();
+        const addPhone = (value, id, label, checked) => {
+            const $wrap = $('<div class="form-check"></div>');
+            const $input = $('<input class="form-check-input phone-selector" type="checkbox">')
+                .attr({ id: id, value: value }).prop('checked', checked);
+            const $label = $('<label class="form-check-label"></label>')
+                .attr('for', id).text(`${value} (${label})`);
+            $box.append($wrap.append($input, $label));
+        };
+
+        if (phone1) addPhone(phone1, 'chkPhone1', 'شماره اول', true);
+        if (phone2) addPhone(phone2, 'chkPhone2', 'شماره دوم', false);
 
         if (!phone1 && !phone2) {
-            phoneHtml = '<span class="text-danger small">شماره تماسی برای این نوبت ثبت نشده است.</span>';
+            $box.append('<span class="text-danger small">شماره تماسی برای این نوبت ثبت نشده است.</span>');
             $('#btnSendSms').prop('disabled', true);
         } else {
             $('#btnSendSms').prop('disabled', false);
         }
 
-        $('#phoneCheckboxes').html(phoneHtml);
         $('#smsModal').modal('show');
     });
 
-    // انتخاب قالب پیامک آماده
+    // قالب‌های پیام با جایگذاری نام، تاریخ و ساعت
+    const SMS_TEMPLATES = {
+        'یادآوری نوبت فردا': c =>
+            `${c.name} عزیز، یادآوری می‌شود نوبت شما فردا ساعت ${c.time} در کلینیک کهن ثبت شده است.`,
+        'تغییر ساعت حضور': c =>
+            `${c.name} عزیز، لطفاً یک ساعت زودتر از زمان مقرر (${c.time}) در کلینیک حضور یابید.`,
+        'لغو نوبت': c =>
+            `${c.name} عزیز، نوبت ${c.date} شما به دلیل مشکلات پیش‌بینی‌نشده لغو گردید. برای دریافت نوبت جدید با کلینیک تماس بگیرید.`
+    };
+
     $(document).on('click', '.sms-template', function () {
-        let templateText = $(this).text();
-        let fullText = "";
-        if (templateText === "یادآوری نوبت فردا") {
-            fullText = "بیمار گرامی، یادآوری می‌شود نوبت شما برای فردا در کلینیک ثبت شده است.";
-        } else if (templateText === "تغییر ساعت حضور") {
-            fullText = "بیمار گرامی، لطفا یک ساعت زودتر از زمان مقرر در کلینیک حضور یابید.";
-        } else if (templateText === "لغو نوبت") {
-            fullText = "بیمار گرامی، نوبت شما به دلیل مشکلات پیش‌بینی نشده لغو گردید. برای دریافت نوبت جدید با کلینیک تماس بگیرید.";
-        }
-        $('#smsMessageText').val(fullText);
+        const build = SMS_TEMPLATES[$(this).text().trim()];
+        if (build) $('#smsMessageText').val(build(smsContext));
     });
 
     // ارسال پیامک
@@ -1106,11 +1207,11 @@ $(document).ready(function () {
             },
             data: JSON.stringify({
                 message: message,
-                phones: selectedPhones
+                phones: selectedPhones,
             }),
             success: function (response) {
                 if (response.success) {
-                    alert('پیامک با موفقیت در صف ارسال قرار گرفت.');
+                    alert(response.message || 'پیامک در صف ارسال قرار گرفت.');
                     $('#smsModal').modal('hide');
                 } else {
                     alert(response.error || 'خطا در ارسال پیامک.');
@@ -1307,19 +1408,24 @@ $(document).ready(function () {
     });
 
     // تغییر وضعیت نوبت از طریق رادیو باتن‌های داخل منو
-    document.addEventListener('change', function (event) {
+        document.addEventListener('change', function (event) {
         const target = event.target;
-
-        if (!target.matches('input[name="appointment_status"]')) {
-            return;
-        }
+        if (!target.matches('input[name="appointment_status"]')) return;
 
         event.stopPropagation();
 
         const appointmentId = contextMenu.getAttribute('data-target-id');
         const newStatus = target.value;
 
-        updateAppointmentStatus(appointmentId, newStatus, target);
+        if (NOTE_STATUSES[newStatus]) {
+            const row = document.querySelector(`tr[data-id="${appointmentId}"]`);
+            const previousStatus = row?.querySelector('.appointment-status-badge')?.dataset.status || null;
+            closeContextMenu();
+            openStatusNote(appointmentId, newStatus, 'context', previousStatus);
+            return;
+        }
+
+        updateAppointmentStatus(appointmentId, newStatus);
     });
 
     // بستن منو با کلیک خارج از آن
@@ -1387,105 +1493,88 @@ $(document).ready(function () {
     }
 
     // آدرس API تغییر وضعیت
+        // آدرس API تغییر وضعیت
     const updateStatusUrl = "{% url 'appointments:api_update_appointment_status' %}";
 
-    // ارسال درخواست تغییر وضعیت نوبت
-    async function updateAppointmentStatus(appointmentId, newStatus, radioElement = null) {
+    // متادیتای مشترک وضعیت‌ها (رنگ‌ها برای badge)
+    const STATUS_COLORS = {
+        scheduled: 'primary', confirmed: 'success', waiting: 'info',
+        completed: 'secondary', canceled: 'danger', no_show: 'warning',
+        rescheduled: 'dark'
+    };
+    const ALL_COLORS = ['primary', 'success', 'info', 'secondary', 'danger', 'warning', 'dark'];
+
+    // وضعیت‌هایی که توضیحات می‌گیرند
+    const NOTE_STATUSES = {
+        canceled:    { title: 'لغو نوبت',      reasons: ['درخواست بیمار', 'عدم هماهنگی', 'بیماری', 'تصمیم کلینیک'] },
+        no_show:     { title: 'عدم حضور',      reasons: ['پاسخ نداد', 'اطلاع نداد', 'فراموش کرد'] },
+        rescheduled: { title: 'جابه‌جایی نوبت', reasons: ['به درخواست بیمار', 'به درخواست کلینیک', 'نوبت جدید ثبت شد'] }
+    };
+
+    // اعمال رنگ و متن روی یک badge
+    function applyBadge(badge, status, label) {
+        if (!badge) return;
+        ALL_COLORS.forEach(c => badge.classList.remove(`bg-${c}`, `text-${c}`));
+        const color = STATUS_COLORS[status] || 'secondary';
+        badge.classList.add(`bg-${color}`, `text-${color}`);
+        badge.textContent = label || status;
+        badge.dataset.status = status;
+    }
+
+    // درخواست تغییر وضعیت به سرور (مشترک بین کلیک راست و مدال)
+    async function requestStatusChange(appointmentId, newStatus, note = '') {
         if (!appointmentId || !newStatus) {
-            alert('شناسه نوبت یا وضعیت جدید نامعتبر است.');
-            return;
+            throw new Error('شناسه نوبت یا وضعیت جدید نامعتبر است.');
         }
 
-        const previousStatus = selectedAppointmentRow
-            ? selectedAppointmentRow.querySelector('.appointment-status-badge')?.dataset.status || null
-            : null;
+        const response = await fetch(updateStatusUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ id: appointmentId, status: newStatus, note: note })
+        });
 
-        try {
-            const response = await fetch(updateStatusUrl, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    id: appointmentId,
-                    status: newStatus
-                })
-            });
+        let data = {};
+        try { data = await response.json(); }
+        catch (e) { throw new Error('پاسخ سرور JSON معتبر نیست.'); }
 
-            let data = {};
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || data.message || 'تغییر وضعیت نوبت ناموفق بود.');
+        }
+        return data;
+    }
 
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                throw new Error('پاسخ سرور JSON معتبر نیست.');
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'خطا در ارتباط با سرور.');
-            }
-
-            if (!data.success) {
-                throw new Error(data.error || data.message || 'تغییر وضعیت نوبت ناموفق بود.');
-            }
-
-            // به‌روزرسانی UI
-            if (selectedAppointmentRow) {
-                updateAppointmentStatusUI(
-                    selectedAppointmentRow,
-                    data.status,
-                    data.status_label
-                );
-            }
-
-            closeContextMenu();
-
-        } catch (error) {
-            console.error('Error updating appointment status:', error);
-
-            // برگرداندن رادیو به وضعیت قبلی در صورت خطا
-            if (previousStatus) {
-                setAppointmentStatusRadio(previousStatus);
-            }
-
-            alert(error.message || 'خطای داخلی هنگام تغییر وضعیت نوبت!');
+    // به‌روزرسانی badge در ردیف جدول
+    function updateAppointmentStatusUI(rowElement, status, statusLabel, note = '') {
+        if (!rowElement) return;
+        const badge = rowElement.querySelector('.appointment-status-badge');
+        applyBadge(badge, status, statusLabel);
+        rowElement.dataset.statusNote = note || '';
+        if (badge) {
+            if (note) badge.title = note; else badge.removeAttribute('title');
         }
     }
 
-    // به‌روزرسانی ظاهر badge وضعیت در جدول
-    function updateAppointmentStatusUI(rowElement, status, statusLabel) {
-        if (!rowElement) return;
+    // تغییر وضعیت از طریق منوی کلیک راست
+    async function updateAppointmentStatus(appointmentId, newStatus) {
+        const row = document.querySelector(`tr[data-id="${appointmentId}"]`);
+        const previousStatus = row
+            ? row.querySelector('.appointment-status-badge')?.dataset.status
+            : null;
 
-        const badge = rowElement.querySelector('.appointment-status-badge');
-        if (!badge) return;
-
-        badge.textContent = statusLabel || status;
-        badge.dataset.status = status;
-
-        // حذف کلاس‌های رنگی قبلی
-        badge.classList.remove(
-            'bg-primary', 'text-primary',
-            'bg-success', 'text-success',
-            'bg-info', 'text-info',
-            'bg-danger', 'text-danger',
-            'bg-warning', 'text-warning',
-            'bg-secondary', 'text-secondary'
-        );
-
-        // نگاشت وضعیت به کلاس‌های Bootstrap
-        const classMap = {
-            scheduled: ['bg-primary', 'text-primary'],
-            confirmed: ['bg-success', 'text-success'],
-            waiting: ['bg-info', 'text-info'],
-            completed: ['bg-info', 'text-info'],
-            canceled: ['bg-danger', 'text-danger'],
-            no_show: ['bg-warning', 'text-warning']
-        };
-
-        const newClasses = classMap[status] || ['bg-secondary', 'text-secondary'];
-        badge.classList.add(...newClasses);
+        try {
+            const data = await requestStatusChange(appointmentId, newStatus);
+            updateAppointmentStatusUI(row, data.status, data.status_label, data.status_note);
+            closeContextMenu();
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+            if (previousStatus) setAppointmentStatusRadio(previousStatus);
+            alert(error.message || 'خطای داخلی هنگام تغییر وضعیت نوبت!');
+        }
     }
 
     // تنظیم رادیو باتن وضعیت داخل منو
@@ -1497,6 +1586,71 @@ $(document).ready(function () {
             radio.checked = (radio.value === status);
         });
     }
+
+        // ── مدال توضیحات تغییر وضعیت ──
+    let pendingChange = null;   // { id, status, source, previousStatus }
+    let noteConfirmed = false;
+
+    function openStatusNote(id, status, source, previousStatus) {
+        const cfg = NOTE_STATUSES[status];
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        pendingChange = { id, status, source, previousStatus };
+        noteConfirmed = false;
+
+        $('#statusNoteTitle').text(cfg.title);
+        $('#statusNoteText').val(
+            row && row.dataset.status === undefined ? '' : (row?.dataset.statusNote || '')
+        );
+
+        const $quick = $('#statusNoteQuick').empty();
+        cfg.reasons.forEach(function (reason) {
+            $('<button type="button" class="quick-chip"></button>')
+                .text(reason)
+                .on('click', function () { $('#statusNoteText').val(reason).trigger('focus'); })
+                .appendTo($quick);
+        });
+
+        $('#statusNoteModal').modal('show');
+    }
+
+    $('#btnConfirmStatusNote').on('click', async function () {
+        if (!pendingChange) return;
+        const { id, status, source } = pendingChange;
+        const note = $('#statusNoteText').val().trim();
+        const $btn = $(this).prop('disabled', true);
+
+        try {
+            const data = await requestStatusChange(id, status, note);
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            updateAppointmentStatusUI(row, data.status, data.status_label, data.status_note);
+            noteConfirmed = true;
+
+            $('#statusNoteModal').modal('hide');
+
+            // اگر از مدال جزئیات آمده بود، با اطلاعات تازه دوباره باز شود
+            if (source === 'detail' && row) {
+                $('#statusNoteModal').one('hidden.bs.modal', function () { $(row).trigger('click'); });
+            }
+        } catch (error) {
+            alert(error.message || 'خطا در تغییر وضعیت نوبت.');
+        } finally {
+            $btn.prop('disabled', false);
+        }
+    });
+
+    // انصراف: رادیوی منوی کلیک راست به وضعیت قبلی برگردد
+    $('#statusNoteModal').on('hidden.bs.modal', function () {
+        if (!noteConfirmed && pendingChange) {
+            if (pendingChange.source === 'context' && pendingChange.previousStatus) {
+                setAppointmentStatusRadio(pendingChange.previousStatus);
+            }
+            if (pendingChange.source === 'detail') {
+                const row = document.querySelector(`tr[data-id="${pendingChange.id}"]`);
+                if (row) $(row).trigger('click');
+            }
+        }
+        pendingChange = null;
+    });
 
     // ─────────────────────────────────────────────────────────
     // ۱۲. تغییر وضعیت ارسال پیامک (آدرس / یادآوری) از منوی راست
@@ -1592,10 +1746,183 @@ $(document).ready(function () {
             }
         }
     }
+        // ─────────────────────────────────────────────────────────
+    // ۱۳. دکمه‌های تغییر وضعیت داخل مدال جزئیات
+    // ─────────────────────────────────────────────────────────
+        $(document).on('click', '.btn-set-status', async function () {
+        const $btn = $(this);
+        const $group = $btn.closest('.status-actions');
+        const appointmentId = $btn.data('id');
+        const newStatus = $btn.data('status');
 
+        const currentStatus = document.getElementById('modal-status-badge')?.dataset.status;
+
+        // وضعیت‌های دارای توضیحات: مدال جزئیات بسته و مدال توضیحات باز می‌شود
+        if (NOTE_STATUSES[newStatus]) {
+            $('#appointmentDetailModal').one('hidden.bs.modal', function () {
+                openStatusNote(appointmentId, newStatus, 'detail', currentStatus);
+            });
+            $('#appointmentDetailModal').modal('hide');
+            return;
+        }
+
+        if (currentStatus === newStatus) return;
+
+        $group.find('button').prop('disabled', true);
+
+        try {
+            const data = await requestStatusChange(appointmentId, newStatus);
+
+            const row = document.querySelector(`tr[data-id="${appointmentId}"]`);
+            updateAppointmentStatusUI(row, data.status, data.status_label, data.status_note);
+
+            const shortLabel = $group.find(`button[data-status="${data.status}"]`).text().trim();
+            applyBadge(document.getElementById('modal-status-badge'), data.status, shortLabel);
+            $('#modal-status-note').text(data.status_note || '').toggleClass('d-none', !data.status_note);
+
+            $group.find('button').each(function () {
+                const color = $(this).data('color');
+                const isActive = $(this).data('status') === data.status;
+                $(this)
+                    .removeClass(`btn-${color} btn-outline-${color}`)
+                    .addClass(isActive ? `btn-${color}` : `btn-outline-${color}`);
+            });
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'خطا در تغییر وضعیت نوبت.');
+        } finally {
+            $group.find('button').prop('disabled', false);
+        }
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // ۱۴. سوییچ وضعیت پیامک‌ها داخل مدال جزئیات
+    // ─────────────────────────────────────────────────────────
+    $(document).on('change', '.modal-sms-toggle', function () {
+        const checkbox = this;
+        const appointmentId = $(checkbox).data('id');
+        const smsType = $(checkbox).data('sms-type');
+        const newState = checkbox.checked;
+        const $label = $(checkbox).closest('.d-flex').find('.sms-state-label');
+
+        checkbox.disabled = true;
+
+        fetch(`/appointments/${appointmentId}/toggle-sms-status/`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ sms_type: smsType, state: newState })
+        })
+        .then(async (response) => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || data.error || 'خطا در ارتباط با سرور.');
+            }
+            return data;
+        })
+        .then(() => {
+            $label
+                .toggleClass('bg-success', newState)
+                .toggleClass('bg-secondary', !newState)
+                .text(newState ? 'ارسال شده' : 'ارسال نشده');
+            updateRowUI(appointmentId, smsType, newState);
+        })
+        .catch((err) => {
+            checkbox.checked = !newState;
+            alert(err.message);
+        })
+        .finally(() => {
+            checkbox.disabled = false;
+        });
+    });
     // مقداردهی اولیه نهایی پلاگین‌ها
     initModalPlugins();
+
+    // Select2 برای فیلترهای چندتایی
+    $('.select2-multiple').select2({
+        width: '100%',
+        dir: 'rtl',
+        placeholder: function() {
+            return $(this).data('placeholder') || 'انتخاب کنید...';
+        },
+        allowClear: true,
+        closeOnSelect: false   // مهم: بعد از انتخاب نبندد
+    });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('filterForm');
+    if (!form) return;
 
+    // ── ۱. میان‌برهای تاریخ ──
+    form.querySelectorAll('.quick-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            form.elements['start_date'].value = chip.dataset.start;
+            form.elements['end_date'].value = chip.dataset.end;
+            form.submit();
+        });
+    });
+
+    // ── ۲. اعمال خودکار با تغییر نوع/وضعیت ──
+    form.querySelectorAll('select').forEach(function (sel) {
+        sel.addEventListener('change', function () { form.submit(); });
+    });
+
+    // ── ۳. نمایش و حذف فیلترهای فعال ──
+    const labels = {
+        patient_name: 'نام',
+        start_date: 'از',
+        end_date: 'تا',
+        appointment_type: 'نوع',
+        status: 'وضعیت'
+    };
+    const box = document.getElementById('activeFilters');
+    const params = new URLSearchParams(window.location.search);
+    let count = 0;
+
+    Object.keys(labels).forEach(function (name) {
+        const value = params.get(name);
+        if (!value) return;
+
+        const field = form.elements[name];
+        let text = value;
+        if (field && field.tagName === 'SELECT' && field.selectedIndex >= 0) {
+            text = field.options[field.selectedIndex].text;
+        }
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'active-filter-chip';
+        chip.title = 'حذف این فیلتر';
+
+        const key = document.createElement('span');
+        key.className = 'chip-key';
+        key.textContent = labels[name] + ':';
+        const val = document.createElement('span');
+        val.textContent = text;
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-xmark';
+
+        chip.append(key, val, icon);
+        chip.addEventListener('click', function () {
+            params.delete(name);
+            params.delete('page');
+            // اگر فیلتری نماند، پارامتر all می‌گذاریم تا لیست به «امروز» برنگردد
+            const hasFilter = Object.keys(labels).some(function (k) { return params.get(k); });
+            if (!hasFilter) params.set('all', '1');
+            window.location.search = params.toString();
+        });
+
+        box.appendChild(chip);
+        count++;
+    });
+
+    if (count > 0) box.classList.remove('d-none');
+});
+</script>
 {% endblock %}

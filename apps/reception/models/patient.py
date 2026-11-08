@@ -76,7 +76,14 @@ class Patient(TimeStampedModel, SoftDeleteModel):
     foot_size = models.PositiveIntegerField(null=True, blank=True, verbose_name="سایز پا")
     reception_notes = models.TextField(null=True, blank=True, verbose_name="یادداشت پذیرش")
     referrer = models.CharField(max_length=255, null=True, blank=True, verbose_name="معرف")
-    
+    referrer_person = models.ForeignKey(
+        'Referrer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='referred_patients', verbose_name='معرف ثبت‌شده'
+    )
+    referrer_patient = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='referred_patients', verbose_name='معرف (بیمار)'
+    )
     underlying_diseases = models.TextField(blank=True, null=True)
 
     orthotic_history = models.TextField(blank=True, null=True)

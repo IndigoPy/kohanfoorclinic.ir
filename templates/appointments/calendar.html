@@ -180,7 +180,7 @@
 </div>
 
 
-<div class="modal fade" id="appointmentEventModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal fade" id="appointmentEventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-end">
             <div class="modal-header">
@@ -217,8 +217,16 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
+<!-- Modal نمایش جزئیات نوبت (همان مدال لیست) -->
+<div class="modal fade" id="appointmentDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg border-0 rounded-4" id="detailModalContent">
+            <!-- محتوا با Ajax لود می‌شود -->
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
@@ -315,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
         slotMinTime: '10:00:00',
         slotMaxTime: '21:00:00',
         allDaySlot: false,
-        slotDuration: '00:05:00',
+        slotDuration: '00:50:00',
         nowIndicator: true,
         events: '{% url "appointments:api_calendar" %}',
         
@@ -401,44 +409,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     eventClick: function(info) {
-        info.jsEvent.preventDefault();
+    info.jsEvent.preventDefault();
 
-        const event = info.event;
-        const props = event.extendedProps || {};
+    const event = info.event;
+    const props = event.extendedProps || {};
+    const detailUrl = props.detailUrl;
 
-        const patient = props.patient || event.title || '-';
-        const statusLabel = props.statusLabel || props.status || '-';
+    if (!detailUrl) {
+        alert('لینک جزئیات نوبت یافت نشد.');
+        return;
+    }
 
-        const startTime = props.startTime || formatPersianTime(event.start);
-        const endTime = props.endTime || (event.end ? formatPersianTime(event.end) : '');
-        const timeText = endTime ? `${startTime} - ${endTime}` : startTime;
+    let $modalContent = $('#detailModalContent');
+    
+    // نمایش لودینگ
+    $modalContent.html(
+        '<div class="p-5 text-center">' +
+            '<i class="fa-solid fa-spinner fa-spin fa-3x text-primary mb-3"></i>' +
+            '<p class="text-muted mt-2">در حال دریافت اطلاعات نوبت...</p>' +
+        '</div>'
+    );
 
-        document.getElementById('eventModalTitle').textContent = patient;
-        document.getElementById('eventPatient').textContent = patient;
-        document.getElementById('eventDate').textContent = formatPersianDate(event.start);
-        document.getElementById('eventTime').textContent = timeText || '-';
-        document.getElementById('eventStatus').textContent = statusLabel;
+    // باز کردن مدال
+    const modal = new bootstrap.Modal(document.getElementById('appointmentDetailModal'));
+    modal.show();
 
-        const detailLink = document.getElementById('eventDetailLink');
-        const editLink = document.getElementById('eventEditLink');
-
-        if (props.detailUrl) {
-            detailLink.href = props.detailUrl;
-            detailLink.classList.remove('d-none');
-        } else {
-            detailLink.classList.add('d-none');
+    // دریافت جزئیات با AJAX
+    $.ajax({
+        url: detailUrl,
+        type: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        success: function (response) {
+            $modalContent.html(response);
+        },
+        error: function () {
+            $modalContent.html(
+                '<div class="p-5 text-center text-danger">' +
+                    '<i class="fa-solid fa-circle-exclamation fa-3x mb-3"></i>' +
+                    '<p>خطا در دریافت جزئیات نوبت.</p>' +
+                    '<button class="btn btn-outline-secondary mt-2" data-bs-dismiss="modal">بستن</button>' +
+                '</div>'
+            );
         }
-
-        if (props.editUrl) {
-            editLink.href = props.editUrl;
-            editLink.classList.remove('d-none');
-        } else {
-            editLink.classList.add('d-none');
-        }
-
-        const modal = new bootstrap.Modal(document.getElementById('appointmentEventModal'));
-        modal.show();
-    },
+    });
+},
 
 
         windowResize: function(arg) {

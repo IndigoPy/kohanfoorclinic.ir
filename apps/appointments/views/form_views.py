@@ -10,6 +10,8 @@ from django.shortcuts import get_object_or_404
 from django.views import View
 import json
 from django.views.generic import DetailView
+from apps.calls.services import queue_sms_commands
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -73,19 +75,28 @@ class AppointmentUpdateView(UpdateView):
     template_name = 'appointments/appointment_form.html'
     success_url = reverse_lazy('appointments:list')
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
+    _DIGITS = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
 
-        if request.GET.get('debug') == '1':
-            from django.http import HttpResponse
-            return HttpResponse(
-                f"date type: {type(self.object.date)}<br>"
-                f"date value: {self.object.date}<br>"
-                f"jalali_date_value: {context.get('jalali_date_value')}"
-            )
+    def get_queryset(self):
+        return Appointment.objects.select_related('patient')
 
-        return render(request, self.template_name, context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_update'] = True
+
+        form = context['form']
+        if form.is_bound:
+            # بعد از خطای اعتبارسنجی، مقدار ارسال‌شده نمایش داده شود
+            raw = str(form.data.get('date', '')).strip()
+            context['jalali_date_value'] = raw.translate(self._DIGITS)
+        elif self.object.date:
+            context['jalali_date_value'] = self.object.date.isoformat()
+        else:
+            context['jalali_date_value'] = ''
+        return context
+
+    def _is_ajax(self):
+        return self.request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -93,84 +104,110 @@ class AppointmentUpdateView(UpdateView):
         self.object.save()
         form.save_m2m()
 
-        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'id': self.object.pk,
-                'redirect_url': str(self.get_success_url())
-            })
-
+        if self._is_ajax():
+            return JsonResponse({'success': True, 'id': self.object.pk})
         return redirect(self.get_success_url())
 
     def form_invalid(self, form):
         logger.warning(f"Update form errors: {form.errors.as_json()}")
-
-        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            context = self.get_context_data(form=form, object=self.object)
-            return render(self.request, self.template_name, context, status=400)
-
+        if self._is_ajax():
+            return render(
+                self.request, self.template_name,
+                self.get_context_data(form=form), status=400
+            )
         return super().form_invalid(form)
 
     
 class AppointmentDeleteView(View):
     def post(self, request, pk, *args, **kwargs):
-        # بررسی اینکه درخواست حتما از طریق AJAX ارسال شده باشد
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        if not is_ajax:
+            return JsonResponse(
+                {'success': False, 'message': 'درخواست باید از طریق AJAX ارسال شود.'},
+                status=400
+            )
+
+        try:
             appointment = get_object_or_404(Appointment, pk=pk)
             appointment._changed_by = request.user if request.user.is_authenticated else None
             appointment.delete()
             return JsonResponse({'success': True, 'message': 'نوبت با موفقیت حذف شد.'})
-        
-        return JsonResponse({'success': False, 'message': 'درخواست نامعتبر است.'}, status=400)
+        except Exception as e:
+            # برای دیباگ
+            print("Error during delete:", str(e))
+            return JsonResponse(
+                {'success': False, 'message': 'خطا در حذف نوبت.'},
+                status=500
+            )
     
 class SendSMSView(View):
     def post(self, request, pk):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'ابتدا وارد شوید.'}, status=401)
+
+        appointment = get_object_or_404(Appointment.objects.select_related('patient'), pk=pk)
+
         try:
-            # دریافت داده‌های JSON از بدنه درخواست
             data = json.loads(request.body)
-            message_text = data.get('message', '').strip()
-            phones = data.get('phones', [])
-
-            # اعتبارسنجی اولیه
-            if not message_text:
-                return JsonResponse({'success': False, 'error': 'متن پیامک نمی‌تواند خالی باشد.'}, status=400)
-            
-            if not phones or not isinstance(phones, list):
-                return JsonResponse({'success': False, 'error': 'حداقل یک شماره تماس باید انتخاب شود.'}, status=400)
-
-            # TODO 1: در آینده اتصال به ماژول/اپلیکیشن 'messages' برای ثبت سوابق (History) در دیتابیس در اینجا انجام می‌شود
-            
-            # TODO 2: در آینده فراخوانی API پنل پیامکی (مانند کاوه نگار، ملی پیامک و ...) در اینجا انجام می‌شود
-            # for phone in phones:
-            #     send_sms_api(phone, message_text)
-
-            # در حال حاضر فقط یک پاسخ موفقیت‌آمیز برمی‌گردانیم
-            return JsonResponse({
-                'success': True, 
-                'message': 'درخواست ارسال پیامک با موفقیت پردازش شد.'
-            })
-
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'ساختار داده‌های ارسالی نامعتبر است.'}, status=400)
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': f'خطای سرور: {str(e)}'}, status=500)
+
+        message_text = (data.get('message') or '').strip()
+        phones = data.get('phones') or []
+
+        if not message_text:
+            return JsonResponse({'success': False, 'error': 'متن پیامک نمی‌تواند خالی باشد.'}, status=400)
+        if not isinstance(phones, list) or not phones:
+            return JsonResponse({'success': False, 'error': 'حداقل یک شماره تماس باید انتخاب شود.'}, status=400)
+
+        # فقط شماره‌های متعلق به همین نوبت مجاز هستند (جلوگیری از ارسال به شماره دلخواه)
+        allowed = {
+            self._normalize(p)
+            for p in (appointment.display_phone_1, appointment.display_phone_2)
+            if p
+        }
+        valid_phones = [p for p in phones if self._normalize(p) in allowed]
+
+        if not valid_phones:
+            return JsonResponse({'success': False, 'error': 'شماره انتخاب‌شده متعلق به این نوبت نیست.'}, status=400)
+
+        commands = queue_sms_commands(valid_phones, message_text)
+
+        return JsonResponse({
+            'success': True,
+            'queued': len(commands),
+            'message': f'{len(commands)} پیامک در صف ارسال قرار گرفت.',
+        })
+
+    @staticmethod
+    def _normalize(number):
+        digits = str(number).translate(str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789'))
+        return re.sub(r'\D', '', digits)
 
 class AppointmentDetailView(DetailView):
     model = Appointment
     template_name = 'appointments/components/appointment_detail_modal.html'
     context_object_name = 'appointment'
 
-    def get_context_data(self,**kwargs):
+    # لیست اکشن‌های تغییر وضعیت (برچسب کوتاه برای دکمه‌ها)
+    STATUS_ACTIONS = [
+        {'value': 'scheduled', 'label': 'رزرو شده',       'icon': 'fa-calendar-check',  'color': 'primary'},
+        {'value': 'confirmed', 'label': 'تایید شده',      'icon': 'fa-circle-check',    'color': 'success'},
+        {'value': 'waiting',   'label': 'حضور در کلینیک', 'icon': 'fa-user-clock',      'color': 'info'},
+        {'value': 'completed', 'label': 'انجام شده',      'icon': 'fa-flag-checkered',  'color': 'secondary'},
+        {'value': 'canceled',  'label': 'لغو شده',        'icon': 'fa-ban',             'color': 'danger'},
+        {'value': 'no_show',   'label': 'عدم حضور',       'icon': 'fa-user-slash',      'color': 'warning'},
+        {'value': 'rescheduled', 'label': 'جابه‌جا شده', 'icon': 'fa-right-left', 'color': 'dark'},
+    ]
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # می‌توانید متغیرهای اضافی برای ترجمه انواع نوبت‌ها به قالب پاس دهید
-        type_labels = {
-            'existing': 'بیمار فعلی',
-            'new': 'بیمار جدید',
-            'delivery': 'تحویل',
-            'followup': 'پیگیری',
-            'clinic_call': 'تماس کلینیک',
-            'checkup': 'چکاپ'
-        }
-        context['appointment_type_label'] = type_labels.get(self.object.appointment_type, self.object.appointment_type)
+        extra = self.object.extra_data if isinstance(self.object.extra_data, dict) else {}
+
+        context['appointment_type_label'] = self.object.get_appointment_type_display()
+        context['status_actions'] = self.STATUS_ACTIONS
+        context['address_sms_sent'] = bool(extra.get('address_sms_sent'))
+        context['reminder_sms_sent'] = bool(extra.get('reminder_sms_sent'))
         return context
-            

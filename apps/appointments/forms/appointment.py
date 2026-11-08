@@ -3,6 +3,8 @@ from ..models import Appointment
 from ...reception.models import Patient 
 import logging
 from django_jalali.forms import jDateField
+from django.urls import reverse
+from ...reception.utils import resolve_referrer, referrer_initial
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ EXTRA_FIELDS_SCHEMA = {
         'last_name': {'type': forms.CharField, 'required': True, 'label': 'نام خانوادگی'},
         'phone_number_1': {'type': forms.CharField, 'required': True, 'label': 'شماره تماس اصلی'},
         'phone_number_2': {'type': forms.CharField, 'required': False, 'label': 'شماره تماس دوم'},
-        'referrer': {'type': forms.CharField, 'required': False, 'label': 'معرف'},
+        'referrer': {'is_referrer': True, 'required': False, 'label': 'معرف'},
     },
     'delivery': {
         'patient': {'is_patient_fk': True, 'required': True, 'label': 'انتخاب پرونده بیمار'},
@@ -118,6 +120,20 @@ class AppointmentForm(forms.ModelForm):
                         label=field_config.get('label', 'بیمار'),
                         widget=forms.Select(attrs={'class': 'form-select select2'})
                     )
+                elif field_config.get('is_referrer'):
+                    self.fields[field_name] = forms.CharField(
+                        required=False,
+                        label=field_config.get('label', 'معرف'),
+                        widget=forms.Select(
+                            choices=[('', '')],  # هر درخواست، ویجت تازه می‌سازد
+                            attrs={
+                                'class': 'form-select referrer-select',
+                                'data-url': reverse('reception:search-referrers'),
+                                'data-quick-url': reverse('reception:quick-create-referrer'),
+                                'data-placeholder': 'جستجوی معرف یا بیمار...',
+                            },
+                        ),
+                    )
                 else:
                     widget = field_config.get(
                         'widget', 
@@ -158,7 +174,12 @@ class AppointmentForm(forms.ModelForm):
             for field_name in native_fields:
                 if field_name in self.fields:
                     self.fields[field_name].initial = getattr(self.instance, field_name, '') or ''
-
+                    
+        if self.instance and self.instance.pk and self.instance.date and not self.is_bound:
+            self.initial['date'] = self.instance.date.strftime('%Y-%m-%d')
+            
+        if 'referrer' in self.fields:
+            self._set_referrer_choice()
     @property
     def dynamic_field_names(self):
         """لیست نام فیلدهای داینامیک فعلی فرم"""
@@ -186,6 +207,13 @@ class AppointmentForm(forms.ModelForm):
                 # در غیر این صورت به عنوان دیتای JSON در extra_data ذخیره می‌شود
                 else:
                     extra_data_dict[field_name] = value
+                    
+            if field_name == 'referrer':
+                    text, ref_patient, ref_person = resolve_referrer(value)
+                    appointment.referrer = text or None
+                    appointment.referrer_patient = ref_patient
+                    appointment.referrer_person = ref_person
+                    continue
 
         appointment.extra_data = extra_data_dict
 
@@ -196,3 +224,19 @@ class AppointmentForm(forms.ModelForm):
     def clean_date(self):
         value = self.cleaned_data.get('date')
         return value
+
+    def _set_referrer_choice(self):
+        field = self.fields['referrer']
+        choice = None
+
+        if self.is_bound:
+            raw = self.data.get('referrer', '')
+            if raw:
+                from ...reception.utils import referrer_initial_from_raw
+                choice = referrer_initial_from_raw(raw)
+        elif self.instance and self.instance.pk:
+            choice = referrer_initial(self.instance)
+
+        if choice:
+            field.widget.choices = [('', ''), (choice['id'], choice['text'])]
+            field.initial = choice['id']

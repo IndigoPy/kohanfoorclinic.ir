@@ -245,87 +245,65 @@ class ToggleSMSStatusView(View):
 logger = logging.getLogger(__name__)
 
 
-logger = logging.getLogger(__name__)
 
 
 @login_required
 @require_POST
 def update_appointment_status(request):
+    NOTE_STATUSES = {'canceled', 'no_show', 'rescheduled'}
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
-
-        appointment_id = payload.get('id')
-        new_status = payload.get('status')
-
-        if not appointment_id or not new_status:
-            return JsonResponse(
-                {
-                    'success': False,
-                    'error': 'شناسه نوبت و وضعیت جدید الزامی است.'
-                },
-                status=400
-            )
-
-        # دریافت وضعیت‌های معتبر مستقیماً از فیلد مدل
-        status_field = Appointment._meta.get_field('status')
-
-        valid_statuses = {
-            str(value)
-            for value, label in status_field.choices
-        }
-
-        if new_status not in valid_statuses:
-            return JsonResponse(
-            {
-                'success': True,
-                'id': appointment.pk,
-                'status': appointment.status,
-                'status_label': force_str(appointment.get_status_display()),  # ← این خط
-            }
-        )
-
-        try:
-            appointment = Appointment.objects.get(pk=appointment_id)
-        except Appointment.DoesNotExist:
-            return JsonResponse(
-                {
-                    'success': False,
-                    'error': 'نوبت موردنظر پیدا نشد.'
-                },
-                status=404
-            )
-
-        appointment.status = new_status
-        appointment.save(update_fields=['status'])
-
-        return JsonResponse(
-            {
-                'success': True,
-                'id': appointment.pk,
-                'status': appointment.status,
-                'status_label': str(appointment.get_status_display()),  # ← این خط اصلاح شد
-            }
-        )
-
     except json.JSONDecodeError:
         return JsonResponse(
-            {
-                'success': False,
-                'error': 'داده ارسالی JSON معتبر نیست.'
-            },
+            {'success': False, 'error': 'داده ارسالی JSON معتبر نیست.'},
             status=400
         )
 
-    except Exception as error:
-        # ثبت traceback واقعی در لاگ سرور
-        logger.exception(
-            'Unexpected error while updating appointment status'
+    appointment_id = payload.get('id')
+    new_status = payload.get('status')
+    note = (payload.get('note') or '').strip()[:500]
+    
+    if not appointment_id or not new_status:
+        return JsonResponse(
+            {'success': False, 'error': 'شناسه نوبت و وضعیت جدید الزامی است.'},
+            status=400
         )
 
+    valid_statuses = {
+        str(value) for value, _label in Appointment._meta.get_field('status').choices
+    }
+
+    if new_status not in valid_statuses:
         return JsonResponse(
-            {
-                'success': False,
-                'error': f'خطای داخلی هنگام تغییر وضعیت نوبت: {str(error)}'
-            },
+            {'success': False, 'error': 'وضعیت ارسال‌شده معتبر نیست.'},
+            status=400
+        )
+
+    try:
+        appointment = Appointment.objects.get(pk=appointment_id)
+    except Appointment.DoesNotExist:
+        return JsonResponse(
+            {'success': False, 'error': 'نوبت موردنظر پیدا نشد.'},
+            status=404
+        )
+
+    try:
+        appointment._changed_by = request.user
+        appointment.status = new_status
+        # توضیحات فقط برای وضعیت‌های لغو، عدم حضور و جابه‌جایی نگه داشته می‌شود
+        appointment.status_note = note if new_status in NOTE_STATUSES else ''
+        appointment.save(update_fields=['status', 'status_note'])
+    except Exception as error:
+        logger.exception('Unexpected error while updating appointment status')
+        return JsonResponse(
+            {'success': False, 'error': f'خطای داخلی هنگام تغییر وضعیت نوبت: {error}'},
             status=500
         )
+
+    return JsonResponse({
+        'success': True,
+        'id': appointment.pk,
+        'status': appointment.status,
+        'status_label': force_str(appointment.get_status_display()),
+        'status_note': appointment.status_note,
+    })

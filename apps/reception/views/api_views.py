@@ -5,7 +5,9 @@ from django.contrib import messages
 from django.db.models import Q, Prefetch
 from django.core.paginator import Paginator
 
-from ..models import Patient, Services, ServiceSizePrice 
+from apps.reception.utils import normalize_digits
+
+from ..models import Patient, Services, ServiceSizePrice, Referrer
 # from WorkShop.forms import OrderCreateForm
 from apps.core.decorators import group_required
 from django.http import JsonResponse
@@ -17,9 +19,7 @@ from decimal import Decimal
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
-
-
-
+from django.views.decorators.http import require_POST
 
 
 
@@ -94,3 +94,67 @@ def get_price_by_size(request):
         return JsonResponse({'error': 'سرویس یافت نشد.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@login_required
+def search_referrers_ajax(request):
+    q = normalize_digits(request.GET.get('q', '')).strip()
+    if not q:
+        return JsonResponse({'results': []})
+
+    refs = Referrer.objects.filter(is_active=True)
+    pats = Patient.objects.filter(is_active=True)
+
+    exclude_id = request.GET.get('exclude', '')
+    if exclude_id.isdigit():
+        pats = pats.exclude(pk=int(exclude_id))
+
+    # هر کلمه باید در یکی از فیلدها باشد (مثلاً «علی رضا»)
+    for term in q.split():
+        refs = refs.filter(
+            Q(full_name__icontains=term) | Q(code__icontains=term) |
+            Q(phone__icontains=term) | Q(workplace__icontains=term)
+        )
+        pats = pats.filter(
+            Q(first_name__icontains=term) | Q(last_name__icontains=term) |
+            Q(case_number__icontains=term) | Q(phone__icontains=term)
+        )
+
+    groups = []
+    refs = list(refs[:10])
+    pats = list(pats[:10])
+
+    if refs:
+        groups.append({'text': 'معرفین ثبت‌شده', 'children': [{
+            'id': f'ref:{r.pk}',
+            'text': f'{r.full_name} ({r.code})',
+            'meta': ' · '.join(x for x in (r.get_category_display(), r.workplace, r.phone) if x),
+        } for r in refs]})
+
+    if pats:
+        groups.append({'text': 'بیماران', 'children': [{
+            'id': f'pat:{p.pk}',
+            'text': f'{p.full_name} ({p.case_number})',
+            'meta': p.phone or '',
+        } for p in pats]})
+
+    return JsonResponse({'results': groups})
+
+
+@require_POST
+@login_required
+def quick_create_referrer(request):
+    name = request.POST.get('full_name', '').strip()
+    if not name:
+        return JsonResponse({'success': False, 'error': 'نام معرف الزامی است.'}, status=400)
+
+    category = request.POST.get('category', 'other')
+    if category not in dict(Referrer.CATEGORY_CHOICES):
+        category = 'other'
+
+    obj = Referrer.objects.create(
+        full_name=name[:200],
+        category=category,
+        phone=normalize_digits(request.POST.get('phone', '')).strip()[:20],
+        workplace=request.POST.get('workplace', '').strip()[:200],
+    )
+    return JsonResponse({'success': True, 'id': f'ref:{obj.pk}', 'text': f'{obj.full_name} ({obj.code})'})

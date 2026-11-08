@@ -35,7 +35,8 @@ urlpatterns = [
 
     # api
     path('api/get-price-by-size/', views.get_price_by_size, name='get_price_by_size'),
-    
+    path('search-referrers-ajax/', views.search_referrers_ajax, name='search-referrers'),
+    path('referrers/quick-create/', views.quick_create_referrer, name='quick-create-referrer'),
     # path('patient/<int:patient_id>/create-order/',
     #      views.create_order_for_patient, name='create-order'),
 

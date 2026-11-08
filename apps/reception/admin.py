@@ -411,3 +411,10 @@ class DiseaseAdmin(admin.ModelAdmin):
 @admin.register(OrthoticHistoryType)
 class OrthoticAdmin(admin.ModelAdmin):
     list_display = ('name',)
+
+@admin.register(Referrer)
+class ReferrerAdmin(admin.ModelAdmin):
+    list_display = ('code', 'full_name', 'category', 'workplace', 'phone', 'is_active')
+    list_filter = ('category', 'is_active')
+    search_fields = ('code', 'full_name', 'phone', 'workplace')
+    readonly_fields = ('code',)

@@ -15,4 +15,5 @@ class AppointmentStatus(models.TextChoices):
     COMPLETED = 'completed', _('انجام شده')
     CANCELED = 'canceled', _('لغو شده')
     NO_SHOW = 'no_show', _('عدم حضور')
+    RESCHEDULED = 'rescheduled', _('جابه‌جا شده')
 

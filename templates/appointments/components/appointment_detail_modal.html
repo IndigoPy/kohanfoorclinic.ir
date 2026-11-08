@@ -1,113 +1,266 @@
-{% load jformat %}
+{% load jformat persian_date %}
 
-<div class="modal-header">
-    <h5 class="modal-title fw-bold">
-        <i class="fa-solid fa-address-card text-primary me-2"></i>جزئیات نوبت
-    </h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center"
+             style="width:44px;height:44px;background:var(--primary-soft,#eef2ff);">
+            <i class="fa-solid fa-calendar-check text-primary fs-5"></i>
+        </div>
+        <div>
+            <h5 class="modal-title fw-bold mb-0">جزئیات نوبت</h5>
+            <div class="text-muted small mt-1">
+                {% if appointment.patient %}
+                    پرونده: {{ appointment.patient.case_number|default:"—" }}
+                {% else %}
+                    نوبت جدید (بدون پرونده)
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
-<div class="modal-body p-4">
-    <div class="row g-4">
-        <!-- اطلاعات پایه بیمار -->
-        <div class="col-md-6">
-            <div class="card h-100 border-0 bg-light rounded-4">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3 text-secondary border-bottom pb-2">اطلاعات بیمار</h6>
-                    
-                    <div class="mb-2">
-                        <span class="text-muted small">نام و نام خانوادگی:</span>
-                        <div class="fw-bold fs-5">
-                            {% if appointment.patient %}
-                                <a href="#" class="text-decoration-none">{{ appointment.patient }}</a>
-                                <span class="badge bg-info text-white ms-2 text-xs">دارای پرونده</span>
-                            {% else %}
-                                {{ appointment.first_name }} {{ appointment.last_name }}
-                            {% endif %}
+
+<div class="modal-body pt-3 pb-4">
+    <div class="row g-3">
+
+        <!-- اطلاعات بیمار + وضعیت -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+                        <!-- سمت راست: اطلاعات بیمار -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="patient-avatar-lg rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:52px;height:52px;background:#e0e7ff;color:#4f46e5;font-size:1.25rem;">
+                                    <i class="fa-solid fa-user-injured"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold fs-5 text-dark">
+                                        {% if appointment.patient %}
+                                            <a href="{% url 'reception:patient-detail' appointment.patient.id %}"
+                                               class="text-decoration-none text-dark">
+                                                {{ appointment.patient }}
+                                            </a>
+                                            <span class="badge bg-info bg-opacity-10 text-info ms-2 small">دارای پرونده</span>
+                                        {% else %}
+                                            {{ appointment.first_name }} {{ appointment.last_name }}
+                                        {% endif %}
+                                    </div>
+                                    {% if appointment.referrer %}
+                                        <div class="text-muted small mt-1">
+                                            <i class="fa-solid fa-user-tag me-1"></i>معرف: {{ appointment.referrer }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-4">
+                                <div class="mb-2">
+                                    <span class="text-muted small">شماره تماس اصلی:</span>
+                                    <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.display_phone_1|default:"ثبت نشده" }}</div>
+                                </div>
+
+                                {% if appointment.display_phone_2 %}
+                                <div class="mb-2">
+                                    <span class="text-muted small">شماره تماس دوم:</span>
+                                    <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.display_phone_2 }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- سمت چپ: وضعیت فعلی -->
+                        <div class="text-md-end">
+                            <div class="text-muted small mb-2">وضعیت فعلی</div>
+                            {% for s in status_actions %}
+                                {% if s.value == appointment.status %}
+                                <span id="modal-status-badge"
+                                      class="badge-status d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-{{ s.color }} bg-opacity-10 text-{{ s.color }} fw-semibold"
+                                      data-status="{{ s.value }}">
+                                    <i class="fa-solid {{ s.icon }}"></i>
+                                    {{ s.label }}
+                                </span>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
-                    
-                    <div class="mb-2">
-                        <span class="text-muted small">شماره تماس اصلی:</span>
-                        <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.phone_number_1|default:"ثبت نشده" }}</div>
-                    </div>
-
-                    {% if appointment.phone_number_2 %}
-                    <div class="mb-2">
-                        <span class="text-muted small">شماره تماس دوم:</span>
-                        <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.phone_number_2 }}</div>
-                    </div>
-                    {% endif %}
-
-                    {% if appointment.referrer %}
-                    <div class="mb-2">
-                        <span class="text-muted small">معرف:</span>
-                        <div class="fw-bold">{{ appointment.referrer }}</div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- اطلاعات زمان و وضعیت -->
+        <!-- زمان و نوع نوبت -->
         <div class="col-md-6">
-            <div class="card h-100 border-0 bg-light rounded-4">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3 text-secondary border-bottom pb-2">اطلاعات زمان و رزرو</h6>
-                    
-                    <div class="row mb-2">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-secondary mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-regular fa-clock text-primary"></i>
+                        زمان نوبت
+                    </h6>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">تاریخ</div>
+                        <div class="fw-bold fs-5 text-dark">{{ appointment.date|jalali_long }}</div>
+                    </div>
+
+                    <div class="row g-2">
                         <div class="col-6">
-                            <span class="text-muted small">نوع نوبت:</span>
-                            <div class="fw-bold text-primary">{{ appointment_type_label }}</div>
+                            <div class="p-3 rounded-3 bg-light">
+                                <div class="text-muted small mb-1">شروع</div>
+                                <div class="fw-bold" dir="ltr" style="text-align:right;">
+                                    {{ appointment.start_time|time:"H:i"|persian_digits }}
+                                </div>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <span class="text-muted small">وضعیت:</span>
-                            <div class="fw-bold">
-                                {% if appointment.status == 'scheduled' %}رزرو شده
-                                {% elif appointment.status == 'confirmed' %}تایید شده
-                                {% elif appointment.status == 'completed' %}انجام شده
-                                {% elif appointment.status == 'cancelled' %}لغو شده
-                                {% elif appointment.status == 'no_show' %}عدم حضور
-                                {% else %}{{ appointment.status }}{% endif %}
+                            <div class="p-3 rounded-3 bg-light">
+                                <div class="text-muted small mb-1">پایان</div>
+                                <div class="fw-bold" dir="ltr" style="text-align:right;">
+                                    {% if appointment.end_time %}
+                                        {{ appointment.end_time|time:"H:i"|persian_digits }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="mb-2">
-                        <span class="text-muted small">تاریخ:</span>
-                        <div class="fw-bold text-dark fs-5">{{ appointment.date|jformat:"%A %d %B %Y" }}</div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-6">
-                            <span class="text-muted small">ساعت شروع:</span>
-                            <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.start_time|time:"H:i" }}</div>
+        <!-- نوع نوبت -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-secondary mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-tag text-primary"></i>
+                        نوع نوبت
+                    </h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center"
+                             style="width:48px;height:48px;background:var(--primary-soft,#eef2ff);">
+                            <i class="fa-solid fa-stethoscope text-primary"></i>
                         </div>
-                        <div class="col-6">
-                            <span class="text-muted small">ساعت پایان:</span>
-                            <div class="fw-bold" dir="ltr" style="text-align: right;">{{ appointment.end_time|time:"H:i"|default:"---" }}</div>
+                        <div>
+                            <div class="fw-bold text-primary fs-5">{{ appointment_type_label }}</div>
+                            <div class="text-muted small">نوع مراجعه ثبت‌شده</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- اطلاعات تکمیلی (extra_data) -->
+        <!-- تغییر وضعیت -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-secondary mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-arrows-rotate text-primary"></i>
+                        تغییر وضعیت نوبت
+                    </h6>
+                    <div class="status-actions d-flex flex-wrap gap-2" data-id="{{ appointment.pk }}">
+                        {% for s in status_actions %}
+                        <button type="button"
+                                class="btn btn-sm rounded-pill px-3 py-2 btn-set-status
+                                       {% if s.value == appointment.status %}btn-{{ s.color }}{% else %}btn-outline-{{ s.color }}{% endif %}"
+                                data-id="{{ appointment.pk }}"
+                                data-status="{{ s.value }}"
+                                data-color="{{ s.color }}">
+                            <i class="fa-solid {{ s.icon }} me-1"></i>{{ s.label }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- وضعیت پیامک‌ها -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-secondary mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-comment-sms text-primary"></i>
+                        وضعیت پیامک‌ها
+                    </h6>
+                    <div class="row g-3">
+                        <!-- پیامک آدرس -->
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border bg-white">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width:40px;height:40px;background:#f0fdf4;">
+                                        <i class="fa-solid fa-location-dot text-success"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">پیامک آدرس / تحویل</div>
+                                        <span class="sms-state-label badge rounded-pill
+                                              {% if address_sms_sent %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if address_sms_sent %}ارسال شده{% else %}ارسال نشده{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input modal-sms-toggle" type="checkbox"
+                                           data-id="{{ appointment.pk }}"
+                                           data-sms-type="address_sms_sent"
+                                           {% if address_sms_sent %}checked{% endif %}
+                                           style="width:2.4em;height:1.2em;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- پیامک یادآوری -->
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 border bg-white">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width:40px;height:40px;background:#eff6ff;">
+                                        <i class="fa-solid fa-bell text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">پیامک یادآوری</div>
+                                        <span class="sms-state-label badge rounded-pill
+                                              {% if reminder_sms_sent %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if reminder_sms_sent %}ارسال شده{% else %}ارسال نشده{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input modal-sms-toggle" type="checkbox"
+                                           data-id="{{ appointment.pk }}"
+                                           data-sms-type="reminder_sms_sent"
+                                           {% if reminder_sms_sent %}checked{% endif %}
+                                           style="width:2.4em;height:1.2em;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اطلاعات تکمیلی -->
         {% if appointment.extra_data %}
         <div class="col-12">
-            <div class="card border-0 bg-white shadow-sm rounded-4 border-start border-4 border-info">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3 text-info">اطلاعات تکمیلی نوبت</h6>
+            <div class="card border-0 shadow-sm rounded-4 border-start border-4 border-info">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-info mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-info"></i>
+                        اطلاعات تکمیلی
+                    </h6>
                     <div class="row g-3">
                         {% for key, value in appointment.extra_data.items %}
-                            {% if value %}
+                            {% if key != 'address_sms_sent' and key != 'reminder_sms_sent' and value %}
                             <div class="col-md-6">
-                                <!-- اینجا در صورت نیاز می‌توانید دیکشنری ترجمه کلیدها را بنویسید (مانند reason_for_visit) -->
-                                <span class="text-muted small">
-                                    {% if key == 'reason_for_visit' %}علت مراجعه
-                                    {% elif key == 'delivery_item' %}مورد تحویلی
-                                    {% else %}{{ key }}{% endif %}:
-                                </span>
-                                <div class="fw-bold">{{ value }}</div>
+                                <div class="p-3 rounded-3 bg-light">
+                                    <div class="text-muted small mb-1">
+                                        {% if key == 'reason_for_visit' %}علت مراجعه
+                                        {% elif key == 'provided_services' %}خدمات قابل ارائه
+                                        {% else %}{{ key }}{% endif %}
+                                    </div>
+                                    <div class="fw-semibold">{{ value }}</div>
+                                </div>
                             </div>
                             {% endif %}
                         {% endfor %}
@@ -116,12 +269,19 @@
             </div>
         </div>
         {% endif %}
+
     </div>
 </div>
-<div class="modal-footer bg-light border-top-0 rounded-bottom-4">
-    <!-- می‌توانیم دکمه‌های عملیاتی را به اینجا هم منتقل کنیم -->
-    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">بستن</button>
-    <button type="button" class="btn btn-outline-primary rounded-pill px-4 btn-edit" data-url="{% url 'appointments:update' pk=appointment.pk %}" data-bs-dismiss="modal">
-        <i class="fa-solid fa-pen-to-square me-1"></i> ویرایش
+
+<div class="modal-footer border-0 bg-light rounded-bottom-4 pt-3 pb-3">
+    <button type="button" class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
+        بستن
+    </button>
+    <button type="button"
+            class="btn btn-primary rounded-pill px-4 btn-edit"
+            data-url="{% url 'appointments:update' pk=appointment.pk %}"
+            data-bs-dismiss="modal">
+        <i class="fa-solid fa-pen-to-square me-1"></i>
+        ویرایش نوبت
     </button>
 </div>

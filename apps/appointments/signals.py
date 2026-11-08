@@ -1,6 +1,7 @@
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 from apps.appointments.models.appointment import Appointment, AppointmentLog
+from django.utils.encoding import force_str
 
 
 TRACKED_FIELDS = [
@@ -15,6 +16,7 @@ TRACKED_FIELDS = [
     'end_time',
     'appointment_type',
     'status',
+    'status_note',
     'extra_data',
 ]
 
@@ -38,7 +40,7 @@ def get_choice_label(model_instance, field_name, value):
 
     field = model_instance._meta.get_field(field_name)
     if field.choices:
-        return dict(field.choices).get(value, value)
+        return force_str(dict(field.choices).get(value, value))
 
     return value
 
@@ -113,7 +115,7 @@ def appointment_post_save(sender, instance, created, **kwargs):
     if not changes:
         return
 
-    only_status_changed = set(changes.keys()) == {'status'}
+    only_status_changed = set(changes.keys()) <= {'status', 'status_note'}
 
     AppointmentLog.objects.create(
         appointment=instance,
@@ -140,8 +142,8 @@ def appointment_post_delete(sender, instance, **kwargs):
         deleted_data[field] = serialize_value(value)
 
     AppointmentLog.objects.create(
-        appointment=None,
-        appointment_snapshot_id=instance.pk,
+        appointment=None,                          # درست
+        appointment_snapshot_id=instance.pk,       # درست
         action='delete',
         changed_by=changed_by,
         description='نوبت حذف شد',

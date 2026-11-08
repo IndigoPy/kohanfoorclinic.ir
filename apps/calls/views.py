@@ -206,20 +206,31 @@ class PendingCommandsView(APIView):
 
 
 class AckCommandView(APIView):
+    VALID = ('done', 'failed', 'rejected')
+
     def post(self, request):
         check_api_key(request)
         cmd_id = request.data.get('id')
-        status_value = request.data.get('status', 'done')  # done / failed / rejected
+        status_value = request.data.get('status')
+
+        if status_value not in self.VALID:
+            return Response({'ok': False, 'error': 'status is required: done/failed/rejected'}, status=400)
 
         try:
             cmd = PendingCommand.objects.get(id=cmd_id)
-            cmd.status = status_value
-            cmd.is_done = status_value in ['done', 'failed', 'rejected']
-            cmd.done_at = timezone.now()
-            cmd.save()
-            return Response({'ok': True})
         except PendingCommand.DoesNotExist:
             return Response({'ok': False}, status=404)
+
+        # فقط دستورات در حال انتظار قابل تغییرند
+        if cmd.status != PendingCommand.STATUS_PENDING:
+            return Response({'ok': True, 'ignored': True})
+
+        cmd.status = status_value
+        cmd.is_done = True
+        cmd.done_at = timezone.now()
+        cmd.error = (request.data.get('error') or '')[:255]
+        cmd.save()
+        return Response({'ok': True})
 
 
 

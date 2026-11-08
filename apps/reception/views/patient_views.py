@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 
 from apps.appointments.models import Appointment
 from apps.appointments.models.choices import AppointmentType, AppointmentStatus
+from ..utils import standardize_persian_date, resolve_referrer, referrer_initial, referrer_initial_from_raw
 
 def is_manager(user):
     """فقط سوپریوزر یا عضو گروه Manager اجازه ویرایش/حذف تراکنش دارد"""
@@ -174,6 +175,8 @@ def create_patient(request):
             orthotic_name = orthotic_name.strip()
             if orthotic_name:
                 OrthoticHistoryType.objects.get_or_create(name=orthotic_name)
+        
+        ref_text, ref_patient, ref_person = resolve_referrer(request.POST.get('referrer')),
                 
         # --- ایجاد بیمار (بدون attached_to) ---
                 # --- ایجاد بیمار (بدون attached_to) ---
@@ -188,7 +191,9 @@ def create_patient(request):
             foot_size=request.POST.get('foot_size'),
             height=request.POST.get('height'),
             weight=request.POST.get('weight'),
-            referrer=request.POST.get('referrer'),
+            referrer=ref_text or None,
+            referrer_patient=ref_patient,
+            referrer_person=ref_person,
             visit_reason='، '.join(request.POST.getlist('visit_reason')),
             underlying_diseases=','.join(request.POST.getlist('underlying_diseases')),
             orthotic_history=','.join(request.POST.getlist('orthotic_history')),
@@ -262,6 +267,9 @@ def create_patient(request):
         'selected_attached_patients': Patient.objects.none(), 
         'all_diseases': UnderlyingDisease.objects.all(),
         'all_orthotics': OrthoticHistoryType.objects.all(),
+        'referrer_initial': referrer_initial_from_raw(
+        request.GET.get('referrer_ref') or request.GET.get('referrer', '')
+        ),
     }
     
     return render(request, 'reception/create_patient.html', context)
@@ -316,7 +324,12 @@ def edit_patient(request, patient_id):
         patient.foot_size = request.POST.get('foot_size')
         patient.height = request.POST.get('height')
         patient.weight = request.POST.get('weight')
-        patient.referrer = request.POST.get('referrer')
+        ref_text, ref_patient, ref_person = resolve_referrer(request.POST.get('referrer'))
+        if ref_patient and ref_patient.pk == patient.pk:
+            ref_patient = None  # بیمار نمی‌تواند معرف خودش باشد
+        patient.referrer = ref_text or None
+        patient.referrer_patient = ref_patient
+        patient.referrer_person = ref_person
         patient.visit_reason = '، '.join(request.POST.getlist('visit_reason'))
         patient.underlying_diseases = ','.join([
             item.strip() for item in request.POST.getlist('underlying_diseases') if item.strip()
@@ -433,6 +446,7 @@ def edit_patient(request, patient_id):
         'all_diseases': UnderlyingDisease.objects.all(),
         'all_orthotics': OrthoticHistoryType.objects.all(),
         'persian_admission_date': persian_admission_date,
+        'referrer_initial': referrer_initial(patient),
     }
 
     return render(request, 'reception/create_patient.html', context)
