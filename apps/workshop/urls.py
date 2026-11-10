@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import views
 from .views import actions, notes
-
+from .views import actions, notes, specs
 
 app_name = 'workshop'
 
@@ -100,7 +100,7 @@ urlpatterns = [
         actions.resume_manufacturing,
         name="resume_manufacturing",
     ),
-    
+    path("items/<int:item_id>/specs/", specs.update_item_specs, name="update_item_specs"),
     # actions
     path(
     "items/<int:item_id>/notes/",

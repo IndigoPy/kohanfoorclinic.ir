@@ -1646,7 +1646,7 @@
                                 {% endif %}
 
                             </div>
-
+                            {% include "workshop/partials/_item_specs_form.html" %}
 
                             <!-- Item update form -->
                             <div class="product-update-form">
@@ -2100,4 +2100,13 @@
     </div>
 </div>
 
+  <script>
+  document.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('spec-size-toggle')) return;
+      const id = e.target.dataset.item, diff = e.target.checked;
+      document.getElementById('spec-same-' + id).style.display = diff ? 'none' : '';
+      document.getElementById('spec-diff-' + id).style.display = diff ? '' : 'none';
+      document.getElementById('size-mode-' + id).value = diff ? 'different' : 'same';
+  });
+  </script>
 {% endblock %}

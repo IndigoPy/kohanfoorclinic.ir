@@ -86,6 +86,7 @@ def update_workshop_notes(request, order_id):
 
 
 @login_required
+@group_required('Workshop')
 def update_item_notes(request, item_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

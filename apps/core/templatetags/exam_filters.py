@@ -67,3 +67,8 @@ def get_item(dictionary, key):
     if isinstance(dictionary, dict):
         return dictionary.get(key, '')
     return ''
+
+@register.filter(name='has_group')
+def has_group(user, names):
+    wanted = {n.strip().lower() for n in str(names).split(',')}
+    return user.is_superuser or any(g.name.lower() in wanted for g in user.groups.all())

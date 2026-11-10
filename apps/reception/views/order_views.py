@@ -16,7 +16,6 @@ import jdatetime
 from django.utils import timezone
 from django.core.serializers.json import DjangoJSONEncoder
 
-
 def is_manager(user):
     """فقط سوپریوزر یا عضو گروه Manager اجازه ویرایش/حذف تراکنش دارد"""
     return user.is_superuser or user.groups.filter(name='Examiner').exists()
@@ -25,6 +24,57 @@ from django.db import transaction
 from django.http import JsonResponse
 import json
 
+def _json_for_script(data):
+    """JSON امن برای قرار گرفتن داخل <script>."""
+    return json.dumps(data, cls=DjangoJSONEncoder).replace('</', '<\\/')
+
+
+def _wizard_static_data():
+    services_data = {
+        sp.id: {
+            'name': sp.name,
+            'price': float(sp.unit_price or 0),
+            'has_size': bool(sp.has_size),
+        }
+        for sp in Services.objects.all()
+    }
+
+    designs_data = {
+        dp.id: {
+            'name': dp.name,
+            'price': float(dp.price or 0),
+            'priority': dp.priority,
+            'service_ids': [s.id for s in dp.services.all()],
+        }
+        for dp in Design.objects.prefetch_related('services')
+    }
+
+    dynamic_fields = defaultdict(list)
+    for df in ServiceDynamicField.objects.all():
+        dynamic_fields[df.service_id].append({
+            'name': df.name,
+            'label': df.label,
+            'field_type': df.field_type,
+            'choices': [c.strip() for c in (df.dropdown_options or '').split(',') if c.strip()],
+            'is_required': df.is_required,
+        })
+
+    measurement_schema = defaultdict(list)
+    for m in ServiceMeasurements.objects.all():
+        measurement_schema[str(m.service_id)].append({
+            'name': m.name,
+            'label': m.label,
+            'type': m.field_type,
+            'required': m.is_required,
+            'options': [o.strip() for o in (m.dropdown_options or '').split(',') if o.strip()],
+        })
+
+    return {
+        'services_data': _json_for_script(services_data),
+        'designs_data': _json_for_script(designs_data),
+        'dynamic_fields_schema': dict(dynamic_fields),
+        'measurement_schema': _json_for_script(measurement_schema),
+    }
 
 @group_required('Reception')
 @login_required
@@ -110,12 +160,9 @@ def create_order_from_exam(request, exam_id):
     context = {
         'exam': exam,
         'patient': patient,
-        'services_data': json.dumps(services_data),
-        'designs_data': json.dumps(designs_data),
-        'dynamic_fields_schema': dict(dynamic_fields_dict),
-        'measurement_schema': json.dumps(measurement_schema),
         'current_persian_order_date': current_persian_order_date,
         'persian_order_date': current_persian_order_date,
+        **_wizard_static_data(),
     }
 
     # =========================== POST ===========================
@@ -283,15 +330,19 @@ def create_order():
 @require_POST
 def delete_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    patient_id = order.patient.id  # ذخیره آیدی بیمار برای ریدایرکت
-    
-    # کنترل امنیت: فقط سفارشات پیش‌نویس قابل حذف هستند
+    patient_id = order.patient_id
+
+    if (order.status != 'draft'
+            or order.payments.exists()
+            or OrderInvoice.objects.filter(order=order).exists()):
+        messages.error(
+            request,
+            'فقط سفارش پیش‌نویسِ بدون پرداخت و بدون فاکتور قابل حذف است.'
+        )
+        return redirect('reception:patient-detail', patient_id=patient_id)
+
     order.delete()
     messages.success(request, f"سفارش شماره {order_id} با موفقیت حذف شد.")
-
-        
-    # ریدایرکت به صفحه جزئیات بیمار
-    # نام URL را مطابق با پروژه خود تنظیم کنید (احتمالا reception:patient_detail)
     return redirect('reception:patient-detail', patient_id=patient_id)
 
 @group_required('Reception')
@@ -376,13 +427,10 @@ def create_direct_order(request, patient_id):
     context = {
         'exam': None,
         'patient': patient,
-        'services_data': json.dumps(services_data),
-        'designs_data': json.dumps(designs_data),
-        'dynamic_fields_schema': dict(dynamic_fields_dict),
-        'measurement_schema': json.dumps(measurement_schema),
         'current_persian_order_date': current_persian_order_date,
         'persian_order_date': current_persian_order_date,
         'is_edit': False,
+        **_wizard_static_data(),
     }
 
     # =========================== POST ===========================
@@ -767,6 +815,8 @@ def edit_order(request, order_id):
             for d in item.designs.all()
         ]
         order_items_payload.append({
+            'item_id': item.id,
+            'specs_status': item.specs_status, 
             'service_id': item.service_id,
             'service_name': item.service.name if item.service else '',
             'quantity': item.quantity,
@@ -788,13 +838,10 @@ def edit_order(request, order_id):
         'order': order,
         'is_edit': True,
         'total_paid': order.total_paid,
-        'existing_order_items': json.dumps(order_items_payload, cls=DjangoJSONEncoder),
-        'services_data': json.dumps(services_data),
-        'designs_data': json.dumps(designs_data),
-        'dynamic_fields_schema': dict(dynamic_fields_dict),
-        'measurement_schema': json.dumps(measurement_schema),
+        'existing_order_items': _json_for_script(order_items_payload),
         'persian_order_date': persian_order_date,
         'current_persian_order_date': persian_order_date,
+        **_wizard_static_data(),
     }
 
     # =========================== POST ===========================
@@ -872,3 +919,35 @@ def get_price_by_size(request):
         'price': float(size_price.price),
         'cost': float(size_price.cost),
     })
+    
+@login_required
+@group_required('Reception')
+@require_POST
+@transaction.atomic
+def apply_suggested_price(request, item_id):
+    item = get_object_or_404(
+        OrderItem.objects.select_for_update(of=('self',)).select_related('order', 'service'),
+        id=item_id,
+    )
+    order = item.order
+    back = redirect('reception:patient-detail', patient_id=order.patient_id)
+
+    if OrderInvoice.objects.filter(order=order).exists():
+        messages.error(request, 'برای این سفارش فاکتور صادر شده و تغییر قیمت مجاز نیست.')
+        return back
+    if order.status in ('delivered', 'cancelled'):
+        messages.error(request, 'تغییر قیمت این سفارش مجاز نیست.')
+        return back
+
+    price = item.suggested_size_price
+    if price is None or price == item.price_at_order:
+        messages.info(request, 'قیمت پیشنهادی متفاوتی وجود ندارد.')
+        return back
+
+    old = item.price_at_order
+    item.price_at_order = price
+    item.save(update_fields=['price_at_order', 'updated_at'])
+    order.recalculate_total()
+    order.update_payment_status()
+    messages.success(request, f'قیمت از {old:,.0f} به {price:,.0f} تومان تغییر کرد.')
+    return back

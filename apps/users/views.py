@@ -19,13 +19,13 @@ def custom_login(request):
             login(request, user)
 
             # هدایت بر اساس نقش
-            if user.groups.filter(name='Reception').exists():
+            if user.groups.filter(name__iexact='Reception').exists():
                 # هدایت بر اساس نقش
                 messages.success(
                     request, f'خوش آمدید {user.get_full_name() or user.username}')
                 return redirect('main-dashboard')
 
-            if user.groups.filter(name='Workshop').exists():
+            if user.groups.filter(name__iexact='Workshop').exists():
                 # هدایت بر اساس نقش
                 messages.success(
                     request, f'خوش آمدید {user.get_full_name() or user.username}')

@@ -1,5 +1,5 @@
 # reception/models/orders.py
-from django.db import models, transaction
+from django.db import models, transaction, IntegrityError
 from .patient import TimeStampedModel, Patient
 from .services import Design, ServiceSizePrice, Services, ServiceVariant
 from .examination import Examination
@@ -11,6 +11,7 @@ from django.shortcuts import  get_object_or_404
 from django.utils import timezone
 import jdatetime
 from datetime import datetime, date
+from ..utils import normalize_digits
 
 def normalize_delivery_date(value):
     """Convert Gregorian/Jalali delivery-date values to datetime.date."""
@@ -55,7 +56,19 @@ def normalize_delivery_date(value):
         return None
 
 
-
+def extract_foot_length(measurements):
+    """طول پا از JSON اندازه‌گیری (در حالت چپ/راست، پای راست مرجع است)."""
+    measurements = measurements or {}
+    if measurements.get('different_sizes'):
+        raw = (measurements.get('right') or {}).get('foot_length')
+    else:
+        raw = measurements.get('foot_length')
+    if raw in (None, ''):
+        return None
+    try:
+        return Decimal(normalize_digits(raw).replace('٫', '.'))
+    except (InvalidOperation, ValueError, TypeError):
+        return None
 # =============================
 # Order
 # =============================
@@ -124,15 +137,15 @@ class Order(TimeStampedModel):
         return f"Order #{self.id} - {self.patient}"
 
     def recalculate_total(self):
-        items_total = self.items.aggregate(
-            total=Sum(F("price_at_order") * F("quantity"))
-        )["total"] or 0
-
+        items_total = sum(
+            (i.price_at_order - i.discount) * i.quantity
+            for i in self.items.all()
+        )
         design_total = self.design_items.aggregate(
             total=Sum(F("price_at_order") * F("quantity"))
-        )["total"] or 0
+        )["total"] or Decimal('0')
 
-        self.total_price = items_total + design_total - self.discount
+        self.total_price = max(Decimal('0'), items_total + design_total - self.discount)
         self.save(update_fields=["total_price"])
 
     
@@ -335,6 +348,30 @@ class OrderItem(TimeStampedModel):
     status = models.CharField(max_length=40, choices=ITEM_STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True)
 
+    SPECS_STATUS_CHOICES = (
+        ("pending", "در انتظار تکمیل مشخصات"),
+        ("completed", "مشخصات تکمیل شد"),
+    )
+    specs_status = models.CharField(
+        max_length=20, choices=SPECS_STATUS_CHOICES, default="pending",
+        db_index=True, verbose_name="وضعیت مشخصات",
+    )
+    specs_completed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="specs_completed_items", verbose_name="تکمیل‌کننده مشخصات",
+    )
+    specs_completed_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def suggested_size_price(self):
+        """قیمت جدول سایز بر اساس طول پای ثبت‌شده؛ None اگر قابل محاسبه نباشد."""
+        if not getattr(self.service, 'has_size', False) or not self.foot_length:
+            return None
+        size_price = ServiceSizePrice.find_price(
+            service=self.service, foot_length=self.foot_length, variant=self.variant
+        )
+        return size_price.price if size_price else None
+    
     def calculate_price(self):
         if not self.service or not getattr(self.service, 'has_size', False) or not self.foot_length:
             return
@@ -479,124 +516,190 @@ class OrderItemDesign(TimeStampedModel):
 # OrderService (نسخه نهایی)
 # =============================
 class OrderService:
+    PRIORITY_RANK = {'normal': 0, 'fast': 1, 'urgent': 2}
+    # فقط آیتم‌هایی که هنوز به کارگاه/تامین‌کننده نرفته‌اند قابل تغییر کامل/حذف‌اند
+    REMOVABLE_STATUSES = ('draft', 'pending')
 
     @staticmethod
+    def _dec(value):
+        if value in (None, ''):
+            return Decimal('0')
+        try:
+            return Decimal(str(value))
+        except (InvalidOperation, ValueError, TypeError):
+            raise ValueError('مقدار عددی نامعتبر است.')
+
+    @staticmethod
+    def _parse_order_datetime(raw_order_date):
+        order_datetime = timezone.now()
+        raw_order_date = (raw_order_date or '').strip()
+        if not raw_order_date:
+            return order_datetime
+        try:
+            table = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
+            year, month, day = map(int, raw_order_date.translate(table).replace('-', '/').split('/'))
+            now_time = timezone.localtime()
+            gregorian_dt = jdatetime.datetime(
+                year, month, day, now_time.hour, now_time.minute, now_time.second
+            ).togregorian()
+            return timezone.make_aware(gregorian_dt) if timezone.is_naive(gregorian_dt) else gregorian_dt
+        except Exception:
+            return order_datetime
+
+    @classmethod
     @transaction.atomic
-    def create_or_update_from_wizard(order_data, is_draft=True):
+    def create_or_update_from_wizard(cls, order_data, is_draft=True):
         patient = order_data['patient']
         exam = order_data.get('examination')
-        items_data = order_data.get('items', [])
+        items_data = order_data.get('items', []) or []
+        order_datetime = cls._parse_order_datetime(order_data.get('order_date'))
 
-        raw_order_date = (order_data.get('order_date') or '').strip()
-        order_datetime = timezone.now()
+        # آیتم بدون سرویس: در پیش‌نویس نادیده گرفته می‌شود، در ثبت نهایی خطا
+        valid_items = []
+        for idx, item in enumerate(items_data, start=1):
+            if item.get('service_id'):
+                valid_items.append(item)
+            elif not is_draft:
+                raise ValueError(f'برای قلم شماره {idx} سرویس انتخاب نشده است.')
 
-        if raw_order_date:
-            try:
-                # پشتیبانی از اعداد فارسی/عربی
-                translation_table = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
-                raw_order_date = raw_order_date.translate(translation_table)
+        # اولویت سفارش = بالاترین اولویت آیتم‌ها
+        priority = max(
+            (i.get('priority') or 'normal' for i in valid_items),
+            key=lambda p: cls.PRIORITY_RANK.get(p, 0),
+            default='normal',
+        )
 
-                year, month, day = map(int, raw_order_date.split('/'))
-
-                # اگر فقط تاریخ مهم است، ساعت فعلی را می‌گذاریم
-                now_time = timezone.localtime()
-                gregorian_dt = jdatetime.datetime(
-                    year,
-                    month,
-                    day,
-                    now_time.hour,
-                    now_time.minute,
-                    now_time.second
-                ).togregorian()
-
-                order_datetime = timezone.make_aware(gregorian_dt) if timezone.is_naive(gregorian_dt) else gregorian_dt
-
-            except Exception:
-                order_datetime = timezone.now()
-
-        
-        # Order
         existing_order_id = order_data.get('order_id') or order_data.get('draft_order_id')
 
         if existing_order_id:
-            order = Order.objects.get(id=existing_order_id)
-            order.priority = order_data.get('priority', 'normal')
+            order = Order.objects.select_for_update().get(id=existing_order_id)
+            order.priority = priority
             order.general_notes = order_data.get('general_notes', '')
             order.order_date = order_datetime
-            
-            # مدیریت وضعیت: فقط اگر سفارش هنوز پیش‌نویس بود تغییر می‌کند
-            # (سفارش تایید‌شده/در حال ساخت/آماده با ذخیره پیش‌نویس یا اتوسیو به عقب برنمی‌گردد)
             if order.status == 'draft':
                 order.status = 'draft' if is_draft else 'awaiting'
-
             order.save()
-            order.items.all().delete()
-            order.design_items.all().delete()
+            existing_items = {i.id: i for i in order.items.select_related('service')}
+            old_total = order.total_price
+            invoiced = OrderInvoice.objects.filter(order=order).exists()
         else:
             order = Order.objects.create(
                 patient=patient,
                 examination=exam,
                 order_date=order_datetime,
-                priority=order_data.get('priority', 'normal'),
+                priority=priority,
                 general_notes=order_data.get('general_notes', ''),
                 status='draft' if is_draft else 'awaiting',
                 payment_status='unpaid',
-                created_by=order_data.get('created_by')
+                created_by=order_data.get('created_by'),
             )
+            existing_items = {}
+            old_total, invoiced = None, False
+        kept_ids = set()
 
-        for item in items_data:
+        for item in valid_items:
             service = get_object_or_404(Services, id=item['service_id'])
+
+            quantity = max(1, int(item.get('quantity') or 1))
+            unit_price = cls._dec(item.get('unit_price'))
+            discount = cls._dec(item.get('discount'))
+            designs = [d for d in (item.get('designs') or []) if d.get('design_id')]
+            designs_unit_total = sum((cls._dec(d.get('price')) for d in designs), Decimal('0'))
+
+            if unit_price < 0 or discount < 0:
+                raise ValueError('قیمت و تخفیف نمی‌توانند منفی باشند.')
+            if discount > unit_price + designs_unit_total:
+                raise ValueError(f'تخفیف قلم «{service.name}» از قیمت آن بیشتر است.')
+
+            raw_id = str(item.get('item_id') or '')
+            order_item = existing_items.get(int(raw_id)) if raw_id.isdigit() else None
+
+            # آیتمی که به کارگاه/تامین‌کننده رفته: پذیرش فقط بخش مالی را می‌تواند تغییر دهد
+            if order_item and order_item.status not in cls.REMOVABLE_STATUSES:
+                order_item.price_at_order = unit_price
+                order_item.discount = discount
+                order_item.save(update_fields=['price_at_order', 'discount', 'updated_at'])
+                kept_ids.add(order_item.id)
+                continue
+
             measurements = item.get('measurements', {}) or {}
+            foot_length = extract_foot_length(measurements)
 
-            # استخراج foot_length: در صورت متفاوت بودن اندازه چپ/راست، پای راست به عنوان مرجع قیمت‌گذاری استفاده می‌شود
-            if measurements.get('different_sizes'):
-                foot_length_val = (measurements.get('right') or {}).get('foot_length')
-            else:
-                foot_length_val = measurements.get('foot_length')
-
-            try:
-                foot_length = Decimal(str(foot_length_val)) if foot_length_val not in (None, '') else None
-            except (InvalidOperation, ValueError, TypeError):
-                foot_length = None
+            if order_item and order_item.specs_status == 'completed':
+                if order_item.service_id != service.id:
+                    raise ValueError(
+                        f'مشخصات قلم «{order_item.service.name}» تایید شده و سرویس آن قابل تغییر نیست.'
+                    )
+                # پذیرش نمی‌تواند مشخصات تاییدشده توسط کارگاه را عوض کند
+                fields['measurements'] = order_item.measurements
+                fields['dynamic_fields'] = order_item.dynamic_fields
+                fields['foot_length'] = order_item.foot_length
                 
-            order_item = OrderItem.objects.create(
-                order=order,
+            delivery_date = item.get('delivery_date') or None
+            fields = dict(
                 service=service,
-                quantity=item.get('quantity', 1),
+                quantity=quantity,
                 foot_length=foot_length,
                 measurements=measurements,
-                dynamic_fields=item.get('dynamic_fields', {}),
-                price_at_order=Decimal(str(item.get('unit_price', 0) or 0)),
-                discount=Decimal(str(item.get('discount', 0) or 0)),
+                dynamic_fields=item.get('dynamic_fields', {}) or {},
+                price_at_order=unit_price,
+                discount=discount,
                 send_to=item.get('send_to', 'manufacturer'),
                 priority=item.get('priority', 'normal'),
-                delivery_date=item.get('delivery_date') or None,
-                status=item.get('status', 'pending'),
-                notes=item.get('notes', '')
+                delivery_date=delivery_date,
+                expected_delivery_date=normalize_delivery_date(delivery_date),
+                notes=item.get('notes', ''),
             )
 
-            order_item.calculate_price()  # اگر service.has_size و foot_length موجود باشد، قیمت واقعی از ServiceSizePrice جایگزین می‌شود
-            order_item.save()
+            if order_item:
+                for key, value in fields.items():
+                    setattr(order_item, key, value)
+                order_item.save()
+                order_item.designs.all().delete()
+            else:
+                has_schema = service.measurements.exists() or service.dynamic_fields.exists()
+                order_item = OrderItem.objects.create(
+                    order=order, status='pending',
+                    specs_status='pending' if has_schema else 'completed',
+                    **fields,
+                )
 
+            # قیمت جدول سایز فقط وقتی اعمال می‌شود که پذیرش قیمتی وارد نکرده باشد
+            if order_item.price_at_order == 0:
+                order_item.calculate_price()
+                order_item.save(update_fields=['price_at_order', 'cost_at_order', 'updated_at'])
 
-            # طراحی‌ها
-            for d in item.get('designs', []):
-                if d.get('design_id'):
-                    try:
-                        design = Design.objects.get(id=d['design_id'])
-                        OrderItemDesign.objects.create(
-                            order=order,
-                            order_item=order_item,
-                            design=design,
-                            quantity=item.get('quantity', 1),
-                            price_at_order=Decimal(d.get('price', 0)),
-                            side=d.get('side')
-                        )
-                    except Design.DoesNotExist:
-                        pass
+            for d in designs:
+                design = Design.objects.filter(id=d['design_id']).first()
+                if design:
+                    OrderItemDesign.objects.create(
+                        order=order,
+                        order_item=order_item,
+                        design=design,
+                        quantity=quantity,
+                        price_at_order=cls._dec(d.get('price')),
+                        side=d.get('side'),
+                    )
+
+            kept_ids.add(order_item.id)
+
+        # آیتم‌هایی که از ویزارد حذف شده‌اند
+        for item_id, old in existing_items.items():
+            if item_id in kept_ids:
+                continue
+            if old.status in cls.REMOVABLE_STATUSES:
+                old.delete()
+            else:
+                raise ValueError(
+                    f'قلم «{old.service.name}» به کارگاه/تامین‌کننده ارسال شده و قابل حذف نیست.'
+                )
 
         order.recalculate_total()
-        order.update_payment_status() 
+        if invoiced and order.total_price != old_total:
+            raise ValueError(
+                'برای این سفارش فاکتور صادر شده و تغییر مبلغ آن مجاز نیست.'
+            )
+        order.update_payment_status()
         return order
 
 

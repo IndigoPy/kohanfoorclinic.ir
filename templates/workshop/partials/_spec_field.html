@@ -1,0 +1,27 @@
+{% with fid=prefix|add:f.name %}
+<label class="form-label" for="{{ fid }}-{{ item.id }}">
+    {{ f.label }}{% if f.required %} <span class="text-danger">*</span>{% endif %}
+</label>
+{% if f.type == 'select' %}
+    <select name="{{ fid }}" id="{{ fid }}-{{ item.id }}" class="form-select">
+        <option value="">انتخاب کنید...</option>
+        {% for opt in f.options %}
+            <option value="{{ opt }}" {% if opt == f.value|stringformat:"s" %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+    </select>
+{% elif f.type == 'textarea' %}
+    <textarea name="{{ fid }}" id="{{ fid }}-{{ item.id }}" class="form-control" rows="2">{{ f.value }}</textarea>
+{% elif f.type == 'checkbox' %}
+    <div class="form-check mt-2">
+        <input type="checkbox" name="{{ fid }}" id="{{ fid }}-{{ item.id }}" value="true"
+               class="form-check-input" {% if f.value %}checked{% endif %}>
+        <label class="form-check-label" for="{{ fid }}-{{ item.id }}">دارد / بله</label>
+    </div>
+{% elif f.type == 'number' %}
+    <input type="text" inputmode="decimal" name="{{ fid }}" id="{{ fid }}-{{ item.id }}"
+           class="form-control" value="{{ f.value }}">
+{% else %}
+    <input type="text" name="{{ fid }}" id="{{ fid }}-{{ item.id }}"
+           class="form-control" value="{{ f.value }}">
+{% endif %}
+{% endwith %}

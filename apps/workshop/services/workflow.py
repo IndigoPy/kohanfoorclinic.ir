@@ -28,6 +28,9 @@ from apps.workshop.exceptions import (
 )
 from apps.workshop.services.order_sync import sync_order_status
 
+SPECS_REQUIRED_STATUSES = {
+    ITEM_STATUS_MANUFACTURING, ITEM_STATUS_AWAITING_SUPPLIER}
+
 
 class WorkshopWorkflowService:
     """
@@ -62,12 +65,17 @@ class WorkshopWorkflowService:
             new_status=new_status,
         )
 
+        if (not force and new_status in SPECS_REQUIRED_STATUSES
+                and item.specs_status != 'completed'):
+            raise InvalidWorkshopActionError(
+                'ابتدا مشخصات و اندازه‌گیری این محصول باید تکمیل و تایید شود.'
+            )
         update_fields = ["status", "updated_at"]
 
         item.status = new_status
 
         if new_status == ITEM_STATUS_DELIVERED:
-            item.delivered_at = delivered_at or timezone.localdate() 
+            item.delivered_at = delivered_at or timezone.localdate()
             item.delivered_by = self.user
             update_fields.extend(["delivered_at", "delivered_by"])
 
@@ -120,7 +128,7 @@ class WorkshopWorkflowService:
             new_status=ITEM_STATUS_AWAITING_SUPPLIER,
             description=description,
         )
-    
+
     def mark_received_from_supplier(self, item, description=""):
         return self.transition_item(
             item=item,
@@ -170,7 +178,7 @@ class WorkshopWorkflowService:
             new_status=ITEM_STATUS_MANUFACTURING,
             description=description,
         )
-    
+
     def _lock_item(self, item):
         return (
             OrderItem.objects.select_for_update()
@@ -198,7 +206,7 @@ class WorkshopWorkflowService:
             ITEM_STATUS_AWAITING_SUPPLIER,
             ITEM_STATUS_RECEIVED_FROM_SUPPLIER,
         }
-        
+
         workshop_only_statuses = {
             ITEM_STATUS_WORKSHOP_QUEUE,
         }
@@ -252,4 +260,3 @@ class WorkshopWorkflowService:
         }
 
         return WorkshopStatusLog.objects.create(**log_data)
-

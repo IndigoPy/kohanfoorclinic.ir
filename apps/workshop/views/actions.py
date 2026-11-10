@@ -10,13 +10,18 @@ from apps.reception.models import OrderItem,Order
 from apps.workshop.exceptions import WorkshopWorkflowError
 from apps.workshop.services.workflow import WorkshopWorkflowService
 from django.views.decorators.http import require_POST
-from apps.core.decorators import group_required
+from apps.core.decorators import group_required, user_in_groups
 
 from django.shortcuts import resolve_url
 from django.utils.http import url_has_allowed_host_and_scheme
 
 import jdatetime
 from apps.reception.utils import standardize_persian_date
+from django.http import HttpResponseForbidden
+
+
+WORKSHOP_ONLY = ('Workshop',)
+RECEPTION_AND_WORKSHOP = ('Workshop', 'Reception')
 
 def _require_post(request):
     return request.method == "POST"
@@ -25,15 +30,12 @@ def _get_description(request, default=""):
     return request.POST.get("description") or default
 
 
-def _handle_workflow_action(
-    request,
-    item_id,
-    service_method_name,
-    success_message,
-    default_description="",
-):
+def _handle_workflow_action(request, item_id, service_method_name, success_message,
+                            default_description="", allowed_groups=WORKSHOP_ONLY):
     if not _require_post(request):
         return HttpResponseNotAllowed(["POST"])
+    if not user_in_groups(request.user, *allowed_groups):
+        return HttpResponseForbidden('Permission denied')
 
     item = get_object_or_404(
         OrderItem.objects.select_related("order"),
@@ -55,7 +57,7 @@ def _handle_workflow_action(
 
 
 @login_required
-def send_to_workshop_queue(request, item_id):
+def send_to_workshop_queue(request, item_id, allowed_groups=RECEPTION_AND_WORKSHOP):
     return _handle_workflow_action(
         request=request,
         item_id=item_id,
@@ -137,7 +139,7 @@ def start_manufacturing(request, item_id):
 
 
 @login_required
-def register_supplier_order(request, item_id):
+def register_supplier_order(request, item_id,allowed_groups=RECEPTION_AND_WORKSHOP):
     return _handle_workflow_action(
         request=request,
         item_id=item_id,
@@ -227,6 +229,9 @@ def mark_ready(request, item_id):
 @login_required
 def deliver_item(request, item_id):
     if request.method != "POST":
+        if not user_in_groups(request.user, *RECEPTION_AND_WORKSHOP):
+            return HttpResponseForbidden('Permission denied')
+        
         return HttpResponseNotAllowed(["POST"])
 
     item = get_object_or_404(

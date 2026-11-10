@@ -10,13 +10,15 @@ class WorkshopStatusLog(models.Model):
     ACTION_NOTE_UPDATE = 'note_update'
     ACTION_ITEM_NOTE_UPDATE = 'item_note_update'
     ACTION_AUTO_ORDER_SYNC = 'auto_order_sync'
-
+    ACTION_SPECS_UPDATE = 'specs_update'
+    
     ACTION_CHOICES = [
         (ACTION_STATUS_CHANGE, 'تغییر وضعیت آیتم'),
         (ACTION_BULK_STATUS_CHANGE, 'تغییر گروهی وضعیت آیتم‌ها'),
         (ACTION_NOTE_UPDATE, 'ویرایش یادداشت کلی کارگاه'),
         (ACTION_ITEM_NOTE_UPDATE, 'ویرایش یادداشت آیتم'),
         (ACTION_AUTO_ORDER_SYNC, 'هماهنگ‌سازی خودکار وضعیت سفارش'),
+        (ACTION_SPECS_UPDATE, 'ثبت/ویرایش مشخصات و اندازه‌گیری'),
     ]
 
     patient = models.ForeignKey(

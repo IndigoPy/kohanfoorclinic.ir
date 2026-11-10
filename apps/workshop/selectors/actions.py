@@ -156,6 +156,8 @@ WORKSHOP_ITEM_ACTIONS = {
 
 
 def get_available_item_actions(item):
+    
+    SPECS_GATED_ACTIONS = {'start_manufacturing', 'mark_sent_to_supplier'}
     actions = WORKSHOP_ITEM_ACTIONS.get(item.status, [])
     available_actions = []
 
@@ -166,6 +168,11 @@ def get_available_item_actions(item):
         available_actions.append({
             **action,
             "url": reverse(f"workshop:{action['name']}", kwargs={"item_id": item.id}),
+            "disabled_reason": (
+                "ابتدا مشخصات را تکمیل و تایید کنید"
+                if action["name"] in SPECS_GATED_ACTIONS and item.specs_status != "completed"
+                else ""
+            ),
         })
 
     return available_actions

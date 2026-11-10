@@ -14,10 +14,8 @@ def workshop_orders_queryset():
         'variant',
     ).prefetch_related(
         'designs__design',
-    ).order_by(
-        'delivery_date',
-        'created_at',
-    )
+        'service__measurements', 'service__dynamic_fields', 'specs_completed_by'
+    ).order_by('expected_delivery_date', 'created_at')
 
     return Order.objects.filter(
         items__status__in=RELEASED_ITEM_STATUSES,
@@ -33,6 +31,8 @@ def workshop_orders_queryset():
             'items',
             queryset=workshop_items,
             to_attr='workshop_items',
+
         ),
         'scans__technician',
+        'service__measurements', 'service__dynamic_fields', 'specs_completed_by'
     ).distinct()

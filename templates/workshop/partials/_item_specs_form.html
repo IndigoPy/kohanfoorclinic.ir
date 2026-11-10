@@ -1,0 +1,79 @@
+<div class="product-update-form mb-3">
+    <div class="form-section-title d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="fas fa-ruler-combined"></i> مشخصات و اندازه‌گیری</span>
+        {% if item.specs_status == 'completed' %}
+            <span class="ws-status ws-status-ready">
+                <i class="fas fa-check-circle"></i> تایید شد
+                {% if item.specs_completed_by %}— {{ item.specs_completed_by.get_full_name|default:item.specs_completed_by.username }}{% endif %}
+            </span>
+        {% else %}
+            <span class="ws-status ws-status-manufacturing">
+                <i class="fas fa-hourglass-half"></i> در انتظار تکمیل مشخصات
+            </span>
+        {% endif %}
+    </div>
+
+    {% if not item.spec.has_schema %}
+        <div class="no-action-state">برای این محصول مشخصه‌ای تعریف نشده است.</div>
+    {% else %}
+    <form method="post" action="{% url 'workshop:update_item_specs' item.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+        {% if item.spec.dynamic_fields %}
+        <div class="row g-3 mb-3">
+            {% for f in item.spec.dynamic_fields %}
+                <div class="col-md-4">{% include "workshop/partials/_spec_field.html" with prefix="dyn_" %}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if item.spec.same_fields %}
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input spec-size-toggle" type="checkbox" id="diff-{{ item.id }}"
+                   data-item="{{ item.id }}" {% if item.spec.different %}checked{% endif %}>
+            <label class="form-check-label small" for="diff-{{ item.id }}">اندازه پای راست و چپ متفاوت است</label>
+        </div>
+        <input type="hidden" name="size_mode" id="size-mode-{{ item.id }}"
+               value="{% if item.spec.different %}different{% else %}same{% endif %}">
+
+        <div id="spec-same-{{ item.id }}" class="row g-3" {% if item.spec.different %}style="display:none"{% endif %}>
+            {% for f in item.spec.same_fields %}
+                <div class="col-md-4">{% include "workshop/partials/_spec_field.html" with prefix="meas_" %}</div>
+            {% endfor %}
+        </div>
+
+        <div id="spec-diff-{{ item.id }}" class="row g-3" {% if not item.spec.different %}style="display:none"{% endif %}>
+            <div class="col-md-6 border-end">
+                <div class="fw-bold text-success mb-2">پای راست</div>
+                <div class="row g-3">
+                    {% for f in item.spec.right_fields %}
+                        <div class="col-md-6">{% include "workshop/partials/_spec_field.html" with prefix="meas_right_" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="fw-bold text-primary mb-2">پای چپ</div>
+                <div class="row g-3">
+                    {% for f in item.spec.left_fields %}
+                        <div class="col-md-6">{% include "workshop/partials/_spec_field.html" with prefix="meas_left_" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 flex-wrap mt-3">
+            <button type="submit" name="action" value="save" class="btn btn-outline-primary">
+                <i class="fas fa-save me-1"></i>
+                {% if item.specs_status == 'completed' %}ذخیره ویرایش مشخصات{% else %}ذخیره پیش‌نویس{% endif %}
+            </button>
+            {% if item.specs_status != 'completed' %}
+            <button type="submit" name="action" value="complete" class="btn btn-success">
+                <i class="fas fa-check-double me-1"></i> تایید و تکمیل مشخصات
+            </button>
+            {% endif %}
+        </div>
+    </form>
+    {% endif %}
+</div>

@@ -1,3 +1,4 @@
+{% load exam_filters %}
 <div class="sidebar-menu-inner">
     <div class="sidebar-header text-center">
         <h3>کلینیک ارتوپدی فنی کهن</h3>
@@ -5,21 +6,21 @@
     </div>
 
     <div class="mt-4">
-        {% if 'Reception' in user.groups.all|join:"," %}
+        {% if user|has_group:"Reception" %}
         <a href="{% url 'reception:dashboard' %}" class="nav-link-custom {% if request.resolver_match.namespace == 'reception' %}active{% endif %}">
             <i class="fas fa-user-check"></i>
             <span>پذیرش بیمار</span>
         </a>
         {% endif %}
 
-        {% if 'Reception' in user.groups.all|join:"," %}
+        {% if user|has_group:"Reception" %}
         <a href="{% url 'appointments:list' %}" class="nav-link-custom {% if request.resolver_match.namespace == 'appointments' %}active{% endif %}">
             <i class="fas fa-user-plus"></i>
             <span>نوبت دهی</span>
         </a>
         {% endif %}
 
-        {% if 'Reception' in user.groups.all|join:"," %}
+        {% if user|has_group:"Workshop" %}
         <a href="{% url 'workshop:dashboard' %}" class="nav-link-custom {% if request.resolver_match.namespace == 'workshop' %}active{% endif %}">
             <i class="fas fa-tools"></i>
             <span>کارگاه تولید</span>

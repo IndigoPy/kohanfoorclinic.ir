@@ -16,7 +16,12 @@ from apps.workshop.constants import (
     ITEM_STATUS_PENDING_SUPPLIER_REGISTRATION,
     ITEM_STATUS_AWAITING_SUPPLIER,
     ITEM_STATUS_READY,
+    RELEASED_ITEM_STATUSES,
+    TERMINAL_ITEM_STATUSES,
 )
+from apps.workshop.services.specs import get_spec_context
+
+ACTIVE_ITEM_STATUSES = RELEASED_ITEM_STATUSES - TERMINAL_ITEM_STATUSES
 
 @login_required
 @group_required('workshop')
@@ -44,13 +49,15 @@ def workshop_order_list(request):
     today = timezone.localdate()
 
     if quick_filter == 'today':
-        orders = orders.filter(items__delivery_date=today).exclude(
-            items__status__in=['delivered', 'cancelled']
+        orders = orders.filter(
+            items__expected_delivery_date=today,
+            items__status__in=ACTIVE_ITEM_STATUSES,
         ).distinct()
 
     elif quick_filter == 'overdue':
-        orders = orders.filter(items__delivery_date__lt=today).exclude(
-            items__status__in=['delivered', 'cancelled']
+        orders = orders.filter(
+            items__expected_delivery_date__lt=today,
+            items__status__in=ACTIVE_ITEM_STATUSES,
         ).distinct()
 
     elif quick_filter == 'awaiting_supplier':
@@ -96,7 +103,8 @@ def workshop_order_detail(request, order_id):
     ).order_by('-created_at')[:50]
 
     for item in order.workshop_items:
-            item.available_actions = get_available_item_actions(item)
+        item.available_actions = get_available_item_actions(item)
+        item.spec = get_spec_context(item)
             
     patient_orders_count = Order.objects.filter(
         patient=order.patient

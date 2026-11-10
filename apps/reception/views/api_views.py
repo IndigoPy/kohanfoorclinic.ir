@@ -62,38 +62,38 @@ def search_patients_ajax(request):
     return JsonResponse({'html': html})
 
 
-def get_price_by_size(request):
-    service_id = request.GET.get('service_id')
-    size_value = request.GET.get('size')
-    variant_id = request.GET.get('variant_id') # اختیاری، اگر واریانت دارید
+# def get_price_by_size(request):
+#     service_id = request.GET.get('service_id')
+#     size_value = request.GET.get('size')
+#     variant_id = request.GET.get('variant_id') # اختیاری، اگر واریانت دارید
 
-    if not service_id or not size_value:
-        return JsonResponse({'error': 'پارامترهای سرویس یا سایز ارسال نشده است.'}, status=400)
+#     if not service_id or not size_value:
+#         return JsonResponse({'error': 'پارامترهای سرویس یا سایز ارسال نشده است.'}, status=400)
 
-    try:
-        service = Services.objects.get(id=service_id)
-        size_decimal = Decimal(size_value)
+#     try:
+#         service = Services.objects.get(id=service_id)
+#         size_decimal = Decimal(size_value)
 
-        # اگر سرویس قیمت‌گذاری بر اساس سایز ندارد، قیمت پایه/واحد را برگردان
-        if not service.has_size:
-            return JsonResponse({'price': service.unit_price or 0})
+#         # اگر سرویس قیمت‌گذاری بر اساس سایز ندارد، قیمت پایه/واحد را برگردان
+#         if not service.has_size:
+#             return JsonResponse({'price': service.unit_price or 0})
 
-        # استفاده از متد کمکی که در مدل خود نوشته‌اید
-        price_record = ServiceSizePrice.find_price(
-            service=service, 
-            foot_length=size_decimal, 
-            variant=variant_id
-        )
+#         # استفاده از متد کمکی که در مدل خود نوشته‌اید
+#         price_record = ServiceSizePrice.find_price(
+#             service=service, 
+#             foot_length=size_decimal, 
+#             variant=variant_id
+#         )
 
-        if price_record:
-            return JsonResponse({'price': price_record.price})
-        else:
-            return JsonResponse({'error': 'قیمتی برای این سایز در دیتابیس یافت نشد.'}, status=404)
+#         if price_record:
+#             return JsonResponse({'price': price_record.price})
+#         else:
+#             return JsonResponse({'error': 'قیمتی برای این سایز در دیتابیس یافت نشد.'}, status=404)
 
-    except Services.DoesNotExist:
-        return JsonResponse({'error': 'سرویس یافت نشد.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+#     except Services.DoesNotExist:
+#         return JsonResponse({'error': 'سرویس یافت نشد.'}, status=404)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
     
 @login_required
 def search_referrers_ajax(request):
