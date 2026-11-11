@@ -2,7 +2,8 @@ from django.urls import path
 
 from . import views
 from .views import actions, notes
-from .views import actions, notes, specs
+from .views import actions, notes, specs, measurements
+
 
 app_name = 'workshop'
 
@@ -107,4 +108,7 @@ urlpatterns = [
     notes.update_item_notes,
     name="update_item_notes",
 ),
+    path('measurements/', measurements.measurement_list, name='measurement-list'),
+    path('measurements/<int:order_id>/', measurements.measurement_detail, name='measurement-detail'),
+    path('measurements/<int:order_id>/return/', measurements.return_measurement_view, name='measurement-return'),
 ]

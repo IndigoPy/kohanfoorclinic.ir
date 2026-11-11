@@ -1,24 +1,45 @@
 <div class="product-update-form mb-3">
     <div class="form-section-title d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span><i class="fas fa-ruler-combined"></i> مشخصات و اندازه‌گیری</span>
-        {% if item.specs_status == 'completed' %}
+        <span><i class="fas fa-ruler-combined"></i> مشخصات، اندازه‌گیری و نحوه ساخت</span>
+        {% if item.specs_status == 'completed' and item.send_to_confirmed %}
             <span class="ws-status ws-status-ready">
                 <i class="fas fa-check-circle"></i> تایید شد
                 {% if item.specs_completed_by %}— {{ item.specs_completed_by.get_full_name|default:item.specs_completed_by.username }}{% endif %}
             </span>
         {% else %}
             <span class="ws-status ws-status-manufacturing">
-                <i class="fas fa-hourglass-half"></i> در انتظار تکمیل مشخصات
+                <i class="fas fa-hourglass-half"></i> در انتظار تایید کارگاه
             </span>
         {% endif %}
     </div>
 
-    {% if not item.spec.has_schema %}
+    {% if not item.spec.has_schema and not item.spec.can_set_route %}
         <div class="no-action-state">برای این محصول مشخصه‌ای تعریف نشده است.</div>
     {% else %}
     <form method="post" action="{% url 'workshop:update_item_specs' item.id %}">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+        {% if item.spec.can_set_route %}
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label" for="route-{{ item.id }}">
+                    نحوه ساخت / تامین <span class="text-danger">*</span>
+                </label>
+                <select name="send_to" id="route-{{ item.id }}" class="form-select">
+                    {% if not item.send_to_confirmed %}<option value="">انتخاب کنید...</option>{% endif %}
+                    <option value="workshop" {% if item.send_to_confirmed and item.send_to == 'workshop' %}selected{% endif %}>ساخت/تکمیل در کارگاه کلینیک</option>
+                    <option value="manufacturer" {% if item.send_to_confirmed and item.send_to == 'manufacturer' %}selected{% endif %}>سفارش به تولیدکننده (تامین‌کننده)</option>
+                </select>
+                <div class="form-text">پذیرش بر اساس همین انتخاب، قلم را به صف کارگاه یا تامین‌کننده می‌فرستد.</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="small mb-3">
+            <strong>نحوه ساخت:</strong>
+            {% if item.send_to == 'workshop' %}کارگاه کلینیک{% else %}تولیدکننده{% endif %}
+        </div>
+        {% endif %}
 
         {% if item.spec.dynamic_fields %}
         <div class="row g-3 mb-3">
@@ -66,11 +87,11 @@
         <div class="d-flex gap-2 flex-wrap mt-3">
             <button type="submit" name="action" value="save" class="btn btn-outline-primary">
                 <i class="fas fa-save me-1"></i>
-                {% if item.specs_status == 'completed' %}ذخیره ویرایش مشخصات{% else %}ذخیره پیش‌نویس{% endif %}
+                {% if item.specs_status == 'completed' %}ذخیره ویرایش{% else %}ذخیره پیش‌نویس{% endif %}
             </button>
-            {% if item.specs_status != 'completed' %}
+            {% if item.specs_status != 'completed' or item.spec.can_set_route and not item.send_to_confirmed %}
             <button type="submit" name="action" value="complete" class="btn btn-success">
-                <i class="fas fa-check-double me-1"></i> تایید و تکمیل مشخصات
+                <i class="fas fa-check-double me-1"></i> تایید و تکمیل
             </button>
             {% endif %}
         </div>

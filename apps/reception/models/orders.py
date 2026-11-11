@@ -133,6 +133,22 @@ class Order(TimeStampedModel):
     workshop_notes = models.TextField(blank=True, verbose_name="یادداشت کارگاه")
     general_notes = models.TextField(blank=True, verbose_name="یادداشت کلی")     # از wizard
 
+    # ارجاعات به کارگاه
+    MEASUREMENT_CHOICES = (
+        ("none", "بدون اندازه‌گیری"),
+        ("requested", "در انتظار اندازه‌گیری کارگاه"),
+        ("completed", "اندازه‌گیری انجام شد"),
+        ("returned", "برگشت از کارگاه با یادداشت"),
+    )
+    measurement_status = models.CharField(
+        max_length=20, choices=MEASUREMENT_CHOICES, default="none", db_index=True)
+    measurement_requested_at = models.DateTimeField(null=True, blank=True)
+    measurement_requested_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="measurement_requests")
+    measurement_completed_at = models.DateTimeField(null=True, blank=True)
+    measurement_note = models.TextField(blank=True, default='')
+    
     def __str__(self):
         return f"Order #{self.id} - {self.patient}"
 
@@ -292,7 +308,8 @@ class OrderItem(TimeStampedModel):
     foot_length = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     measurements = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
     dynamic_fields = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
-
+    send_to_confirmed = models.BooleanField(
+        default=False, verbose_name="مسیر ساخت توسط کارگاه تایید شده")
     priority = models.CharField(
         max_length=20,
         choices=PRIORITY_CHOICES,
@@ -554,7 +571,6 @@ class OrderService:
         items_data = order_data.get('items', []) or []
         order_datetime = cls._parse_order_datetime(order_data.get('order_date'))
 
-        # آیتم بدون سرویس: در پیش‌نویس نادیده گرفته می‌شود، در ثبت نهایی خطا
         valid_items = []
         for idx, item in enumerate(items_data, start=1):
             if item.get('service_id'):
@@ -562,7 +578,6 @@ class OrderService:
             elif not is_draft:
                 raise ValueError(f'برای قلم شماره {idx} سرویس انتخاب نشده است.')
 
-        # اولویت سفارش = بالاترین اولویت آیتم‌ها
         priority = max(
             (i.get('priority') or 'normal' for i in valid_items),
             key=lambda p: cls.PRIORITY_RANK.get(p, 0),
@@ -584,21 +599,19 @@ class OrderService:
             invoiced = OrderInvoice.objects.filter(order=order).exists()
         else:
             order = Order.objects.create(
-                patient=patient,
-                examination=exam,
-                order_date=order_datetime,
-                priority=priority,
-                general_notes=order_data.get('general_notes', ''),
-                status='draft' if is_draft else 'awaiting',
-                payment_status='unpaid',
+                patient=patient, examination=exam, order_date=order_datetime,
+                priority=priority, general_notes=order_data.get('general_notes', ''),
+                status='draft' if is_draft else 'awaiting', payment_status='unpaid',
                 created_by=order_data.get('created_by'),
             )
             existing_items = {}
             old_total, invoiced = None, False
+
         kept_ids = set()
 
         for item in valid_items:
             service = get_object_or_404(Services, id=item['service_id'])
+            has_schema = service.measurements.exists() or service.dynamic_fields.exists()
 
             quantity = max(1, int(item.get('quantity') or 1))
             unit_price = cls._dec(item.get('unit_price'))
@@ -614,7 +627,7 @@ class OrderService:
             raw_id = str(item.get('item_id') or '')
             order_item = existing_items.get(int(raw_id)) if raw_id.isdigit() else None
 
-            # آیتمی که به کارگاه/تامین‌کننده رفته: پذیرش فقط بخش مالی را می‌تواند تغییر دهد
+            # قلم ارسال‌شده به کارگاه/تامین‌کننده: فقط بخش مالی
             if order_item and order_item.status not in cls.REMOVABLE_STATUSES:
                 order_item.price_at_order = unit_price
                 order_item.discount = discount
@@ -622,29 +635,18 @@ class OrderService:
                 kept_ids.add(order_item.id)
                 continue
 
-            measurements = item.get('measurements', {}) or {}
-            foot_length = extract_foot_length(measurements)
-
-            if order_item and order_item.specs_status == 'completed':
-                if order_item.service_id != service.id:
-                    raise ValueError(
-                        f'مشخصات قلم «{order_item.service.name}» تایید شده و سرویس آن قابل تغییر نیست.'
-                    )
-                # پذیرش نمی‌تواند مشخصات تاییدشده توسط کارگاه را عوض کند
-                fields['measurements'] = order_item.measurements
-                fields['dynamic_fields'] = order_item.dynamic_fields
-                fields['foot_length'] = order_item.foot_length
-                
             delivery_date = item.get('delivery_date') or None
+            send_to = item.get('send_to')
+            if send_to not in ('workshop', 'manufacturer'):
+                send_to = 'manufacturer'
+
+            # اندازه‌ها، مشخصات و foot_length هرگز از ویزارد پذیرش نوشته نمی‌شوند
             fields = dict(
                 service=service,
                 quantity=quantity,
-                foot_length=foot_length,
-                measurements=measurements,
-                dynamic_fields=item.get('dynamic_fields', {}) or {},
                 price_at_order=unit_price,
                 discount=discount,
-                send_to=item.get('send_to', 'manufacturer'),
+                send_to=send_to,
                 priority=item.get('priority', 'normal'),
                 delivery_date=delivery_date,
                 expected_delivery_date=normalize_delivery_date(delivery_date),
@@ -652,19 +654,33 @@ class OrderService:
             )
 
             if order_item:
+                if order_item.service_id != service.id:
+                    old_svc = order_item.service
+                    old_has_schema = (old_svc.measurements.exists()
+                                      or old_svc.dynamic_fields.exists())
+                    if order_item.specs_status == 'completed' and old_has_schema:
+                        raise ValueError(
+                            f'مشخصات قلم «{old_svc.name}» تایید شده و سرویس آن قابل تغییر نیست.')
+                    fields.update(
+                        measurements={}, dynamic_fields={}, foot_length=None,
+                        send_to_confirmed=False,
+                        specs_status='pending' if has_schema else 'completed')
+                elif order_item.send_to_confirmed:
+                    fields.pop('send_to')        # مسیر را کارگاه تعیین کرده
+
                 for key, value in fields.items():
                     setattr(order_item, key, value)
                 order_item.save()
                 order_item.designs.all().delete()
             else:
-                has_schema = service.measurements.exists() or service.dynamic_fields.exists()
                 order_item = OrderItem.objects.create(
-                    order=order, status='pending',
+                    order=order,
+                    status='draft' if order.status == 'draft' else 'pending',
                     specs_status='pending' if has_schema else 'completed',
                     **fields,
                 )
 
-            # قیمت جدول سایز فقط وقتی اعمال می‌شود که پذیرش قیمتی وارد نکرده باشد
+            # قیمت جدول سایز فقط وقتی پذیرش قیمتی وارد نکرده
             if order_item.price_at_order == 0:
                 order_item.calculate_price()
                 order_item.save(update_fields=['price_at_order', 'cost_at_order', 'updated_at'])
@@ -673,17 +689,13 @@ class OrderService:
                 design = Design.objects.filter(id=d['design_id']).first()
                 if design:
                     OrderItemDesign.objects.create(
-                        order=order,
-                        order_item=order_item,
-                        design=design,
-                        quantity=quantity,
-                        price_at_order=cls._dec(d.get('price')),
-                        side=d.get('side'),
+                        order=order, order_item=order_item, design=design,
+                        quantity=quantity, price_at_order=cls._dec(d.get('price')),
+                        cost_at_order=design.cost, side=d.get('side') or None,
                     )
 
             kept_ids.add(order_item.id)
 
-        # آیتم‌هایی که از ویزارد حذف شده‌اند
         for item_id, old in existing_items.items():
             if item_id in kept_ids:
                 continue
@@ -691,14 +703,16 @@ class OrderService:
                 old.delete()
             else:
                 raise ValueError(
-                    f'قلم «{old.service.name}» به کارگاه/تامین‌کننده ارسال شده و قابل حذف نیست.'
-                )
+                    f'قلم «{old.service.name}» به کارگاه/تامین‌کننده ارسال شده و قابل حذف نیست.')
+
+        if not is_draft:
+            if order.measurement_status == 'requested':
+                raise ValueError('اندازه‌گیری کارگاه هنوز تکمیل نشده است.')
+            order.items.filter(status='draft').update(status='pending')
 
         order.recalculate_total()
         if invoiced and order.total_price != old_total:
-            raise ValueError(
-                'برای این سفارش فاکتور صادر شده و تغییر مبلغ آن مجاز نیست.'
-            )
+            raise ValueError('برای این سفارش فاکتور صادر شده و تغییر مبلغ آن مجاز نیست.')
         order.update_payment_status()
         return order
 

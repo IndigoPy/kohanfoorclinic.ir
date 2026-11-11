@@ -71,7 +71,11 @@ def send_to_workshop_queue(request, item_id, allowed_groups=RECEPTION_AND_WORKSH
 @require_POST
 def send_order_to_workshop_queue(request, order_id):
     order = get_object_or_404(Order.objects.select_related('patient'), id=order_id)
-
+    
+    if order.status == 'draft':
+        messages.error(request, 'این سفارش هنوز ثبت نهایی نشده و قابل ارسال نیست.')
+        return redirect('reception:patient-detail', patient_id=order.patient_id)
+    
     items = order.items.filter(send_to='workshop', status='pending')
 
     if not items.exists():
@@ -102,6 +106,10 @@ def send_order_to_workshop_queue(request, order_id):
 @require_POST
 def send_order_to_supplier_registration(request, order_id):
     order = get_object_or_404(Order.objects.select_related('patient'), id=order_id)
+
+    if order.status == 'draft':
+        messages.error(request, 'این سفارش هنوز ثبت نهایی نشده و قابل ارسال نیست.')
+        return redirect('reception:patient-detail', patient_id=order.patient_id)
 
     items = order.items.filter(send_to='manufacturer', status='pending')
 
@@ -286,4 +294,6 @@ def _get_next_url(request, item):
     ):
         return referer
 
+    if item.order.status == 'draft':
+        return resolve_url("workshop:measurement-detail", order_id=item.order_id)
     return resolve_url("workshop:order-detail", order_id=item.order_id)

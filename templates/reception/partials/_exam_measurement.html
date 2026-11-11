@@ -1,0 +1,58 @@
+{% load jformat %}
+{% with mo=exam.measurement_order %}
+{% if mo or exam.can_request_measurement %}
+<div class="px-3 py-3 border-top bg-white">
+
+  {% if not mo %}
+    <form method="post" action="{% url 'reception:request-measurement' exam.id %}"
+          class="m-0 d-flex flex-wrap justify-content-between align-items-center gap-2"
+          onsubmit="return confirm('پرونده برای ثبت اندازه و مشخصات به کارگاه ارسال شود؟');">
+      {% csrf_token %}
+      <span class="small text-muted">
+        <i class="fas fa-ruler-combined me-1"></i> اندازه‌گیری و مشخصات (مدل، رنگ و...) توسط کارگاه ثبت می‌شود
+      </span>
+      <button type="submit" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-paper-plane me-1"></i> ارسال برای اندازه‌گیری
+      </button>
+    </form>
+
+  {% elif mo.measurement_status == 'requested' %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span class="badge bg-warning text-dark px-3 py-2">
+        <i class="fas fa-hourglass-half me-1"></i> در انتظار اندازه‌گیری کارگاه
+      </span>
+      <small class="text-muted">ارسال: {{ mo.measurement_requested_at|jformat:"%Y/%m/%d - %H:%M" }}</small>
+    </div>
+
+  {% elif mo.measurement_status == 'completed' %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span class="badge bg-success px-3 py-2">
+        <i class="fas fa-check-circle me-1"></i> اندازه‌گیری انجام شد
+        {% if mo.measurement_completed_at %}({{ mo.measurement_completed_at|jformat:"%Y/%m/%d" }}){% endif %}
+      </span>
+      <a href="{% url 'reception:edit-order' mo.id %}" class="btn btn-sm btn-success">
+        <i class="fas fa-file-invoice-dollar me-1"></i> ادامه ثبت سفارش (قیمت‌گذاری)
+      </a>
+    </div>
+
+  {% elif mo.measurement_status == 'returned' %}
+    <div class="alert alert-danger py-2 mb-2 small">
+      <strong><i class="fas fa-undo me-1"></i> کارگاه پرونده را برگرداند:</strong>
+      {{ mo.measurement_note|linebreaksbr }}
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <form method="post" action="{% url 'reception:request-measurement' exam.id %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-paper-plane me-1"></i> ارسال مجدد برای اندازه‌گیری
+        </button>
+      </form>
+      <a href="{% url 'reception:edit-order' mo.id %}" class="btn btn-sm btn-outline-secondary">
+        ثبت سفارش بدون اندازه‌گیری قبلی
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endif %}
+{% endwith %}

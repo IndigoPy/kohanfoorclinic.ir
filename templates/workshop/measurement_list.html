@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load jformat %}
+{% block title %}صف اندازه‌گیری کارگاه{% endblock %}
+
+{% block content %}
+<div class="py-3" dir="rtl">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="fas fa-ruler-combined text-primary me-2"></i>صف اندازه‌گیری</h3>
+      <div class="text-muted small">پرونده‌هایی که پذیرش برای ثبت اندازه و مشخصات به کارگاه فرستاده است</div>
+    </div>
+    <a href="{% url 'workshop:dashboard' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-right me-1"></i> داشبورد کارگاه
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <ul class="nav nav-pills">
+          <li class="nav-item">
+            <a class="nav-link {% if state == 'requested' %}active{% endif %}" href="?state=requested">
+              در انتظار اندازه‌گیری <span class="badge bg-light text-dark ms-1">{{ counts.requested }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if state == 'completed' %}active{% endif %}" href="?state=completed">
+              انجام‌شده (منتظر پذیرش) <span class="badge bg-light text-dark ms-1">{{ counts.completed }}</span>
+            </a>
+          </li>
+        </ul>
+
+        <form method="get" class="d-flex gap-2">
+          <input type="hidden" name="state" value="{{ state }}">
+          <input type="search" name="q" value="{{ search }}" class="form-control"
+                 placeholder="نام، شماره پرونده، تلفن...">
+          <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+        </form>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>بیمار</th>
+              <th>اقلام</th>
+              <th>{% if state == 'requested' %}زمان ارسال{% else %}زمان تکمیل{% endif %}</th>
+              <th>پیشرفت</th>
+              <th class="text-center">عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+            <tr>
+              <td>
+                <div class="fw-bold">{{ order.patient.full_name }}</div>
+                <small class="text-muted">پرونده: {{ order.patient.case_number }}</small>
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for item in order.measurement_items %}
+                    <span class="badge {% if item.specs_status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                      {{ item.service.name }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </td>
+              <td class="small text-muted">
+                {% if state == 'requested' %}
+                  {{ order.measurement_requested_at|jformat:"%Y/%m/%d - %H:%M" }}
+                  {% if order.measurement_requested_by %}<br>{{ order.measurement_requested_by.get_full_name|default:order.measurement_requested_by.username }}{% endif %}
+                {% else %}
+                  {{ order.measurement_completed_at|jformat:"%Y/%m/%d - %H:%M" }}
+                {% endif %}
+              </td>
+              <td>
+                {% if order.pending_specs %}
+                  <span class="text-warning fw-bold">{{ order.pending_specs }} قلم باقی‌مانده</span>
+                  <small class="text-muted">از {{ order.total_specs }}</small>
+                {% else %}
+                  <span class="text-success fw-bold"><i class="fas fa-check-circle"></i> همه تکمیل شد</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{% url 'workshop:measurement-detail' order.id %}" class="btn btn-sm btn-primary">
+                  <i class="fas fa-ruler me-1"></i>
+                  {% if state == 'requested' %}ثبت اندازه‌ها{% else %}مشاهده / ویرایش{% endif %}
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-5">
+                <i class="fas fa-inbox fa-2x d-block mb-2 opacity-50"></i>
+                موردی در این بخش وجود ندارد.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if orders.has_other_pages %}
+      <nav class="mt-4">
+        <ul class="pagination justify-content-center mb-0">
+          {% if orders.has_previous %}
+            <li class="page-item"><a class="page-link" href="?state={{ state }}&q={{ search|urlencode }}&page={{ orders.previous_page_number }}">قبلی</a></li>
+          {% endif %}
+          <li class="page-item active"><span class="page-link">{{ orders.number }} از {{ orders.paginator.num_pages }}</span></li>
+          {% if orders.has_next %}
+            <li class="page-item"><a class="page-link" href="?state={{ state }}&q={{ search|urlencode }}&page={{ orders.next_page_number }}">بعدی</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

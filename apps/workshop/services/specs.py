@@ -9,7 +9,11 @@ from apps.workshop.services.logging import create_workshop_log
 
 TRUE_VALUES = (True, 'true', 'True', 'on', '1', 1)
 SIDE_LABELS = {'right': ' (راست)', 'left': ' (چپ)'}
-
+ROUTES = {
+    'workshop': 'ساخت/تکمیل در کارگاه کلینیک',
+    'manufacturer': 'سفارش به تولیدکننده',
+}
+ROUTE_EDITABLE_STATUSES = ('draft', 'pending')
 
 def _options(field):
     return [o.strip() for o in (field.dropdown_options or '').split(',') if o.strip()]
@@ -93,6 +97,9 @@ def save_item_specs(*, item, post, user, complete):
         measurements = {'different_sizes': False, **read_meas('meas_')}
     dynamic = {f.name: _read(post, f'dyn_{f.name}', f) for f in dyn_fields}
 
+    can_route = item.status in ROUTE_EDITABLE_STATUSES
+    new_route = (post.get('send_to') or '').strip() if can_route else ''
+
     errors = []
     if different:
         for side, where in (('right', ' (پای راست)'), ('left', ' (پای چپ)')):
@@ -100,12 +107,21 @@ def save_item_specs(*, item, post, user, complete):
     else:
         errors += _validate(meas_fields, measurements, '', complete)
     errors += _validate(dyn_fields, dynamic, '', complete)
+    if new_route and new_route not in ROUTES:
+        errors.append('نحوه ساخت انتخاب‌شده معتبر نیست.')
+    if can_route and complete and not new_route and not item.send_to_confirmed:
+        errors.append('نحوه ساخت (کارگاه یا تامین‌کننده) را مشخص کنید.')
     if errors:
         raise ValueError(' | '.join(errors))
 
     changed = _changed_labels(item.measurements, measurements, item.dynamic_fields, dynamic, labels)
+    route_changed = bool(new_route) and new_route != item.send_to
+    if route_changed:
+        changed.append('نحوه ساخت ← ' + ROUTES[new_route])
+
     newly_completed = complete and item.specs_status != 'completed'
-    if not changed and not newly_completed:
+    first_confirm = can_route and complete and not item.send_to_confirmed
+    if not changed and not newly_completed and not first_confirm:
         return []
 
     item.measurements = measurements
@@ -113,6 +129,12 @@ def save_item_specs(*, item, post, user, complete):
     item.foot_length = extract_foot_length(measurements)
     update_fields = ['measurements', 'dynamic_fields', 'foot_length', 'updated_at']
 
+    if route_changed:
+        item.send_to = new_route
+        update_fields.append('send_to')
+    if first_confirm:
+        item.send_to_confirmed = True
+        update_fields.append('send_to_confirmed')
     if newly_completed:
         item.specs_status = 'completed'
         item.specs_completed_by = user
@@ -121,8 +143,10 @@ def save_item_specs(*, item, post, user, complete):
     item.save(update_fields=update_fields)
 
     parts = []
-    if newly_completed:
+    if newly_completed or first_confirm:
         parts.append('مشخصات تکمیل و تایید شد.')
+    if first_confirm or route_changed:
+        parts.append('نحوه ساخت: ' + ROUTES.get(item.send_to, item.send_to) + '.')
     if changed:
         parts.append('تغییر در: ' + '، '.join(sorted(set(changed))))
     create_workshop_log(
@@ -164,4 +188,7 @@ def get_spec_context(item):
         'right_fields': rows(meas_fields, right),
         'left_fields': rows(meas_fields, left),
         'dynamic_fields': rows(dyn_fields, dyn),
+        'can_set_route': item.status in ROUTE_EDITABLE_STATUSES,
+        'send_to': item.send_to,
+        'send_to_confirmed': item.send_to_confirmed,
     }

@@ -40,5 +40,6 @@ urlpatterns = [
     # path('patient/<int:patient_id>/create-order/',
     #      views.create_order_for_patient, name='create-order'),
     path('items/<int:item_id>/apply-suggested-price/', order_views.apply_suggested_price, name='apply-suggested-price'),
+    path('exam/<int:exam_id>/request-measurement/', views.send_exam_for_measurement, name='request-measurement'),
 
 ]

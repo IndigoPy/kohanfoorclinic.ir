@@ -487,16 +487,17 @@ def patient_detail(request, patient_id):
     orders = list(orders_qs)
 
     for order in orders:
+        is_final = order.status != 'draft'
         order.pending_workshop_items = [
             item for item in order.items.all()
-            if item.status == 'pending' and item.send_to == 'workshop'
+            if is_final and item.status == 'pending' and item.send_to == 'workshop'
         ]
         order.pending_supplier_items = [
             item for item in order.items.all()
-            if item.status == 'pending' and item.send_to == 'manufacturer'
+            if is_final and item.status == 'pending' and item.send_to == 'manufacturer'
         ]
 
-    examinations = (
+    examinations_qs = (
         patient.examinations
         .all()
         .prefetch_related(
@@ -511,7 +512,19 @@ def patient_detail(request, patient_id):
         .order_by('-created_at')
     )
 
-    latest_exam = examinations.first()
+    examinations = list(examinations_qs)
+    for exam in examinations:
+        exam_orders = list(exam.orders.all())
+        exam.measurement_order = next(
+            (o for o in exam_orders
+             if o.status == 'draft' and o.measurement_status != 'none'), None)
+        exam.can_request_measurement = (
+            bool(exam.prescription_services)
+            and exam.measurement_order is None
+            and all(o.status in ('draft', 'cancelled') for o in exam_orders)
+        )
+
+    latest_exam = examinations[0] if examinations else None
 
     related_patients = patient.get_related_patients()
     insurance_info = getattr(patient, 'insurance_info', None)

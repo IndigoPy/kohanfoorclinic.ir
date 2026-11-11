@@ -1,3 +1,6 @@
+import jdatetime
+from django.utils import timezone
+
 def standardize_persian_date(date_str):
     if not date_str:
         return None
@@ -58,3 +61,22 @@ def referrer_initial(obj):
 
 def referrer_initial_from_raw(raw):
     return _referrer_choice(*resolve_referrer(raw))
+
+def parse_jalali_datetime(raw):
+    """'۱۴۰۵/۰۴/۳۰' → datetime آگاه به منطقهٔ زمانی (ساعت = اکنون)."""
+    try:
+        y, m, d = map(int, normalize_digits(raw).strip().replace('-', '/').split('/'))
+        now = timezone.localtime()
+        g = jdatetime.datetime(y, m, d, now.hour, now.minute, now.second).togregorian()
+        return timezone.make_aware(g) if timezone.is_naive(g) else g
+    except (ValueError, TypeError):
+        return None
+
+def to_persian_date_str(value):
+    """date یا datetime میلادی → '1405/04/30' (برای نمایش در input)."""
+    if not value:
+        return ''
+    if hasattr(value, 'astimezone') and timezone.is_aware(value):
+        value = timezone.localtime(value)
+    j = jdatetime.date.fromgregorian(date=value.date() if hasattr(value, 'date') else value)
+    return f"{j.year}/{j.month:02d}/{j.day:02d}"

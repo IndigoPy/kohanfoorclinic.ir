@@ -333,15 +333,6 @@
                 </div>
 
                 <div class="card-body p-5">
-                    {% if messages %}
-                        {% for message in messages %}
-                        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show mb-4">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-
                     <form method="post" enctype="multipart/form-data" id="patient-form">
                         {% csrf_token %}
 

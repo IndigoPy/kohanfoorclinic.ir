@@ -11,7 +11,10 @@ class WorkshopStatusLog(models.Model):
     ACTION_ITEM_NOTE_UPDATE = 'item_note_update'
     ACTION_AUTO_ORDER_SYNC = 'auto_order_sync'
     ACTION_SPECS_UPDATE = 'specs_update'
-    
+    ACTION_MEASUREMENT_REQUEST = 'measurement_request'
+    ACTION_MEASUREMENT_COMPLETE = 'measurement_complete'
+    ACTION_MEASUREMENT_RETURN = 'measurement_return'
+
     ACTION_CHOICES = [
         (ACTION_STATUS_CHANGE, 'تغییر وضعیت آیتم'),
         (ACTION_BULK_STATUS_CHANGE, 'تغییر گروهی وضعیت آیتم‌ها'),
@@ -19,6 +22,9 @@ class WorkshopStatusLog(models.Model):
         (ACTION_ITEM_NOTE_UPDATE, 'ویرایش یادداشت آیتم'),
         (ACTION_AUTO_ORDER_SYNC, 'هماهنگ‌سازی خودکار وضعیت سفارش'),
         (ACTION_SPECS_UPDATE, 'ثبت/ویرایش مشخصات و اندازه‌گیری'),
+        (ACTION_MEASUREMENT_REQUEST, 'ارسال برای اندازه‌گیری'),
+        (ACTION_MEASUREMENT_COMPLETE, 'تکمیل اندازه‌گیری'),
+        (ACTION_MEASUREMENT_RETURN, 'برگشت اندازه‌گیری به پذیرش'),
     ]
 
     patient = models.ForeignKey(

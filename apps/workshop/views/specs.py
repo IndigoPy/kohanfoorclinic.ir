@@ -11,6 +11,7 @@ from apps.workshop.constants import (
 )
 from apps.workshop.services.specs import save_item_specs
 from apps.workshop.views.actions import _get_next_url
+from apps.workshop.services.measurement import sync_measurement_status
 
 ACTIVE_ITEM_STATUSES = RELEASED_ITEM_STATUSES - TERMINAL_ITEM_STATUSES
 
@@ -26,20 +27,28 @@ def update_item_specs(request, item_id):
         pk=item_id,
     )
 
-    if item.order.status in LOCKED_ORDER_STATUSES or item.status not in ACTIVE_ITEM_STATUSES:
+    if not _can_edit_specs(item):
         messages.error(request, 'در وضعیت فعلی امکان ثبت مشخصات برای این محصول وجود ندارد.')
         return redirect(_get_next_url(request, item))
 
     complete = request.POST.get('action') == 'complete'
     try:
         changed = save_item_specs(item=item, post=request.POST, user=request.user, complete=complete)
-        if complete:
+        if complete and sync_measurement_status(item.order, user=request.user):
+            messages.success(request, 'همهٔ مشخصات تکمیل شد؛ پرونده به پذیرش بازگشت.')
+        elif complete:
             messages.success(request, 'مشخصات محصول تکمیل و تایید شد.')
-        elif changed:
-            messages.success(request, 'مشخصات ذخیره شد.')
         else:
             messages.info(request, 'تغییری در مشخصات ایجاد نشده است.')
     except ValueError as exc:
         messages.error(request, str(exc))
 
     return redirect(_get_next_url(request, item))
+
+
+def _can_edit_specs(item):
+    order = item.order
+    if order.status == 'draft':      # فاز اندازه‌گیری قبل از ثبت نهایی
+        return (order.measurement_status in ('requested', 'completed')
+                and item.status in ('draft', 'pending'))
+    return order.status not in LOCKED_ORDER_STATUSES and item.status in ACTIVE_ITEM_STATUSES

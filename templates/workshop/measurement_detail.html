@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load jformat %}
+{% block title %}اندازه‌گیری - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<style>
+  .product-update-form { padding: 16px; border: 1px solid #dbeafe; border-radius: 14px; background: #f8fbff; margin-top: 14px; }
+  .form-section-title { font-weight: 800; color: #1e3a8a; margin-bottom: 14px; }
+  .ws-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; font-size: .78rem; font-weight: 800; }
+  .ws-status-ready { color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; }
+  .ws-status-manufacturing { color: #b45309; background: #fffbeb; border: 1px solid #fde68a; }
+  .no-action-state { color: #6c757d; background: #f8f9fa; border: 1px dashed #ced4da; border-radius: 8px; padding: .75rem 1rem; font-size: .9rem; }
+  .item-card { border-right: 5px solid #2563eb; }
+</style>
+
+<div class="py-3" dir="rtl">
+
+  <!-- هدر -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <h4 class="fw-bold mb-1"><i class="fas fa-ruler-combined text-primary me-2"></i>{{ patient.full_name }}</h4>
+        <div class="text-muted small">
+          پرونده: {{ patient.case_number }}
+          {% if patient.foot_size %}• سایز پا: {{ patient.foot_size }}{% endif %}
+          {% if patient.height %}• قد: {{ patient.height }}{% endif %}
+          {% if patient.weight %}• وزن: {{ patient.weight }}{% endif %}
+          • سفارش پیش‌نویس #{{ order.id }}
+        </div>
+        <div class="text-muted small mt-1">
+          ارسال از پذیرش: {{ order.measurement_requested_at|jformat:"%Y/%m/%d - %H:%M" }}
+          {% if order.measurement_requested_by %}— {{ order.measurement_requested_by.get_full_name|default:order.measurement_requested_by.username }}{% endif %}
+        </div>
+      </div>
+      <div class="text-end">
+        {% if order.measurement_status == 'completed' %}
+          <span class="badge bg-success fs-6 px-3 py-2">تکمیل شد و به پذیرش بازگشت</span>
+        {% else %}
+          <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ done_count }} از {{ order.total_specs }} قلم تایید شد</span>
+        {% endif %}
+        <div class="mt-2">
+          <a href="{% url 'workshop:measurement-list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-right me-1"></i> بازگشت به صف
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if order.measurement_status == 'completed' %}
+  <div class="alert alert-success">
+    <i class="fas fa-check-circle me-1"></i>
+    همه‌ی اقلام تایید شده و پرونده نزد پذیرش است. تا زمانی که پذیرش سفارش را نهایی نکرده، می‌توانید مشخصات را اصلاح کنید.
+  </div>
+  {% endif %}
+
+  <!-- خلاصه معاینه -->
+  {% if exam %}
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-white fw-bold">
+      <i class="fas fa-stethoscope text-primary me-1"></i>
+      خلاصه معاینه ({{ exam.exam_date|jformat:"%Y/%m/%d" }}{% if exam.doctor_name %} — {{ exam.doctor_name }}{% endif %})
+    </div>
+    <div class="card-body small">
+      {% if exam.chief_complaint %}
+        <div class="mb-2"><strong>شرح حال:</strong> {{ exam.chief_complaint|linebreaksbr }}</div>
+      {% endif %}
+      <div class="mb-2">
+        <strong>مشاهدات:</strong>
+        {% if exam.is_separated_observations %}
+          <span class="text-success fw-bold">راست:</span>
+          {% for o in exam.observations_right.all %}<span class="badge bg-success">{{ o.name }}</span> {% empty %}—{% endfor %}
+          <span class="text-primary fw-bold ms-2">چپ:</span>
+          {% for o in exam.observations_left.all %}<span class="badge bg-primary">{{ o.name }}</span> {% empty %}—{% endfor %}
+        {% else %}
+          {% for o in exam.observations.all %}<span class="badge bg-info text-dark">{{ o.name }}</span> {% empty %}—{% endfor %}
+        {% endif %}
+      </div>
+      {% if exam.notes %}
+        <div><strong>یادداشت معاینه:</strong> {{ exam.notes|linebreaksbr }}</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- اقلام -->
+  {% for item in items %}
+  <div class="card border-0 shadow-sm rounded-4 mb-4 item-card">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="fw-bold mb-0"><i class="fas fa-cube text-primary me-2"></i>{{ item.service.name }}</h5>
+        <span class="badge bg-light text-dark border">تعداد: {{ item.quantity }}</span>
+      </div>
+
+      {% if item.designs.all %}
+      <div class="mt-2">
+        <span class="small text-muted">طراحی‌های تجویزی:</span>
+        {% for d in item.designs.all %}
+          <span class="badge bg-info text-dark">
+            {{ d.design.name }}{% if d.side %} ({{ d.get_side_display }}){% endif %}
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% include "workshop/partials/_item_specs_form.html" %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- برگشت با یادداشت -->
+  {% if order.measurement_status == 'requested' %}
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-white fw-bold text-danger">
+      <i class="fas fa-undo me-1"></i> برگرداندن پرونده به پذیرش (بدون تکمیل)
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'workshop:measurement-return' order.id %}"
+            onsubmit="return confirm('پرونده بدون تکمیل اندازه‌گیری به پذیرش برگردد؟');">
+        {% csrf_token %}
+        <label class="form-label small" for="return-note">دلیل (الزامی)</label>
+        <textarea name="note" id="return-note" class="form-control mb-3" rows="2" required
+                  placeholder="مثلاً: بیمار مراجعه نکرد / نیاز به معاینه مجدد / اطلاعات تجویز ناقص است"></textarea>
+        <button type="submit" class="btn btn-outline-danger">
+          <i class="fas fa-undo me-1"></i> برگشت با یادداشت
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- سوابق -->
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white fw-bold"><i class="fas fa-history me-1"></i> سوابق</div>
+    <ul class="list-group list-group-flush small">
+      {% for log in logs %}
+      <li class="list-group-item">
+        <strong>{{ log.get_action_display }}</strong>
+        {% if log.item %}<span class="text-muted">— {{ log.item.service.name }}</span>{% endif %}
+        {% if log.description %}<div class="text-muted">{{ log.description }}</div>{% endif %}
+        <div class="text-muted">
+          {{ log.created_at|jformat:"%Y/%m/%d - %H:%M" }}
+          • {% if log.created_by %}{{ log.created_by.get_full_name|default:log.created_by.username }}{% else %}سیستم{% endif %}
+        </div>
+      </li>
+      {% empty %}
+      <li class="list-group-item text-muted">سابقه‌ای ثبت نشده است.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('spec-size-toggle')) return;
+      const id = e.target.dataset.item, diff = e.target.checked;
+      document.getElementById('spec-same-' + id).style.display = diff ? 'none' : '';
+      document.getElementById('spec-diff-' + id).style.display = diff ? '' : 'none';
+      document.getElementById('size-mode-' + id).value = diff ? 'different' : 'same';
+  });
+</script>
+{% endblock %}
